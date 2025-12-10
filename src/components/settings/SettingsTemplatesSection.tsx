@@ -37,10 +37,10 @@ export function SettingsTemplatesSection({
             <DocumentTextIcon className="relative z-10 h-6 w-6 text-primary" />
           </div>
           <div>
-            <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-2">
+            <h2 className="text-2xl md:text-3xl font-bold text-fg mb-2">
               {t('settings.templates.title')}
             </h2>
-            <p className="text-sm md:text-base text-slate-600">
+            <p className="text-sm md:text-base text-fg-muted">
               Kezeld a sablonokat és állítsd be az alapértelmezetteket
             </p>
           </div>
@@ -60,7 +60,7 @@ export function SettingsTemplatesSection({
               className={`w-full rounded-xl border-2 transition-all ${
                 isSelected
                   ? 'border-primary bg-gradient-to-br from-primary/10 to-primary/5 shadow-md'
-                  : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm'
+                  : 'border-border bg-bg-muted hover:border-border hover:shadow-sm'
               }`}
             >
               <button
@@ -76,7 +76,7 @@ export function SettingsTemplatesSection({
                         className={`flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-lg overflow-hidden border-2 ${
                           isSelected
                             ? 'bg-primary/20 border-primary/30'
-                            : 'bg-slate-100 border-slate-200'
+                            : 'bg-bg-muted border-border'
                         }`}
                       >
                         {template.preview ? (
@@ -90,7 +90,7 @@ export function SettingsTemplatesSection({
                           />
                         ) : (
                           <DocumentTextIcon
-                            className={`h-8 w-8 ${isSelected ? 'text-primary' : 'text-slate-600'}`}
+                            className={`h-8 w-8 ${isSelected ? 'text-primary' : 'text-fg-muted'}`}
                           />
                         )}
                       </div>
@@ -98,25 +98,25 @@ export function SettingsTemplatesSection({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-2 flex-wrap">
                         <h3
-                          className={`font-bold ${isSelected ? 'text-primary' : 'text-slate-900'}`}
+                          className={`font-bold ${isSelected ? 'text-primary' : 'text-fg'}`}
                         >
                           {template.label || template.name}
                         </h3>
                         {isSelected && (
-                          <StarIcon className="h-4 w-4 fill-yellow-500 text-yellow-500 flex-shrink-0" />
+                          <StarIcon className="h-4 w-4 fill-warning text-warning flex-shrink-0" />
                         )}
                         {isPremium ? (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800 border border-amber-200">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-warning/10 px-2 py-0.5 text-xs font-semibold text-warning border border-warning/20">
                             <LockClosedIcon className="h-3 w-3" />
                             Pro
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-800 border border-green-200">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2 py-0.5 text-xs font-semibold text-success border border-success/20">
                             Ingyenes
                           </span>
                         )}
                       </div>
-                      <p className="text-sm text-slate-600 line-clamp-1">
+                      <p className="text-sm text-fg-muted line-clamp-1">
                         {template.description || 'Professzionális elrendezés'}
                       </p>
                     </div>
@@ -129,10 +129,10 @@ export function SettingsTemplatesSection({
                           e.stopPropagation();
                           setExpandedPreview(isPreviewExpanded ? null : template.id);
                         }}
-                        className="p-2 rounded-lg hover:bg-slate-100 transition-colors"
+                        className="p-2 rounded-lg hover:bg-bg-muted transition-colors"
                         aria-label={isPreviewExpanded ? 'Elrejtés' : 'Nagyítás'}
                       >
-                        <PhotoIcon className="h-5 w-5 text-slate-600" />
+                        <PhotoIcon className="h-5 w-5 text-fg-muted" />
                       </button>
                     )}
                     {isSelected && (
@@ -146,7 +146,7 @@ export function SettingsTemplatesSection({
 
               {/* Expanded preview */}
               {isPreviewExpanded && template.preview && (
-                <div className="border-t border-slate-200 p-4 bg-slate-50">
+                <div className="border-t border-border p-4 bg-bg-muted">
                   <div className="relative">
                     <button
                       type="button"
@@ -154,14 +154,14 @@ export function SettingsTemplatesSection({
                       className="absolute top-2 right-2 z-10 p-1.5 rounded-full bg-white/90 hover:bg-white shadow-md transition-colors"
                       aria-label="Bezárás"
                     >
-                      <XMarkIcon className="h-5 w-5 text-slate-600" />
+                      <XMarkIcon className="h-5 w-5 text-fg-muted" />
                     </button>
                     <Image
                       src={template.preview}
                       alt={`${template.label || template.name} előnézet`}
                       width={800}
                       height={600}
-                      className="w-full rounded-lg shadow-lg border border-slate-200"
+                      className="w-full rounded-lg shadow-lg border border-border"
                       unoptimized
                     />
                   </div>

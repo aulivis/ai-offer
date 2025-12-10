@@ -29,10 +29,10 @@ export function SettingsAuthSection({
               <KeyIcon className="relative z-10 h-6 w-6 text-primary" />
             </div>
             <div>
-              <h2 className="text-xl md:text-2xl font-bold text-slate-900 mb-1">
+              <h2 className="text-xl md:text-2xl font-bold text-fg mb-1">
                 {t('settings.authMethods.title')}
               </h2>
-              <p className="text-sm md:text-base text-slate-500">
+              <p className="text-sm md:text-base text-fg-muted">
                 {t('settings.authMethods.subtitle')}
               </p>
             </div>
@@ -64,12 +64,12 @@ export function SettingsAuthSection({
               </svg>
             </div>
             <div>
-              <p className="text-sm font-semibold text-slate-900">
+              <p className="text-sm font-semibold text-fg">
                 {googleLinked
                   ? t('settings.authMethods.googleLinked.title')
                   : t('settings.authMethods.googleNotLinked.title')}
               </p>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-fg-muted">
                 {googleLinked
                   ? t('settings.authMethods.googleLinked.description')
                   : t('settings.authMethods.googleNotLinked.description')}

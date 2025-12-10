@@ -50,7 +50,7 @@ export function ROICalculatorLanding() {
       {/* Background decoration */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-20 left-10 w-64 h-64 bg-turquoise-500 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-blue-500 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-primary/30 rounded-full blur-3xl"></div>
       </div>
 
       <div className="container mx-auto px-4 relative z-10">
@@ -268,10 +268,10 @@ export function ROICalculatorLanding() {
             {/* New orange button style */}
             <Link
               href="/login?redirect=/new"
-              className="w-full bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-bold px-8 py-4 rounded-lg text-lg shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 flex items-center justify-center gap-2 min-h-[44px]"
+              className="w-full bg-cta hover:bg-cta-hover text-cta-ink font-bold px-8 py-4 rounded-lg text-lg shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 flex items-center justify-center gap-2 min-h-[44px]"
             >
-              <span className="text-white">Kezdd el ingyen – 5 perc alatt</span>
-              <TrendingUp className="w-5 h-5 text-white" />
+              <span className="text-cta-ink">Kezdd el ingyen – 5 perc alatt</span>
+              <TrendingUp className="w-5 h-5 text-cta-ink" />
             </Link>
           </div>
         </div>

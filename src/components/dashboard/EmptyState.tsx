@@ -20,21 +20,21 @@ export function EmptyState() {
           <div className="w-20 h-20 bg-gradient-to-br from-teal-500 to-blue-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl">
             <SparklesIcon className="w-10 h-10 text-white" />
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+          <h1 className="text-4xl md:text-5xl font-bold text-fg mb-4">
             Üdvözlünk a Vyndi-ben! 👋
           </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-xl text-fg-muted max-w-2xl mx-auto">
             Kezdd el az első professzionális ajánlatod készítését most
           </p>
         </div>
 
         {/* Quick start guide */}
-        <div className="bg-white rounded-3xl shadow-xl border-2 border-gray-100 p-8 mb-8">
+        <div className="bg-white rounded-3xl shadow-xl border-2 border-border p-8 mb-8">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 bg-teal-100 rounded-xl flex items-center justify-center">
               <RocketLaunchIcon className="w-6 h-6 text-teal-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">3 lépés a sikeres ajánlatig</h2>
+            <h2 className="text-2xl font-bold text-fg">3 lépés a sikeres ajánlatig</h2>
           </div>
 
           <div className="space-y-4">
@@ -43,8 +43,8 @@ export function EmptyState() {
                 1
               </div>
               <div className="flex-1">
-                <h3 className="font-bold text-gray-900 mb-1">Válassz sablont</h3>
-                <p className="text-sm text-gray-600">
+                <h3 className="font-bold text-fg mb-1">Válassz sablont</h3>
+                <p className="text-sm text-fg-muted">
                   Kezdj egy profi sablonnal vagy hozz létre sajátot
                 </p>
               </div>
@@ -52,25 +52,25 @@ export function EmptyState() {
               <span className="text-sm font-semibold text-teal-600">2 perc</span>
             </div>
 
-            <div className="flex items-start gap-4 p-4 bg-blue-50 rounded-xl border-2 border-blue-200">
-              <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold flex-shrink-0">
+            <div className="flex items-start gap-4 p-4 bg-primary/10 rounded-xl border-2 border-primary/20">
+              <div className="w-8 h-8 bg-primary text-primary-ink rounded-full flex items-center justify-center font-bold flex-shrink-0">
                 2
               </div>
               <div className="flex-1">
-                <h3 className="font-bold text-gray-900 mb-1">Töltsd ki az ajánlatot</h3>
-                <p className="text-sm text-gray-600">Add meg a szolgáltatásokat és az árakat</p>
+                <h3 className="font-bold text-fg mb-1">Töltsd ki az ajánlatot</h3>
+                <p className="text-sm text-fg-muted">Add meg a szolgáltatásokat és az árakat</p>
               </div>
-              <ClockIcon className="w-5 h-5 text-blue-600" />
-              <span className="text-sm font-semibold text-blue-600">5 perc</span>
+              <ClockIcon className="w-5 h-5 text-primary" />
+              <span className="text-sm font-semibold text-primary">5 perc</span>
             </div>
 
-            <div className="flex items-start gap-4 p-4 bg-green-50 rounded-xl border-2 border-green-200">
-              <div className="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center font-bold flex-shrink-0">
+            <div className="flex items-start gap-4 p-4 bg-success/10 rounded-xl border-2 border-success/20">
+              <div className="w-8 h-8 bg-success text-white rounded-full flex items-center justify-center font-bold flex-shrink-0">
                 3
               </div>
               <div className="flex-1">
-                <h3 className="font-bold text-gray-900 mb-1">Küld el az ügyfélnek</h3>
-                <p className="text-sm text-gray-600">Egy kattintás és már úton is van!</p>
+                <h3 className="font-bold text-fg mb-1">Küld el az ügyfélnek</h3>
+                <p className="text-sm text-fg-muted">Egy kattintás és már úton is van!</p>
               </div>
               <ClockIcon className="w-5 h-5 text-green-600" />
               <span className="text-sm font-semibold text-green-600">1 perc</span>
@@ -89,19 +89,19 @@ export function EmptyState() {
 
         {/* Template preview cards */}
         <div className="mb-8">
-          <h3 className="text-xl font-bold text-gray-900 mb-4">Vagy kezdj egy sablonnal</h3>
+          <h3 className="text-xl font-bold text-fg mb-4">Vagy kezdj egy sablonnal</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Link
               href="/new?template=web"
-              className="bg-white rounded-2xl p-6 shadow-lg border-2 border-gray-100 hover:border-teal-300 transition-all text-left group"
+              className="bg-white rounded-2xl p-6 shadow-lg border-2 border-border hover:border-primary/30 transition-all text-left group"
             >
               <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
                 <DocumentTextIcon className="w-6 h-6 text-purple-600" />
               </div>
-              <h4 className="font-bold text-gray-900 mb-2 group-hover:text-teal-600 transition-colors">
+              <h4 className="font-bold text-fg mb-2 group-hover:text-primary transition-colors">
                 Webfejlesztés sablon
               </h4>
-              <p className="text-sm text-gray-600 mb-4">
+              <p className="text-sm text-fg-muted mb-4">
                 Teljes webes projekt ajánlat előre kitöltött tételekkel
               </p>
               <div className="flex items-center gap-2 text-teal-600 text-sm font-semibold">
@@ -112,15 +112,15 @@ export function EmptyState() {
 
             <Link
               href="/new?template=marketing"
-              className="bg-white rounded-2xl p-6 shadow-lg border-2 border-gray-100 hover:border-teal-300 transition-all text-left group"
+              className="bg-white rounded-2xl p-6 shadow-lg border-2 border-border hover:border-primary/30 transition-all text-left group"
             >
-              <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center mb-4">
+              <div className="w-12 h-12 bg-warning/10 rounded-xl flex items-center justify-center mb-4">
                 <PaintBrushIcon className="w-6 h-6 text-orange-600" />
               </div>
-              <h4 className="font-bold text-gray-900 mb-2 group-hover:text-teal-600 transition-colors">
+              <h4 className="font-bold text-fg mb-2 group-hover:text-primary transition-colors">
                 Marketing sablon
               </h4>
-              <p className="text-sm text-gray-600 mb-4">SEO, PPC és social media kampány ajánlat</p>
+              <p className="text-sm text-fg-muted mb-4">SEO, PPC és social media kampány ajánlat</p>
               <div className="flex items-center gap-2 text-teal-600 text-sm font-semibold">
                 <span>Sablon használata</span>
                 <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -129,15 +129,15 @@ export function EmptyState() {
 
             <Link
               href="/new?template=consulting"
-              className="bg-white rounded-2xl p-6 shadow-lg border-2 border-gray-100 hover:border-teal-300 transition-all text-left group"
+              className="bg-white rounded-2xl p-6 shadow-lg border-2 border-border hover:border-primary/30 transition-all text-left group"
             >
-              <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-4">
-                <BriefcaseIcon className="w-6 h-6 text-blue-600" />
+              <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-4">
+                <BriefcaseIcon className="w-6 h-6 text-primary" />
               </div>
-              <h4 className="font-bold text-gray-900 mb-2 group-hover:text-teal-600 transition-colors">
+              <h4 className="font-bold text-fg mb-2 group-hover:text-primary transition-colors">
                 Tanácsadás sablon
               </h4>
-              <p className="text-sm text-gray-600 mb-4">Üzleti tanácsadás és stratégiai projekt</p>
+              <p className="text-sm text-fg-muted mb-4">Üzleti tanácsadás és stratégiai projekt</p>
               <div className="flex items-center gap-2 text-teal-600 text-sm font-semibold">
                 <span>Sablon használata</span>
                 <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

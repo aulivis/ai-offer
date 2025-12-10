@@ -11,9 +11,9 @@ import { auditColorPairs, type ColorPair } from '../src/lib/colorContrast';
 
 // Color definitions from globals.css and design tokens
 const COLORS = {
-  // Primary colors
-  primary: '#00e5b0',
-  primaryInk: '#04251a',
+  // Primary colors (using actual values from globals.css)
+  primary: '#009688', // turquoise-600
+  primaryInk: '#ffffff',
   accent: '#c3b3ff',
 
   // Background colors
@@ -32,6 +32,11 @@ const COLORS = {
   warning: '#f59e0b',
   danger: '#dc2626',
   dangerInk: '#ffffff',
+
+  // CTA colors (WCAG AA compliant)
+  cta: '#c62828',
+  ctaHover: '#b71c1c',
+  ctaInk: '#ffffff',
 
   // Brand colors
   brandPrimary: '#1c274c',
@@ -151,6 +156,32 @@ const COLOR_PAIRS: ColorPair[] = [
     background: COLORS.bg,
     name: 'Warning text on background',
     isLargeText: false,
+  },
+
+  // CTA button colors
+  {
+    foreground: COLORS.ctaInk,
+    background: COLORS.cta,
+    name: 'CTA button text (normal)',
+    isLargeText: false,
+  },
+  {
+    foreground: COLORS.ctaInk,
+    background: COLORS.cta,
+    name: 'CTA button text (large)',
+    isLargeText: true,
+  },
+  {
+    foreground: COLORS.ctaInk,
+    background: COLORS.ctaHover,
+    name: 'CTA button text on hover (normal)',
+    isLargeText: false,
+  },
+  {
+    foreground: COLORS.ctaInk,
+    background: COLORS.ctaHover,
+    name: 'CTA button text on hover (large)',
+    isLargeText: true,
   },
 ];
 

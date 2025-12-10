@@ -36,10 +36,10 @@ export function SettingsCompanySection({
             <BuildingOfficeIcon className="relative z-10 h-6 w-6 text-primary" />
           </div>
           <div>
-            <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-1">
+            <h2 className="text-2xl md:text-3xl font-bold text-fg mb-1">
               {t('settings.company.title')}
             </h2>
-            <p className="text-sm md:text-base text-slate-600">{t('settings.company.subtitle')}</p>
+            <p className="text-sm md:text-base text-fg-muted">{t('settings.company.subtitle')}</p>
           </div>
         </div>
       </div>

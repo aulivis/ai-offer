@@ -115,13 +115,13 @@ export default function EditablePriceTable({
           aria-hidden="true"
         />
         <table
-          className="w-full text-sm text-slate-600"
+          className="w-full text-sm text-fg-muted"
           role="table"
           aria-label={t('editablePriceTable.ariaLabel') || 'Pricing table'}
         >
-          <thead className="border-b border-slate-200/80 bg-slate-50/80 text-slate-500">
+          <thead className="border-b border-border/80 bg-bg-muted/80 text-fg-muted">
             <tr>
-              <th className="sticky left-0 z-10 min-w-[12rem] bg-slate-50/80 px-3 py-3 text-left font-medium sm:min-w-[14rem] sm:px-4">
+              <th className="sticky left-0 z-10 min-w-[12rem] bg-bg-muted/80 px-3 py-3 text-left font-medium sm:min-w-[14rem] sm:px-4">
                 {t('editablePriceTable.columns.item')}
               </th>
               <th className="min-w-[5rem] px-2 py-3 text-right font-medium sm:min-w-[6rem] sm:px-4">
@@ -160,9 +160,9 @@ export default function EditablePriceTable({
               return (
                 <tr
                   key={r.id}
-                  className="border-b border-slate-200/80 bg-white even:bg-slate-50/60 last:border-b-0"
+                  className="border-b border-border/80 bg-bg-muted even:bg-bg/60 last:border-b-0"
                 >
-                  <td className="sticky left-0 z-10 bg-white px-3 py-3 align-top even:bg-slate-50/60 sm:px-4">
+                  <td className="sticky left-0 z-10 bg-bg-muted px-3 py-3 align-top even:bg-bg/60 sm:px-4">
                     <Input
                       placeholder={t('editablePriceTable.placeholders.name')}
                       value={r.name}
@@ -210,7 +210,7 @@ export default function EditablePriceTable({
                       aria-label={`${t('editablePriceTable.columns.vat')} for ${r.name || `row ${idx + 1}`}`}
                     />
                   </td>
-                  <td className="px-2 py-3 text-right font-semibold text-slate-700 tabular-nums sm:px-4">
+                  <td className="px-2 py-3 text-right font-semibold text-fg tabular-nums sm:px-4">
                     {formatCurrency(lineNet)}
                   </td>
                   <td className="px-2 py-3 sm:px-4">
@@ -218,7 +218,7 @@ export default function EditablePriceTable({
                       <button
                         type="button"
                         onClick={() => removeRow(r.id)}
-                        className="inline-flex h-8 w-8 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-red-300 bg-red-50 text-red-600 transition hover:border-red-400 hover:bg-red-100 hover:text-red-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="inline-flex h-8 w-8 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-danger/30 bg-danger/10 text-danger transition hover:border-danger/50 hover:bg-danger/20 hover:text-danger focus:outline-none focus-visible:ring-2 focus-visible:ring-danger disabled:opacity-50 disabled:cursor-not-allowed"
                         aria-label={`${t('editablePriceTable.actions.removeRow')}: ${r.name || `row ${idx + 1}`}`}
                         title={t('editablePriceTable.actions.removeRow')}
                       >
@@ -230,7 +230,7 @@ export default function EditablePriceTable({
                             type="button"
                             onClick={() => onSaveActivity?.(r)}
                             disabled={isSaving}
-                            className="inline-flex h-8 w-8 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-green-300 bg-green-50 text-green-600 transition hover:border-green-400 hover:bg-green-100 hover:text-green-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="inline-flex h-8 w-8 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-success/30 bg-success/10 text-success transition hover:border-success/50 hover:bg-success/20 hover:text-success focus:outline-none focus-visible:ring-2 focus-visible:ring-success disabled:opacity-50 disabled:cursor-not-allowed"
                             aria-label={`${t('editablePriceTable.actions.saveActivity')}: ${r.name}`}
                             title={t('editablePriceTable.actions.saveActivity')}
                           >
@@ -251,34 +251,34 @@ export default function EditablePriceTable({
               );
             })}
           </tbody>
-          <tfoot className="bg-gradient-to-br from-slate-50 to-slate-100/50 text-slate-700">
-            <tr className="border-t-2 border-slate-300">
+          <tfoot className="bg-gradient-to-br from-bg-muted to-bg-muted/50 text-fg">
+            <tr className="border-t-2 border-border">
               <td
-                className="sticky left-0 z-10 bg-slate-50/80 px-3 py-3 text-right font-semibold sm:px-4"
+                className="sticky left-0 z-10 bg-bg-muted/80 px-3 py-3 text-right font-semibold sm:px-4"
                 colSpan={5}
               >
                 {t('editablePriceTable.totals.net')}
               </td>
-              <td className="px-2 py-3 text-right font-bold text-slate-900 tabular-nums text-base sm:px-4">
+              <td className="px-2 py-3 text-right font-bold text-fg tabular-nums text-base sm:px-4">
                 {formatCurrency(totals.net)}
               </td>
               <td className="px-2 py-3 sm:px-4" />
             </tr>
-            <tr className="border-t border-slate-200">
+            <tr className="border-t border-border">
               <td
-                className="sticky left-0 z-10 bg-slate-50/80 px-3 py-2 text-right font-semibold sm:px-4"
+                className="sticky left-0 z-10 bg-bg-muted/80 px-3 py-2 text-right font-semibold sm:px-4"
                 colSpan={5}
               >
                 {t('editablePriceTable.totals.vat')}
               </td>
-              <td className="px-2 py-2 text-right font-semibold text-slate-800 tabular-nums sm:px-4">
+              <td className="px-2 py-2 text-right font-semibold text-fg tabular-nums sm:px-4">
                 {formatCurrency(totals.vat)}
               </td>
               <td className="px-2 py-2 sm:px-4" />
             </tr>
-            <tr className="border-t-2 border-slate-400 bg-slate-200/50">
+            <tr className="border-t-2 border-border bg-bg-muted/50">
               <td
-                className="sticky left-0 z-10 bg-slate-200/50 px-3 py-3 text-right font-bold text-base sm:px-4"
+                className="sticky left-0 z-10 bg-bg-muted/50 px-3 py-3 text-right font-bold text-base sm:px-4"
                 colSpan={5}
               >
                 {t('editablePriceTable.totals.gross')}

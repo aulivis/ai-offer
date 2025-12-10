@@ -14,10 +14,10 @@ export function OfferPricingSection({ rows, onChange, error }: OfferPricingSecti
       <Card
         header={
           <CardHeader className="space-y-1">
-            <h2 className="text-sm font-semibold text-slate-700">
+            <h2 className="text-sm font-semibold text-fg">
               {t('offers.wizard.forms.pricing.title')}
             </h2>
-            <p className="text-xs text-slate-500">{t('offers.wizard.forms.pricing.helper')}</p>
+            <p className="text-xs text-fg-muted">{t('offers.wizard.forms.pricing.helper')}</p>
           </CardHeader>
         }
       >
@@ -26,7 +26,7 @@ export function OfferPricingSection({ rows, onChange, error }: OfferPricingSecti
         </div>
       </Card>
       {error ? (
-        <p className="rounded-2xl border border-rose-200 bg-rose-50/80 px-4 py-3 text-sm text-rose-700">
+        <p className="rounded-2xl border border-danger/20 bg-danger/10 px-4 py-3 text-sm text-danger">
           {error}
         </p>
       ) : null}

@@ -80,9 +80,9 @@ export function MetricCard({
   const iconColors = {
     primary: 'text-primary',
     success: 'text-emerald-600',
-    warning: 'text-amber-600',
+    warning: 'text-warning',
     danger: 'text-rose-600',
-    info: 'text-blue-600',
+    info: 'text-primary',
   };
 
   const trendColors = {

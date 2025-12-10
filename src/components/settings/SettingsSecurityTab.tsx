@@ -91,10 +91,10 @@ export function SettingsSecurityTab({
             <LockClosedIcon className="relative z-10 h-6 w-6 text-primary" />
           </div>
           <div>
-            <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-1">
+            <h2 className="text-2xl md:text-3xl font-bold text-fg mb-1">
               {t('settings.authMethods.title')}
             </h2>
-            <p className="text-sm md:text-base text-slate-600">
+            <p className="text-sm md:text-base text-fg-muted">
               {t('settings.authMethods.subtitle')}
             </p>
           </div>
@@ -127,33 +127,33 @@ export function SettingsSecurityTab({
             </div>
             <div className="flex-1">
               <div className="mb-1 flex items-center gap-2">
-                <h3 className="text-lg font-bold text-slate-900">
+                <h3 className="text-lg font-bold text-fg">
                   {t('settings.authMethods.google.account')}
                 </h3>
                 {googleLinked ? (
-                  <span className="flex items-center gap-1 rounded-full bg-green-500 px-2 py-1 text-xs font-bold text-white">
+                  <span className="flex items-center gap-1 rounded-full bg-success px-2 py-1 text-xs font-bold text-white">
                     <CheckCircleIcon className="h-3 w-3" />
                     {t('settings.authMethods.google.active')}
                   </span>
                 ) : (
-                  <span className="rounded-full bg-slate-200 px-2 py-1 text-xs font-bold text-slate-600">
+                  <span className="rounded-full bg-bg-muted px-2 py-1 text-xs font-bold text-fg-muted">
                     {t('settings.authMethods.google.notConnected')}
                   </span>
                 )}
               </div>
               {email && (
-                <p className="mb-3 text-sm text-slate-700">
+                <p className="mb-3 text-sm text-fg">
                   <span className="font-semibold">{email}</span>
                 </p>
               )}
               <div className="flex items-center gap-4 text-sm">
                 {googleLinked && (
                   <>
-                    <div className="flex items-center gap-2 text-slate-600">
-                      <ShieldCheckIcon className="h-4 w-4 text-green-600" />
+                    <div className="flex items-center gap-2 text-fg-muted">
+                      <ShieldCheckIcon className="h-4 w-4 text-success" />
                       <span>{t('settings.authMethods.google.secureLogin')}</span>
                     </div>
-                    <div className="flex items-center gap-2 rounded-lg bg-green-100 px-3 py-1 text-green-700">
+                    <div className="flex items-center gap-2 rounded-lg bg-success/10 px-3 py-1 text-success">
                       <BoltIcon className="h-4 w-4" />
                       <span className="font-semibold">
                         {t('settings.authMethods.google.fastAndSecure')}
@@ -195,33 +195,33 @@ export function SettingsSecurityTab({
       </div>
 
       {/* Magic Link - Primary email method */}
-      <div className="rounded-2xl border-2 border-blue-200 bg-white p-6">
+      <div className="rounded-2xl border-2 border-primary/20 bg-bg-muted p-6">
         <div className="mb-4 flex items-start justify-between">
           <div className="flex items-start gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100">
-              <EnvelopeIcon className="h-6 w-6 text-blue-600" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+              <EnvelopeIcon className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <h3 className="mb-1 text-lg font-bold text-slate-900">
+              <h3 className="mb-1 text-lg font-bold text-fg">
                 {t('settings.authMethods.magicLink.title')}
               </h3>
-              <p className="mb-3 text-sm text-slate-600">
+              <p className="mb-3 text-sm text-fg-muted">
                 {t('settings.authMethods.magicLink.description')}
               </p>
               {email && (
-                <div className="flex items-center gap-2 text-sm text-slate-700">
-                  <EnvelopeIcon className="h-4 w-4 text-blue-600" />
+                <div className="flex items-center gap-2 text-sm text-fg">
+                  <EnvelopeIcon className="h-4 w-4 text-primary" />
                   <span className="font-semibold">{email}</span>
                 </div>
               )}
             </div>
           </div>
-          <span className="rounded-full bg-blue-100 px-2 py-1 text-xs font-bold text-blue-700">
+          <span className="rounded-full bg-primary/10 px-2 py-1 text-xs font-bold text-primary">
             {t('settings.authMethods.magicLink.available')}
           </span>
         </div>
 
-        <div className="rounded-xl border-2 border-blue-200 bg-blue-50 p-4">
+        <div className="rounded-xl border-2 border-primary/20 bg-primary/5 p-4">
           <div className="flex items-start gap-3">
             <InformationCircleIcon className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-600" />
             <div className="text-sm text-blue-800">
@@ -276,10 +276,10 @@ export function SettingsSecurityTab({
             <LockClosedIcon className="h-5 w-5 text-purple-600" />
           </div>
           <div>
-            <h3 className="mb-2 font-bold text-slate-900">
+            <h3 className="mb-2 font-bold text-fg">
               {t('settings.authMethods.security.whyNoPassword.title')}
             </h3>
-            <p className="mb-3 text-sm text-slate-700">
+            <p className="mb-3 text-sm text-fg">
               {t('settings.authMethods.security.whyNoPassword.description')}
             </p>
             <div className="flex items-center gap-4 text-sm">
@@ -308,15 +308,15 @@ export function SettingsSecurityTab({
 
       {/* Email for magic link */}
       <div>
-        <h2 className="mb-2 text-2xl font-bold text-slate-900">
+        <h2 className="mb-2 text-2xl font-bold text-fg">
           {t('settings.authMethods.security.email.title')}
         </h2>
-        <p className="mb-6 text-slate-600">
+        <p className="mb-6 text-fg-muted">
           {t('settings.authMethods.security.email.description')}
         </p>
 
         <div className="rounded-2xl border-2 border-slate-200 bg-white p-6">
-          <label className="mb-2 block text-sm font-semibold text-slate-700">
+          <label className="mb-2 block text-sm font-semibold text-fg">
             {t('settings.authMethods.security.email.primaryLabel')}
           </label>
           <div className="flex items-center gap-3">
@@ -336,7 +336,7 @@ export function SettingsSecurityTab({
               {t('settings.authMethods.security.email.modify')}
             </Button>
           </div>
-          <p className="mt-2 text-xs text-slate-500">
+          <p className="mt-2 text-xs text-fg-muted">
             {t('settings.authMethods.security.email.modifyHelper')}
           </p>
         </div>

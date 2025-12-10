@@ -55,8 +55,8 @@ export function LogoPreview({ logoPath }: LogoPreviewProps) {
 
   if (isLoading) {
     return (
-      <div className="flex h-24 w-24 flex-none items-center justify-center animate-pulse rounded-xl border-2 border-dashed border-border bg-slate-100">
-        <PhotoIcon className="h-8 w-8 text-slate-400" />
+      <div className="flex h-24 w-24 flex-none items-center justify-center animate-pulse rounded-xl border-2 border-dashed border-border bg-bg-muted">
+        <PhotoIcon className="h-8 w-8 text-fg-muted" />
       </div>
     );
   }
@@ -83,8 +83,8 @@ export function LogoPreview({ logoPath }: LogoPreviewProps) {
   }
 
   return (
-    <div className="flex h-24 w-24 flex-none items-center justify-center rounded-xl border-2 border-dashed border-border bg-slate-50">
-      <PhotoIcon className="h-8 w-8 text-slate-400" />
+    <div className="flex h-24 w-24 flex-none items-center justify-center rounded-xl border-2 border-dashed border-border bg-bg-muted">
+      <PhotoIcon className="h-8 w-8 text-fg-muted" />
     </div>
   );
 }

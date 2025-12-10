@@ -115,8 +115,8 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
       [
         'fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300',
         scrolled
-          ? 'bg-white/90 backdrop-blur-xl shadow-lg border-b border-gray-200/50'
-          : 'bg-white border-b border-gray-200/50',
+          ? 'bg-white/90 backdrop-blur-xl shadow-lg border-b border-border/50'
+          : 'bg-white border-b border-border/50',
         // Mobile: hide/show based on scroll direction
         isVisible ? 'translate-y-0' : '-translate-y-full',
         className,
@@ -174,8 +174,8 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
                   href={item.href}
                   className={`relative px-4 py-2 rounded-lg transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-turquoise-500 group ${
                     isNavItemActive(item.href)
-                      ? 'text-navy-900 font-semibold bg-gray-100/80'
-                      : 'text-gray-700 hover:bg-gray-100/80 hover:text-navy-900'
+                      ? 'text-navy-900 font-semibold bg-bg-muted/80'
+                      : 'text-fg hover:bg-bg-muted/80 hover:text-navy-900'
                   }`}
                   {...(isNavItemActive(item.href) && { 'aria-current': 'page' })}
                   onClick={closeMenu}
@@ -196,13 +196,13 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
               <>
                 <Link
                   href="/new"
-                  className="relative px-6 py-3 bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-bold rounded-xl text-base shadow-lg hover:shadow-xl transition-all duration-200 group overflow-hidden"
+                  className="relative px-6 py-3 bg-cta hover:bg-cta-hover text-cta-ink font-bold rounded-xl text-base shadow-lg hover:shadow-xl transition-all duration-200 group overflow-hidden"
                 >
                   {/* Glow effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-orange-500 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
-                  <span className="relative flex items-center gap-2 text-white">
+                  <div className="absolute inset-0 bg-gradient-to-r from-cta/80 to-cta-hover/80 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+                  <span className="relative flex items-center gap-2 text-cta-ink">
                     {t('dashboard.actions.newOffer')}
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform text-white" />
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform text-cta-ink" />
                   </span>
                 </Link>
                 <Link
@@ -211,7 +211,7 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
                     e.preventDefault();
                     logout();
                   }}
-                  className="px-5 py-2.5 text-base font-semibold rounded-lg border border-[#1E3A5F] text-[#1E3A5F] bg-white hover:bg-gray-50 transition-all duration-200"
+                  className="px-5 py-2.5 text-base font-semibold rounded-lg border border-navy-800 text-navy-800 bg-bg-muted hover:bg-bg transition-all duration-200"
                 >
                   {isLoggingOut ? t('nav.logoutInProgress') : t('nav.logout')}
                 </Link>
@@ -221,20 +221,20 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
                 {/* Enhanced "Bejelentkezés" button with hero secondary CTA style */}
                 <Link
                   href="/login"
-                  className="border-2 font-semibold rounded-xl px-5 py-2.5 text-base bg-transparent transition-colors border-navy-900 text-navy-900 hover:border-orange-500 hover:text-orange-500"
+                  className="border-2 font-semibold rounded-xl px-5 py-2.5 text-base bg-transparent transition-colors border-navy-900 text-navy-900 hover:border-cta hover:text-cta"
                 >
                   {t('nav.login')}
                 </Link>
                 {/* Enhanced Primary CTA with glow effect */}
                 <Link
                   href="/login"
-                  className="relative px-6 py-3 bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-bold rounded-xl text-base shadow-lg hover:shadow-xl transition-all duration-200 group overflow-hidden"
+                  className="relative px-6 py-3 bg-cta hover:bg-cta-hover text-cta-ink font-bold rounded-xl text-base shadow-lg hover:shadow-xl transition-all duration-200 group overflow-hidden"
                 >
                   {/* Glow effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-orange-500 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
-                  <span className="relative flex items-center gap-2 text-white">
+                  <div className="absolute inset-0 bg-gradient-to-r from-cta/80 to-cta-hover/80 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+                  <span className="relative flex items-center gap-2 text-cta-ink">
                     {t('nav.freeTrial')}
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform text-white" />
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform text-cta-ink" />
                   </span>
                 </Link>
               </>
@@ -247,30 +247,30 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
             {isAuthenticated ? (
               <Link
                 href="/new"
-                className="relative px-3 py-2 bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-bold rounded-xl text-sm shadow-lg hover:shadow-xl transition-all duration-200 group overflow-hidden"
+                className="relative px-3 py-2 bg-cta hover:bg-cta-hover text-cta-ink font-bold rounded-xl text-sm shadow-lg hover:shadow-xl transition-all duration-200 group overflow-hidden"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-orange-500 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
-                <span className="relative flex items-center gap-1 text-white">
+                <div className="absolute inset-0 bg-gradient-to-r from-cta/80 to-cta-hover/80 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+                <span className="relative flex items-center gap-1 text-cta-ink">
                   {t('dashboard.actions.newOffer')}
-                  <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform text-white" />
+                  <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform text-cta-ink" />
                 </span>
               </Link>
             ) : (
               <Link
                 href="/login"
-                className="relative px-3 py-2 bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-bold rounded-xl text-sm shadow-lg hover:shadow-xl transition-all duration-200 group overflow-hidden"
+                className="relative px-3 py-2 bg-cta hover:bg-cta-hover text-cta-ink font-bold rounded-xl text-sm shadow-lg hover:shadow-xl transition-all duration-200 group overflow-hidden"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-orange-500 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
-                <span className="relative flex items-center gap-1 text-white">
+                <div className="absolute inset-0 bg-gradient-to-r from-cta/80 to-cta-hover/80 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+                <span className="relative flex items-center gap-1 text-cta-ink">
                   {t('nav.freeTrial')}
-                  <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform text-white" />
+                  <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform text-cta-ink" />
                 </span>
               </Link>
             )}
             {/* Enhanced Mobile menu button */}
             <button
               type="button"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-lg transition duration-200 min-h-[44px] min-w-[44px] text-navy-900 hover:bg-gray-100/80"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-lg transition duration-200 min-h-[44px] min-w-[44px] text-navy-900 hover:bg-bg-muted/80"
               aria-label={t('nav.menuToggle')}
               aria-expanded={isMenuOpen}
               aria-controls="landing-navigation"
@@ -293,7 +293,7 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
           ></div>
 
           {/* Mobile Menu Panel */}
-          <div className="fixed top-11 md:top-16 left-0 right-0 bg-white/95 backdrop-blur-xl border-b border-gray-200 shadow-2xl z-40 md:hidden">
+          <div className="fixed top-11 md:top-16 left-0 right-0 bg-white/95 backdrop-blur-xl border-b border-border shadow-2xl z-40 md:hidden">
             <div className="container mx-auto px-4 py-6">
               <nav id="landing-navigation" className="flex flex-col gap-2">
                 {navItems.map((item) => (
@@ -302,8 +302,8 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
                     href={item.href}
                     className={`px-4 py-3 rounded-lg font-medium transition-colors duration-200 min-h-[44px] flex items-center ${
                       isNavItemActive(item.href)
-                        ? 'bg-gray-100 text-navy-900 font-semibold'
-                        : 'text-gray-700 hover:bg-gray-100 hover:text-navy-900'
+                        ? 'bg-bg-muted text-navy-900 font-semibold'
+                        : 'text-fg hover:bg-bg-muted hover:text-navy-900'
                     }`}
                     {...(isNavItemActive(item.href) && { 'aria-current': 'page' })}
                     onClick={closeMenu}
@@ -313,16 +313,16 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
                 ))}
 
                 {/* CTA Section in Mobile Menu */}
-                <div className="mt-4 pt-4 border-t border-gray-200 flex flex-col gap-3">
+                <div className="mt-4 pt-4 border-t border-border flex flex-col gap-3">
                   {isAuthenticated ? (
                     <>
                       <Link
                         href="/new"
-                        className="px-6 py-3 bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-bold rounded-xl text-center shadow-lg transition-all duration-200 min-h-[44px] flex items-center justify-center gap-2 text-base"
+                        className="px-6 py-3 bg-cta hover:bg-cta-hover text-cta-ink font-bold rounded-xl text-center shadow-lg transition-all duration-200 min-h-[44px] flex items-center justify-center gap-2 text-base"
                         onClick={closeMenu}
                       >
-                        <span className="text-white">{t('dashboard.actions.newOffer')}</span>
-                        <ArrowRight className="w-4 h-4 text-white" />
+                        <span className="text-cta-ink">{t('dashboard.actions.newOffer')}</span>
+                        <ArrowRight className="w-4 h-4 text-cta-ink" />
                       </Link>
                       <Link
                         href="/login"
@@ -330,7 +330,7 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
                           e.preventDefault();
                           handleLogout();
                         }}
-                        className="px-4 py-3 text-center text-base font-semibold border border-[#1E3A5F] text-[#1E3A5F] bg-white hover:bg-gray-50 rounded-lg transition-colors duration-200 min-h-[44px] flex items-center justify-center"
+                        className="px-4 py-3 text-center text-base font-semibold border border-navy-800 text-navy-800 bg-bg-muted hover:bg-bg rounded-lg transition-colors duration-200 min-h-[44px] flex items-center justify-center"
                       >
                         {isLoggingOut ? t('nav.logoutInProgress') : t('nav.logout')}
                       </Link>
@@ -339,18 +339,18 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
                     <>
                       <Link
                         href="/login"
-                        className="border-2 border-navy-900 text-navy-900 font-semibold rounded-xl px-4 py-3 text-center text-base hover:border-orange-500 hover:text-orange-500 bg-transparent transition-colors min-h-[44px] flex items-center justify-center"
+                        className="border-2 border-navy-900 text-navy-900 font-semibold rounded-xl px-4 py-3 text-center text-base hover:border-cta hover:text-cta bg-transparent transition-colors min-h-[44px] flex items-center justify-center"
                         onClick={closeMenu}
                       >
                         {t('nav.login')}
                       </Link>
                       <Link
                         href="/login"
-                        className="px-6 py-3 bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-bold rounded-xl text-center shadow-lg transition-all duration-200 min-h-[44px] flex items-center justify-center gap-2 text-base"
+                        className="px-6 py-3 bg-cta hover:bg-cta-hover text-cta-ink font-bold rounded-xl text-center shadow-lg transition-all duration-200 min-h-[44px] flex items-center justify-center gap-2 text-base"
                         onClick={closeMenu}
                       >
-                        <span className="text-white">{t('nav.freeTrial')}</span>
-                        <ArrowRight className="w-4 h-4 text-white" />
+                        <span className="text-cta-ink">{t('nav.freeTrial')}</span>
+                        <ArrowRight className="w-4 h-4 text-cta-ink" />
                       </Link>
                     </>
                   )}

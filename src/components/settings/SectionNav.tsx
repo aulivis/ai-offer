@@ -23,12 +23,12 @@ export function SectionNav({ sections, activeSection, onSectionChange }: Section
           className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium transition-all ${
             activeSection === section.id
               ? 'bg-primary/10 text-primary shadow-sm'
-              : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+              : 'text-fg-muted hover:bg-bg-muted hover:text-fg'
           }`}
           {...(activeSection === section.id && { 'aria-current': 'page' })}
         >
           <span
-            className={`flex-shrink-0 ${activeSection === section.id ? 'text-primary' : 'text-slate-400'}`}
+            className={`flex-shrink-0 ${activeSection === section.id ? 'text-primary' : 'text-fg-muted'}`}
           >
             {section.icon}
           </span>

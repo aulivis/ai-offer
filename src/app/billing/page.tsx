@@ -62,7 +62,7 @@ type CardBrand = {
 const CARD_BRANDS: CardBrand[] = [
   {
     name: 'Visa',
-    render: () => <span className="text-lg font-black tracking-[0.35em] text-[#1a1f71]">VISA</span>,
+    render: () => <span className="text-lg font-black tracking-[0.35em] text-navy-900">VISA</span>,
   },
   {
     name: 'Mastercard',
@@ -100,7 +100,7 @@ const CARD_BRANDS: CardBrand[] = [
         <span className="flex h-6 w-6 items-center justify-center rounded-full border border-border bg-bg-muted">
           <span aria-hidden className="h-3 w-3 rounded-full bg-[#0a3a66]" />
         </span>
-        <span className="text-xs font-semibold tracking-[0.2em] text-slate-700">DINERS</span>
+        <span className="text-xs font-semibold tracking-[0.2em] text-fg-muted">DINERS</span>
       </div>
     ),
   },
@@ -443,7 +443,7 @@ function PlanCard({
           {data.features.map((feature, idx) => (
             <li key={idx} className="flex items-start gap-3">
               <Check className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary" />
-              <span className="text-sm text-slate-700">{feature}</span>
+              <span className="text-sm text-fg">{feature}</span>
             </li>
           ))}
 
@@ -1003,10 +1003,10 @@ function BillingPageContent() {
               as="section"
               header={
                 <CardHeader>
-                  <h2 className="text-xl font-bold text-slate-900">
+                  <h2 className="text-xl font-bold text-fg">
                     {t('billing.comparison.title')}
                   </h2>
-                  <p className="mt-1 text-sm text-slate-600">{t('billing.comparison.subtitle')}</p>
+                  <p className="mt-1 text-sm text-fg-muted">{t('billing.comparison.subtitle')}</p>
                 </CardHeader>
               }
             >
@@ -1014,29 +1014,29 @@ function BillingPageContent() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b-2 border-border">
-                      <th className="pb-4 text-left font-semibold text-slate-900">
+                      <th className="pb-4 text-left font-semibold text-fg">
                         {t('billing.comparison.feature')}
                       </th>
-                      <th className="pb-4 text-center font-semibold text-slate-700">Free</th>
-                      <th className="pb-4 text-center font-semibold text-slate-700">Standard</th>
+                      <th className="pb-4 text-center font-semibold text-fg">Free</th>
+                      <th className="pb-4 text-center font-semibold text-fg">Standard</th>
                       <th className="pb-4 text-center font-bold text-primary">Pro</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/40">
-                    <tr className="transition-colors hover:bg-slate-50/50">
-                      <td className="py-4 font-medium text-slate-700">
+                    <tr className="transition-colors hover:bg-bg-muted/50">
+                      <td className="py-4 font-medium text-fg">
                         {t('billing.comparison.offersPerMonth')}
                       </td>
-                      <td className="py-4 text-center text-slate-600">2</td>
-                      <td className="py-4 text-center text-slate-600">5</td>
+                      <td className="py-4 text-center text-fg-muted">2</td>
+                      <td className="py-4 text-center text-fg-muted">5</td>
                       <td className="py-4 text-center font-bold text-primary">∞</td>
                     </tr>
-                    <tr className="transition-colors hover:bg-slate-50/50">
-                      <td className="py-4 font-medium text-slate-700">
+                    <tr className="transition-colors hover:bg-bg-muted/50">
+                      <td className="py-4 font-medium text-fg">
                         {t('billing.comparison.brandLogo')}
                       </td>
                       <td className="py-4 text-center">
-                        <span className="text-slate-400">—</span>
+                        <span className="text-fg-muted">—</span>
                       </td>
                       <td className="py-4 text-center">
                         <Check className="mx-auto h-5 w-5 text-primary" />
@@ -1045,22 +1045,22 @@ function BillingPageContent() {
                         <Check className="mx-auto h-5 w-5 text-primary" />
                       </td>
                     </tr>
-                    <tr className="transition-colors hover:bg-slate-50/50">
-                      <td className="py-4 font-medium text-slate-700">
+                    <tr className="transition-colors hover:bg-bg-muted/50">
+                      <td className="py-4 font-medium text-fg">
                         {t('billing.comparison.proTemplates')}
                       </td>
                       <td className="py-4 text-center">
-                        <span className="text-slate-400">—</span>
+                        <span className="text-fg-muted">—</span>
                       </td>
                       <td className="py-4 text-center">
-                        <span className="text-slate-400">—</span>
+                        <span className="text-fg-muted">—</span>
                       </td>
                       <td className="py-4 text-center">
                         <Check className="mx-auto h-5 w-5 text-primary" />
                       </td>
                     </tr>
-                    <tr className="transition-colors hover:bg-slate-50/50">
-                      <td className="py-4 font-medium text-slate-700">
+                    <tr className="transition-colors hover:bg-bg-muted/50">
+                      <td className="py-4 font-medium text-fg">
                         {t('billing.comparison.aiGeneration')}
                       </td>
                       <td className="py-4 text-center">
@@ -1082,8 +1082,8 @@ function BillingPageContent() {
           {/* Plan Selection Cards */}
           <section>
             <div className="mb-6">
-              <h2 className="text-xl font-bold text-slate-900">Válassz csomagot</h2>
-              <p className="mt-1 text-sm text-slate-600">
+              <h2 className="text-xl font-bold text-fg">Válassz csomagot</h2>
+              <p className="mt-1 text-sm text-fg-muted">
                 Válaszd ki a számodra megfelelő előfizetést
               </p>
 
@@ -1287,10 +1287,10 @@ function BillingPageContent() {
             header={
               <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <h2 className="text-lg font-semibold text-slate-900">
+                  <h2 className="text-lg font-semibold text-fg">
                     {t('billing.invoices.title')}
                   </h2>
-                  <p className="text-xs text-slate-500">{t('billing.invoices.subtitle')}</p>
+                  <p className="text-xs text-fg-muted">{t('billing.invoices.subtitle')}</p>
                 </div>
               </CardHeader>
             }
@@ -1368,7 +1368,7 @@ function BillingPageContent() {
             className="bg-gradient-to-br from-slate-50 to-white"
             header={
               <CardHeader>
-                <h2 className="text-lg font-semibold text-slate-900">
+                <h2 className="text-lg font-semibold text-fg">
                   {t('billing.stripeSecurity.title')}
                 </h2>
               </CardHeader>
@@ -1376,7 +1376,7 @@ function BillingPageContent() {
           >
             <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
               <div className="max-w-xl space-y-2">
-                <p className="text-sm leading-relaxed text-slate-600">
+                <p className="text-sm leading-relaxed text-fg-muted">
                   {t('billing.stripeSecurity.description')}
                 </p>
               </div>
@@ -1491,9 +1491,9 @@ function BillingPageContent() {
 
           {/* Account Info */}
           <div className="rounded-2xl border border-border/60 bg-white/50 p-6">
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-fg-muted">
               {t('billing.account.emailLabel')}{' '}
-              <span className="font-semibold text-slate-900">{email ?? '—'}</span>
+              <span className="font-semibold text-fg">{email ?? '—'}</span>
               {hasUnlimitedEmail && (
                 <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">
                   <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">

@@ -165,10 +165,10 @@ export function TemplateSelector({
                     />
                   </div>
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
+                  <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-bg-muted to-bg">
                     <div className="text-center">
-                      <div className="mx-auto mb-2 h-12 w-12 rounded-lg border-2 border-dashed border-slate-300 bg-white" />
-                      <span className="text-xs font-medium text-slate-400">{template.name}</span>
+                      <div className="mx-auto mb-2 h-12 w-12 rounded-lg border-2 border-dashed border-border bg-bg-muted" />
+                      <span className="text-xs font-medium text-fg-muted">{template.name}</span>
                     </div>
                   </div>
                 )}
@@ -194,7 +194,7 @@ export function TemplateSelector({
                 {/* Lock Overlay */}
                 {requiresUpgrade && (
                   <div className="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm pointer-events-none">
-                    <LockClosedIcon className="h-8 w-8 text-amber-600" />
+                    <LockClosedIcon className="h-8 w-8 text-warning" />
                   </div>
                 )}
               </div>
@@ -202,11 +202,11 @@ export function TemplateSelector({
               {/* Template Info */}
               <div className="flex-1 space-y-2">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="text-sm font-semibold text-slate-900">{template.name}</h3>
+                  <h3 className="text-sm font-semibold text-fg">{template.name}</h3>
                 </div>
 
                 {requiresUpgrade && (
-                  <div className="flex items-center gap-2 pt-2 text-xs font-medium text-amber-600">
+                  <div className="flex items-center gap-2 pt-2 text-xs font-medium text-warning">
                     <LockClosedIcon className="h-3.5 w-3.5 flex-shrink-0" />
                     <span>{t('settings.templates.proOnly')}</span>
                   </div>
@@ -219,8 +219,8 @@ export function TemplateSelector({
 
       {/* Upgrade Hint */}
       {!canUseProTemplates && availableTemplates.some((t) => t.tier === 'premium') && (
-        <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50/50 p-4">
-          <p className="text-sm text-amber-800">{t('settings.templates.upgradeHint')}</p>
+        <div className="mt-6 rounded-xl border border-warning/20 bg-warning/10 p-4">
+          <p className="text-sm text-warning">{t('settings.templates.upgradeHint')}</p>
         </div>
       )}
     </div>

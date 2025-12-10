@@ -27,11 +27,11 @@ export function LandingCTA({
   return (
     <Link
       href={href}
-      className={`group inline-flex items-center gap-3 bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-bold rounded-xl shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105 relative overflow-hidden ${sizeClasses[size]} ${className}`}
+      className={`group inline-flex items-center gap-3 bg-cta hover:bg-cta-hover text-cta-ink font-bold rounded-xl shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105 relative overflow-hidden ${sizeClasses[size]} ${className}`}
     >
-      <span className="relative z-10 text-white">{children}</span>
-      <ArrowRight className="w-6 h-6 relative z-10 group-hover:translate-x-1 transition-transform duration-300 text-white" />
-      <span className="absolute inset-0 bg-gradient-to-r from-[#E55A2B] to-[#D04A1B] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+      <span className="relative z-10 text-cta-ink">{children}</span>
+      <ArrowRight className="w-6 h-6 relative z-10 group-hover:translate-x-1 transition-transform duration-300 text-cta-ink" />
+      <span className="absolute inset-0 bg-gradient-to-r from-cta-hover/80 to-cta/90 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
     </Link>
   );
 }

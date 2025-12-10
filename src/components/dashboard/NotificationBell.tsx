@@ -148,7 +148,7 @@ export function NotificationBell() {
       >
         <BellIcon className="h-5 w-5" />
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
+          <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-danger text-xs font-bold text-danger-ink">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
@@ -187,7 +187,7 @@ export function NotificationBell() {
                     type="button"
                     onClick={() => handleViewOffer(notification.offerId, notification.id)}
                     className={`w-full p-3 text-left hover:bg-bg-muted transition ${
-                      !notification.isRead ? 'bg-blue-50/50' : ''
+                      !notification.isRead ? 'bg-primary/5' : ''
                     }`}
                   >
                     <div className="flex items-start gap-2">
@@ -201,7 +201,7 @@ export function NotificationBell() {
                         </p>
                       </div>
                       {!notification.isRead && (
-                        <div className="flex-shrink-0 w-2 h-2 rounded-full bg-blue-500 mt-2" />
+                        <div className="flex-shrink-0 w-2 h-2 rounded-full bg-primary mt-2" />
                       )}
                     </div>
                   </button>

@@ -356,8 +356,8 @@ const STATUS_CARD_THEMES: Record<
 > = {
   draft: {
     container: 'border-amber-200 bg-gradient-to-br from-amber-50 via-white to-amber-100/40',
-    accentText: 'text-amber-600',
-    accentIcon: 'text-amber-500',
+    accentText: 'text-warning',
+    accentIcon: 'text-warning',
   },
   sent: {
     container: 'border-sky-200 bg-gradient-to-br from-sky-50 via-white to-sky-100/40',

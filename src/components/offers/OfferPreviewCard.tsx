@@ -38,32 +38,32 @@ const STATUS_STYLES: Record<
   { container: string; icon: string }
 > = {
   info: {
-    container: 'border-border bg-slate-50/90 text-slate-600',
-    icon: 'text-slate-600',
+    container: 'border-border bg-bg-muted/90 text-fg-muted',
+    icon: 'text-fg-muted',
   },
   success: {
-    container: 'border-emerald-200 bg-emerald-50/90 text-emerald-700',
-    icon: 'text-emerald-600',
+    container: 'border-success/20 bg-success/10 text-success',
+    icon: 'text-success',
   },
   error: {
-    container: 'border-rose-200 bg-rose-50/90 text-rose-700',
-    icon: 'text-rose-600',
+    container: 'border-danger/20 bg-danger/10 text-danger',
+    icon: 'text-danger',
   },
   warning: {
-    container: 'border-amber-200 bg-amber-50/90 text-amber-700',
-    icon: 'text-amber-600',
+    container: 'border-warning/20 bg-warning/10 text-warning',
+    icon: 'text-warning',
   },
 };
 
 const ISSUE_BADGE_STYLES: Record<PreviewIssue['severity'], string> = {
-  info: 'bg-slate-100 text-slate-600',
-  warning: 'bg-amber-100 text-amber-700',
-  error: 'bg-rose-100 text-rose-700',
+  info: 'bg-bg-muted text-fg-muted',
+  warning: 'bg-warning/10 text-warning',
+  error: 'bg-danger/10 text-danger',
 };
 
 const ISSUE_TEXT_STYLES: Record<PreviewIssue['severity'], string> = {
-  info: 'text-slate-600',
-  warning: 'text-amber-700',
+  info: 'text-fg-muted',
+  warning: 'text-warning',
   error: 'text-rose-700',
 };
 
@@ -127,7 +127,7 @@ type IconButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
 
 function IconButton({ label, children, className, ...props }: IconButtonProps) {
   const baseClass =
-    'inline-flex h-9 w-9 items-center justify-center rounded-full border border-border/80 bg-white/70 text-slate-600 transition hover:border-slate-400 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50';
+    'inline-flex h-9 w-9 items-center justify-center rounded-full border border-border/80 bg-white/70 text-fg-muted transition hover:border-border hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50';
   const composed = className ? `${baseClass} ${className}` : baseClass;
   return (
     <button type="button" aria-label={label} title={label} className={composed} {...props}>
@@ -188,8 +188,8 @@ function TabButton({
   const baseClass =
     'rounded-full px-3 py-1.5 text-xs font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
   const variantClass = active
-    ? 'bg-slate-900 text-white shadow-sm'
-    : 'text-slate-600 hover:text-slate-900';
+    ? 'bg-navy-900 text-white shadow-sm'
+    : 'text-fg-muted hover:text-fg';
   return (
     <button type="button" onClick={onClick} className={`${baseClass} ${variantClass}`}>
       {children}
@@ -229,10 +229,10 @@ export function OfferPreviewCard({
         <div className="flex min-w-0 flex-1 items-start gap-3">
           <StatusIcon tone={resolvedStatus.tone} isStreaming={isStreaming} />
           <div className="min-w-0">
-            <h2 id={titleId} className="text-sm font-semibold text-slate-700">
+            <h2 id={titleId} className="text-sm font-semibold text-fg">
               {t('offers.previewCard.heading')}
             </h2>
-            <p className="mt-1 text-xs text-slate-500">{t('offers.previewCard.helper')}</p>
+            <p className="mt-1 text-xs text-fg-muted">{t('offers.previewCard.helper')}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -296,7 +296,7 @@ export function OfferPreviewCard({
   const renderSummary = () => {
     if (!summaryHighlights.length) {
       return (
-        <div className="flex h-full flex-col items-center justify-center gap-2 px-4 text-center text-sm text-slate-500">
+        <div className="flex h-full flex-col items-center justify-center gap-2 px-4 text-center text-sm text-fg-muted">
           <p>{t('offers.previewCard.summary.empty')}</p>
         </div>
       );
@@ -308,7 +308,7 @@ export function OfferPreviewCard({
           {summaryHighlights.map((highlight, index) => (
             <div
               key={`${index}-${highlight.slice(0, 24)}`}
-              className="rounded-2xl border border-border/60 bg-slate-50/80 px-4 py-3 text-sm text-slate-700"
+              className="rounded-2xl border border-border/60 bg-bg-muted/80 px-4 py-3 text-sm text-fg"
             >
               {highlight}
             </div>
@@ -321,7 +321,7 @@ export function OfferPreviewCard({
   const renderIssues = () => {
     if (!issues.length) {
       return (
-        <div className="flex h-full flex-col items-center justify-center gap-2 px-4 text-center text-sm text-slate-500">
+        <div className="flex h-full flex-col items-center justify-center gap-2 px-4 text-center text-sm text-fg-muted">
           <p>{t('offers.previewCard.issuesList.empty')}</p>
         </div>
       );
@@ -396,13 +396,13 @@ export function OfferPreviewCard({
   const renderLoading = () => {
     const loadingDescriptor = statusDescriptor;
     return (
-      <div className="flex flex-1 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border bg-slate-50/70 px-6 py-12 text-center text-sm text-slate-600">
+      <div className="flex flex-1 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border bg-bg-muted/70 px-6 py-12 text-center text-sm text-fg-muted">
         <span className="inline-flex h-10 w-10 animate-spin rounded-full border-2 border-current border-t-transparent" />
         <div className="space-y-1">
-          <p className="font-medium text-slate-700">
+          <p className="font-medium text-fg">
             {loadingDescriptor?.title || t('offers.previewCard.loadingState.title')}
           </p>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-fg-muted">
             {loadingDescriptor?.description || t('offers.previewCard.loadingState.description')}
           </p>
         </div>
@@ -413,7 +413,7 @@ export function OfferPreviewCard({
   const renderContent = () => {
     if (!isPreviewAvailable) {
       return (
-        <div className="flex flex-1 items-center justify-center rounded-2xl border border-dashed border-border bg-slate-50/60 px-4 py-8 text-center text-sm text-slate-500">
+        <div className="flex flex-1 items-center justify-center rounded-2xl border border-dashed border-border bg-bg-muted/60 px-4 py-8 text-center text-sm text-fg-muted">
           <p className="mx-auto max-w-xs">{t('offers.previewCard.empty')}</p>
         </div>
       );

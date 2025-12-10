@@ -76,6 +76,9 @@
   --color-warning: #f59e0b;
   --color-danger: #dc2626;
   --color-danger-ink: #ffffff;
+  --color-cta: #c62828; /* WCAG AA compliant CTA color (5.62:1 contrast with white) */
+  --color-cta-hover: #b71c1c; /* Darker hover state */
+  --color-cta-ink: #ffffff; /* Text color for CTA background */
   --brand-primary: #1c274c;
   --brand-secondary: #e2e8f0;
   --brand-text: var(--color-navy-900);
@@ -105,6 +108,9 @@
   --color-warning: #f59e0b;
   --color-danger: #dc2626;
   --color-danger-ink: #ffffff;
+  --color-cta: #c62828; /* WCAG AA compliant CTA color (5.62:1 contrast with white) */
+  --color-cta-hover: #b71c1c; /* Darker hover state */
+  --color-cta-ink: #ffffff; /* Text color for CTA background */
   --brand-primary: #1c274c;
   --brand-secondary: #e2e8f0;
   --brand-text: #102a43;
@@ -129,6 +135,9 @@
   --color-warning-rgb: 245 158 11;
   --color-danger-rgb: 220 38 38;
   --color-danger-ink-rgb: 255 255 255;
+  --color-cta-rgb: 198 40 40; /* RGB values for CTA color */
+  --color-cta-hover-rgb: 183 28 28; /* RGB values for CTA hover */
+  --color-cta-ink-rgb: 255 255 255; /* RGB values for CTA text */
 
   --color-bg: rgb(var(--color-bg-rgb) / 1);
   --color-bg-muted: rgb(var(--color-bg-muted-rgb) / 1);
@@ -142,6 +151,9 @@
   --color-warning: rgb(var(--color-warning-rgb) / 1);
   --color-danger: rgb(var(--color-danger-rgb) / 1);
   --color-danger-ink: rgb(var(--color-danger-ink-rgb) / 1);
+  --color-cta: rgb(var(--color-cta-rgb) / 1);
+  --color-cta-hover: rgb(var(--color-cta-hover-rgb) / 1);
+  --color-cta-ink: rgb(var(--color-cta-ink-rgb) / 1);
 
   --gradient-primary: linear-gradient(135deg, var(--color-primary), var(--color-accent));
 

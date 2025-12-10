@@ -8,6 +8,7 @@ import { useToast } from './ToastProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { createClientLogger } from '@/lib/clientLogger';
+import { H1 } from '@/components/ui/Heading';
 
 export type AppFrameProps = {
   title: string;
@@ -129,9 +130,9 @@ export default function AppFrame({
       <main id="main" className="flex-1 space-y-8">
         <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="font-sans text-3xl font-bold tracking-[-0.125rem] text-[#1c274c]">
+            <H1 className="tracking-[-0.125rem]">
               {title}
-            </h1>
+            </H1>
             {description ? (
               <p className="mt-2 max-w-2xl text-sm text-fg-muted">{description}</p>
             ) : null}

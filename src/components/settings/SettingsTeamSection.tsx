@@ -336,22 +336,22 @@ export function SettingsTeamSection({ plan }: SettingsTeamSectionProps) {
               <UserGroupIcon className="relative z-10 h-6 w-6 text-primary" />
             </div>
             <div>
-              <h2 className="text-xl md:text-2xl font-bold text-slate-900 mb-1">Csapatkezelés</h2>
-              <p className="text-sm md:text-base text-slate-500">
+              <h2 className="text-xl md:text-2xl font-bold text-fg mb-1">Csapatkezelés</h2>
+              <p className="text-sm md:text-base text-fg-muted">
                 Dolgozz együtt csapatoddal az ajánlatokon
               </p>
             </div>
           </div>
         </div>
 
-        <div className="rounded-xl border-2 border-border bg-slate-50/50 p-8 text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-amber-100">
-            <LockClosedIcon className="h-6 w-6 text-amber-600" />
+        <div className="rounded-xl border-2 border-border bg-bg-muted/50 p-8 text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-warning/10">
+            <LockClosedIcon className="h-6 w-6 text-warning" />
           </div>
-          <h3 className="mt-4 text-sm font-semibold text-slate-900">
+          <h3 className="mt-4 text-sm font-semibold text-fg">
             A csapatkezelés csak Pro csomaggal érhető el
           </h3>
-          <p className="mt-2 text-xs text-slate-600">
+          <p className="mt-2 text-xs text-fg-muted">
             Válts Pro csomagra, hogy csapatot hozhass létre és meghívhass másokat.
           </p>
           <Button
@@ -380,8 +380,8 @@ export function SettingsTeamSection({ plan }: SettingsTeamSectionProps) {
               <UserGroupIcon className="relative z-10 h-6 w-6 text-primary" />
             </div>
             <div>
-              <h2 className="text-xl md:text-2xl font-bold text-slate-900 mb-1">Csapatkezelés</h2>
-              <p className="text-sm md:text-base text-slate-500">
+              <h2 className="text-xl md:text-2xl font-bold text-fg mb-1">Csapatkezelés</h2>
+              <p className="text-sm md:text-base text-fg-muted">
                 Dolgozz együtt csapatoddal az ajánlatokon
               </p>
             </div>
@@ -401,14 +401,14 @@ export function SettingsTeamSection({ plan }: SettingsTeamSectionProps) {
       {/* Pending Invitations for Current User */}
       {userInvitations.length > 0 && (
         <div className="mb-8">
-          <h3 className="mb-4 text-sm font-semibold text-slate-900">Meghívók</h3>
+          <h3 className="mb-4 text-sm font-semibold text-fg">Meghívók</h3>
           <div className="space-y-3">
             {userInvitations.map((invitation) => (
               <Card key={invitation.id} className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-slate-900">Csapat meghívás</p>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-sm font-medium text-fg">Csapat meghívás</p>
+                    <p className="text-xs text-fg-muted">
                       Lejár: {new Date(invitation.expires_at).toLocaleDateString('hu-HU')}
                     </p>
                   </div>
@@ -440,12 +440,12 @@ export function SettingsTeamSection({ plan }: SettingsTeamSectionProps) {
 
       {/* Teams List */}
       {loading ? (
-        <div className="text-center py-8 text-slate-500">Betöltés...</div>
+        <div className="text-center py-8 text-fg-muted">Betöltés...</div>
       ) : teams.length === 0 ? (
-        <div className="rounded-xl border-2 border-dashed border-border bg-slate-50/50 p-12 text-center">
+        <div className="rounded-xl border-2 border-dashed border-border bg-bg-muted/50 p-12 text-center">
           <UserGroupIcon className="mx-auto h-12 w-12 text-slate-400" />
-          <p className="mt-4 text-sm font-medium text-slate-600">Még nincs csapatod</p>
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-4 text-sm font-medium text-fg-muted">Még nincs csapatod</p>
+          <p className="mt-1 text-xs text-fg-muted">
             Hozz létre egy új csapatot, vagy várj egy meghívót.
           </p>
         </div>
@@ -456,7 +456,7 @@ export function SettingsTeamSection({ plan }: SettingsTeamSectionProps) {
               <div className="space-y-4">
                 {/* Team Header */}
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-slate-900">
+                  <h3 className="text-lg font-semibold text-fg">
                     Csapat ({team.members.length} tag)
                   </h3>
                   <Button
@@ -479,13 +479,13 @@ export function SettingsTeamSection({ plan }: SettingsTeamSectionProps) {
                     {team.members.map((member) => (
                       <div
                         key={member.user_id}
-                        className="flex items-center justify-between rounded-lg border border-border bg-slate-50/50 p-3"
+                        className="flex items-center justify-between rounded-lg border border-border bg-bg-muted/50 p-3"
                       >
                         <div>
-                          <p className="text-sm font-medium text-slate-900">
+                          <p className="text-sm font-medium text-fg">
                             {member.email || 'Ismeretlen felhasználó'}
                           </p>
-                          <p className="text-xs text-slate-500">
+                          <p className="text-xs text-fg-muted">
                             Csatlakozott: {new Date(member.joined_at).toLocaleDateString('hu-HU')}
                           </p>
                         </div>
@@ -520,7 +520,7 @@ export function SettingsTeamSection({ plan }: SettingsTeamSectionProps) {
                       Meghívás
                     </Button>
                   </div>
-                  <p className="mt-1 text-xs text-slate-500">
+                  <p className="mt-1 text-xs text-fg-muted">
                     Csak Pro felhasználókat lehet meghívni.
                   </p>
                 </div>
@@ -540,10 +540,10 @@ export function SettingsTeamSection({ plan }: SettingsTeamSectionProps) {
                             className="flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50/50 p-3"
                           >
                             <div>
-                              <p className="text-sm font-medium text-slate-900">
+                              <p className="text-sm font-medium text-fg">
                                 {invitation.email}
                               </p>
-                              <p className="text-xs text-slate-500">
+                              <p className="text-xs text-fg-muted">
                                 Lejár: {new Date(invitation.expires_at).toLocaleDateString('hu-HU')}
                               </p>
                             </div>

@@ -635,7 +635,7 @@ export function WizardStep2Pricing({
                   return (
                     <div
                       key={`orphan-${path}`}
-                      className="relative aspect-[4/3] overflow-hidden rounded-xl border-2 border-amber-200 bg-white"
+                      className="relative aspect-[4/3] overflow-hidden rounded-xl border-2 border-warning/20 bg-bg-muted"
                     >
                       {url ? (
                         <>
@@ -654,8 +654,8 @@ export function WizardStep2Pricing({
                           />
                         </>
                       ) : (
-                        <div className="flex h-full w-full items-center justify-center bg-slate-100">
-                          <PhotoIcon className="h-8 w-8 text-slate-400" />
+                        <div className="flex h-full w-full items-center justify-center bg-bg-muted">
+                          <PhotoIcon className="h-8 w-8 text-fg-muted" />
                         </div>
                       )}
                       <button
@@ -762,9 +762,9 @@ export function WizardStep2Pricing({
                     isSelected ? 'border-primary bg-primary/5' : 'border-border bg-white'
                   }`}
                 >
-                  <p className="text-sm text-slate-900">{testimonial.text}</p>
+                  <p className="text-sm text-fg">{testimonial.text}</p>
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                    <p className="text-[11px] text-slate-500">
+                    <p className="text-[11px] text-fg-muted">
                       {testimonial.activity_id
                         ? t('offers.wizard.testimonials.linkedActivity') ||
                           'Tevékenységhez kapcsolva'
@@ -804,9 +804,9 @@ export function WizardStep2Pricing({
       )}
 
       {/* Pricing Table */}
-      <Card className="border-none bg-white/95 shadow-lg ring-1 ring-slate-900/5 overflow-hidden">
-        <div className="p-5 sm:p-6 border-b border-slate-200">
-          <h3 className="text-base font-semibold text-slate-900">
+      <Card className="border-none bg-white/95 shadow-lg ring-1 ring-fg/5 overflow-hidden">
+        <div className="p-5 sm:p-6 border-b border-border">
+          <h3 className="text-base font-semibold text-fg">
             {t('offers.wizard.steps.pricing')}
           </h3>
         </div>
@@ -848,10 +848,10 @@ export function WizardStep2Pricing({
                 <Button
                   key={c.id}
                   type="button"
-                  className="flex w-full flex-col items-start gap-0.5 rounded-none border-none px-3 py-1.5 text-left text-xs text-slate-600 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  className="flex w-full flex-col items-start gap-0.5 rounded-none border-none px-3 py-1.5 text-left text-xs text-fg-muted transition hover:bg-bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   onMouseDown={() => pickClient(c)}
                 >
-                  <span className="font-medium text-slate-700">{c.company_name}</span>
+                  <span className="font-medium text-fg">{c.company_name}</span>
                   {c.email ? <span className="text-[11px] text-slate-500">{c.email}</span> : null}
                 </Button>
               ))}
@@ -958,7 +958,7 @@ export function WizardStep2Pricing({
                               className={`flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border-2 transition-all shadow-md ${
                                 isSelected
                                   ? 'border-primary bg-primary shadow-lg'
-                                  : 'border-slate-300 bg-white hover:bg-slate-50 shadow-lg'
+                                  : 'border-border bg-bg-muted hover:bg-bg shadow-lg'
                               }`}
                             >
                               {isSelected && <CheckIcon className="h-4 w-4 text-white" />}
@@ -966,8 +966,8 @@ export function WizardStep2Pricing({
                           </button>
                         </>
                       ) : (
-                        <div className="flex h-full w-full items-center justify-center bg-slate-100">
-                          <PhotoIcon className="h-8 w-8 text-slate-400" />
+                        <div className="flex h-full w-full items-center justify-center bg-bg-muted">
+                          <PhotoIcon className="h-8 w-8 text-fg-muted" />
                         </div>
                       )}
                     </div>

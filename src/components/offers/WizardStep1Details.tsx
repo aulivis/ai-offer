@@ -168,7 +168,7 @@ export function WizardStep1Details({
       {/* Style Selection - More Prominent */}
       <section className="mb-6 space-y-3">
         <div className="flex items-center gap-2">
-          <h3 className="text-sm font-semibold text-slate-900">
+          <h3 className="text-sm font-semibold text-fg">
             {t('offers.wizard.forms.details.sections.style')}
           </h3>
           <HelpIcon
@@ -198,13 +198,13 @@ export function WizardStep1Details({
                 className={`flex flex-col items-start gap-2 rounded-2xl border-2 p-4 sm:p-5 text-left transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-[100px] touch-manipulation ${
                   active
                     ? 'border-primary bg-primary/5 shadow-lg ring-2 ring-primary/20'
-                    : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-md active:scale-[0.98]'
+                    : 'border-border bg-bg-muted hover:border-primary/50 hover:shadow-md active:scale-[0.98]'
                 }`}
               >
                 <div className="flex items-center gap-3 w-full">
                   <div
                     className={`h-6 w-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                      active ? 'border-primary bg-primary' : 'border-slate-300'
+                      active ? 'border-primary bg-primary' : 'border-border'
                     }`}
                   >
                     {active && (
@@ -276,12 +276,12 @@ export function WizardStep1Details({
 
       {/* Text Templates */}
       {textTemplates.length > 0 && (
-        <section className="space-y-3 rounded-xl border border-dashed border-slate-300 bg-slate-50/70 p-4">
+        <section className="space-y-3 rounded-xl border border-dashed border-border bg-bg-muted/70 p-4">
           <div className="space-y-1">
-            <h3 className="text-sm font-semibold text-slate-700">
+            <h3 className="text-sm font-semibold text-fg">
               {t('offers.wizard.forms.details.templates.heading')}
             </h3>
-            <p className="text-xs text-slate-600">
+            <p className="text-xs text-fg-muted">
               {t('offers.wizard.forms.details.templates.helper')}
             </p>
           </div>
@@ -303,7 +303,7 @@ export function WizardStep1Details({
       {/* Project Details */}
       <section className="space-y-4">
         <div className="flex items-center gap-2">
-          <h3 className="text-sm font-semibold text-slate-900">
+          <h3 className="text-sm font-semibold text-fg">
             {t('offers.wizard.forms.details.sections.overview')}
           </h3>
           <HelpIcon
@@ -339,11 +339,11 @@ export function WizardStep1Details({
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-primary text-base">💡</span>
-                      <p className="text-sm font-semibold text-slate-900">
+                      <p className="text-sm font-semibold text-fg">
                         {t('offers.wizard.forms.details.tips.title')}
                       </p>
                     </div>
-                    <p className="text-xs text-slate-600">
+                    <p className="text-xs text-fg-muted">
                       {t('offers.wizard.forms.details.tips.subtitle')}
                     </p>
                   </div>
@@ -358,7 +358,7 @@ export function WizardStep1Details({
                   </button>
                 </div>
                 {detailsTipsOpen && (
-                  <ul className="list-disc space-y-2 pl-5 text-xs text-slate-700">
+                  <ul className="list-disc space-y-2 pl-5 text-xs text-fg">
                     <li>{t('offers.wizard.forms.details.tips.items.overview')}</li>
                     <li>{t('offers.wizard.forms.details.tips.items.deliverables')}</li>
                     <li>{t('offers.wizard.forms.details.tips.items.timeline')}</li>
@@ -392,9 +392,9 @@ export function WizardStep1Details({
 
       {/* Additional Settings (Detailed Mode) */}
       {form.style === 'detailed' && (
-        <section className="space-y-4 rounded-xl border border-slate-200 bg-slate-50/50 p-4">
+        <section className="space-y-4 rounded-xl border border-border bg-bg-muted/50 p-4">
           <div className="flex items-center gap-2">
-            <h3 className="text-sm font-semibold text-slate-900">
+            <h3 className="text-sm font-semibold text-fg">
               {t('offers.wizard.forms.details.sections.scope')}
             </h3>
             <HelpIcon

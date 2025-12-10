@@ -209,12 +209,12 @@ export function SettingsActivitiesSection({
             ))}
           </div>
         ) : (
-          <div className="rounded-xl border-2 border-dashed border-border bg-slate-50/50 p-12 text-center">
-            <CubeIcon className="mx-auto h-12 w-12 text-slate-400" />
-            <p className="mt-4 text-sm font-medium text-slate-600">
+          <div className="rounded-xl border-2 border-dashed border-border bg-bg-muted/50 p-12 text-center">
+            <CubeIcon className="mx-auto h-12 w-12 text-fg-muted" />
+            <p className="mt-4 text-sm font-medium text-fg-muted">
               {t('settings.activities.empty')}
             </p>
-            <p className="mt-1 text-xs text-slate-500">{t('settings.activities.emptyHelper')}</p>
+            <p className="mt-1 text-xs text-fg-muted">{t('settings.activities.emptyHelper')}</p>
           </div>
         )}
       </div>

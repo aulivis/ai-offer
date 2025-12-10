@@ -22,7 +22,7 @@ export function Skeleton({
   height,
   animate = true,
 }: SkeletonProps) {
-  const baseClasses = 'bg-slate-200';
+  const baseClasses = 'bg-border';
   const variantClasses = {
     text: 'rounded',
     circular: 'rounded-full',
@@ -76,7 +76,7 @@ export function SkeletonText({
  */
 export function SkeletonCard({ className }: { className?: string }) {
   return (
-    <div className={cn('rounded-xl border border-slate-200 bg-white p-4', className)}>
+    <div className={cn('rounded-xl border border-border bg-bg-muted p-4', className)}>
       <Skeleton height="1.5rem" width="60%" className="mb-3" />
       <SkeletonText lines={3} />
     </div>
@@ -88,7 +88,7 @@ export function SkeletonCard({ className }: { className?: string }) {
  */
 export function MetricSkeleton({ className }: { className?: string }) {
   return (
-    <div className={cn('rounded-xl border border-slate-200 bg-white p-5 sm:p-6', className)}>
+    <div className={cn('rounded-xl border border-border bg-bg-muted p-5 sm:p-6', className)}>
       <div className="flex items-start justify-between mb-2.5 sm:mb-3">
         <div className="flex items-start gap-2 sm:gap-3 flex-1 min-w-0">
           <Skeleton variant="circular" width={28} height={28} className="flex-shrink-0 mt-0.5" />
@@ -108,7 +108,7 @@ export function OfferCardSkeleton({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        'relative rounded-2xl border border-slate-200 bg-white/90 p-4 pt-5 shadow-sm overflow-hidden',
+        'relative rounded-2xl border border-border bg-bg-muted/90 p-4 pt-5 shadow-sm overflow-hidden',
         className,
       )}
     >

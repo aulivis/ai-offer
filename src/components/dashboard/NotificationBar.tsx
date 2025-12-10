@@ -52,9 +52,9 @@ export function NotificationBar({ notification, onDismiss, onMarkAsRead }: Notif
 
   const decision = notification.metadata.decision as 'accepted' | 'rejected' | undefined;
   const isAccepted = decision === 'accepted';
-  const bgColor = isAccepted ? 'bg-green-50 border-green-200' : 'bg-orange-50 border-orange-200';
-  const textColor = isAccepted ? 'text-green-800' : 'text-orange-800';
-  const iconColor = isAccepted ? 'text-green-600' : 'text-orange-600';
+  const bgColor = isAccepted ? 'bg-success/10 border-success/30' : 'bg-warning/10 border-warning/30';
+  const textColor = isAccepted ? 'text-success' : 'text-warning';
+  const iconColor = isAccepted ? 'text-success' : 'text-warning';
 
   if (!isVisible) return null;
 

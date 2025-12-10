@@ -9,18 +9,18 @@ export function VideoDemoSection() {
   const [isPlaying, setIsPlaying] = useState(false);
 
   return (
-    <section className="py-16 md:py-24 bg-gradient-to-br from-gray-50 to-blue-50">
+    <section className="py-16 md:py-24 bg-gradient-to-br from-bg to-primary/5">
       <div className="container mx-auto px-4 md:px-6">
         {/* Section Header */}
         <div className="text-center space-y-8 md:space-y-12 mb-12">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-full font-semibold text-sm mb-4">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-bg-muted text-fg rounded-full font-semibold text-sm mb-4">
             <Eye className="w-4 h-4" />
             NÉZD MEG MŰKÖDÉS KÖZBEN
           </div>
           <h2 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-navy-900 mb-4 text-balance leading-tight">
             Nézd meg, hogyan dolgozik helyetted a Vyndi
           </h2>
-          <p className="text-base md:text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto text-pretty leading-relaxed">
+          <p className="text-base md:text-lg lg:text-xl text-fg-muted max-w-3xl mx-auto text-pretty leading-relaxed">
             2 perces rövid bemutató, ami megmutatja, hogyan készül el egy teljes ajánlat mesterséges
             intelligenciával – percek alatt
           </p>
@@ -65,14 +65,14 @@ export function VideoDemoSection() {
           {/* Enhanced engagement metrics with cards and icons */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
             {/* Views */}
-            <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 text-center border border-blue-200">
+            <div className="bg-gradient-to-br from-primary/10 to-primary/20 rounded-xl p-4 text-center border border-primary/20">
               <div className="flex justify-center mb-2">
-                <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
                   <Eye className="w-5 h-5 text-white" />
                 </div>
               </div>
               <div className="text-2xl md:text-3xl font-bold text-navy-900 mb-1">1,250+</div>
-              <div className="text-sm text-gray-600 font-medium">Megtekintés</div>
+              <div className="text-sm text-fg-muted font-medium">Megtekintés</div>
             </div>
 
             {/* Active Users */}
@@ -87,25 +87,25 @@ export function VideoDemoSection() {
             </div>
 
             {/* Rating */}
-            <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-xl p-4 text-center border border-yellow-200">
+            <div className="bg-gradient-to-br from-warning/10 to-warning/20 rounded-xl p-4 text-center border border-warning/20">
               <div className="flex justify-center mb-2">
-                <div className="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center">
+                <div className="w-10 h-10 bg-warning rounded-full flex items-center justify-center">
                   <Star className="w-5 h-5 text-white" fill="white" />
                 </div>
               </div>
               <div className="text-2xl md:text-3xl font-bold text-navy-900 mb-1">4.9/5</div>
-              <div className="text-sm text-gray-600 font-medium">Értékelés</div>
+              <div className="text-sm text-fg-muted font-medium">Értékelés</div>
             </div>
 
             {/* Satisfaction */}
-            <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 text-center border border-green-200">
+            <div className="bg-gradient-to-br from-success/10 to-success/20 rounded-xl p-4 text-center border border-success/20">
               <div className="flex justify-center mb-2">
-                <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                <div className="w-10 h-10 bg-success rounded-full flex items-center justify-center">
                   <ThumbsUp className="w-5 h-5 text-white" />
                 </div>
               </div>
               <div className="text-2xl md:text-3xl font-bold text-navy-900 mb-1">98%</div>
-              <div className="text-sm text-gray-600 font-medium">Elégedettség</div>
+              <div className="text-sm text-fg-muted font-medium">Elégedettség</div>
             </div>
           </div>
         </div>
@@ -137,7 +137,7 @@ export function VideoDemoSection() {
                 <h4 className="text-xl font-bold text-navy-900 mb-3 text-balance">
                   AI-ajánlat generálás
                 </h4>
-                <p className="text-gray-600 leading-relaxed text-pretty text-sm">
+                <p className="text-fg-muted leading-relaxed text-pretty text-sm">
                   Tartalom, ár és struktúra automatikusan
                 </p>
               </div>
@@ -149,9 +149,9 @@ export function VideoDemoSection() {
               <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-20">
                 <div className="relative">
                   {/* Glow effect */}
-                  <div className="absolute inset-0 bg-blue-400 rounded-full opacity-20 blur-xl group-hover:opacity-30 transition-opacity"></div>
+                  <div className="absolute inset-0 bg-primary/30 rounded-full opacity-20 blur-xl group-hover:opacity-30 transition-opacity"></div>
                   {/* Badge - reduced size */}
-                  <div className="relative w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg">
+                  <div className="relative w-10 h-10 bg-gradient-to-br from-primary to-primary/90 rounded-full flex items-center justify-center shadow-lg">
                     <span className="text-xl font-bold text-white">2</span>
                   </div>
                 </div>
@@ -162,7 +162,7 @@ export function VideoDemoSection() {
                 <h4 className="text-xl font-bold text-navy-900 mb-3 text-balance">
                   Testreszabás pár kattintással
                 </h4>
-                <p className="text-gray-600 leading-relaxed text-pretty text-sm">
+                <p className="text-fg-muted leading-relaxed text-pretty text-sm">
                   Egyszerű, vizuális szerkesztőben
                 </p>
               </div>
@@ -174,9 +174,9 @@ export function VideoDemoSection() {
               <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-20">
                 <div className="relative">
                   {/* Glow effect */}
-                  <div className="absolute inset-0 bg-green-400 rounded-full opacity-20 blur-xl group-hover:opacity-30 transition-opacity"></div>
+                  <div className="absolute inset-0 bg-success/30 rounded-full opacity-20 blur-xl group-hover:opacity-30 transition-opacity"></div>
                   {/* Badge - reduced size */}
-                  <div className="relative w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center shadow-lg">
+                  <div className="relative w-10 h-10 bg-gradient-to-br from-success to-success/90 rounded-full flex items-center justify-center shadow-lg">
                     <span className="text-xl font-bold text-white">3</span>
                   </div>
                 </div>
@@ -187,7 +187,7 @@ export function VideoDemoSection() {
                 <h4 className="text-xl font-bold text-navy-900 mb-3 text-balance">
                   Küldés & követés
                 </h4>
-                <p className="text-gray-600 leading-relaxed text-pretty text-sm">
+                <p className="text-fg-muted leading-relaxed text-pretty text-sm">
                   Státuszok és eredmények egy helyen
                 </p>
               </div>
@@ -197,7 +197,7 @@ export function VideoDemoSection() {
 
         {/* CTA Section */}
         <div className="text-center space-y-6">
-          <p className="text-base md:text-lg text-gray-600 text-pretty leading-relaxed">
+          <p className="text-base md:text-lg text-fg-muted text-pretty leading-relaxed">
             Készen állsz, hogy te is automatizáld az ajánlatkészítést?
           </p>
           <LandingCTA size="md" className="w-full md:w-auto justify-center">

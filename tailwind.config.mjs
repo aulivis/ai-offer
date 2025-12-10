@@ -67,6 +67,9 @@ const config = {
         success: withOpacityValue('--color-success-rgb'),
         warning: withOpacityValue('--color-warning-rgb'),
         danger: withOpacityValue('--color-danger-rgb'),
+        cta: withOpacityValue('--color-cta-rgb'),
+        'cta-hover': withOpacityValue('--color-cta-hover-rgb'),
+        'cta-ink': withOpacityValue('--color-cta-ink-rgb'),
       },
       backgroundImage: {
         'gradient-primary': 'var(--gradient-primary)',

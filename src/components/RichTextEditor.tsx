@@ -112,10 +112,10 @@ const toolbarButtons: ToolbarButton[] = [
 ];
 
 const buttonBaseClasses =
-  'inline-flex items-center justify-center gap-1 rounded-full border border-border bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary aria-pressed:border-border aria-pressed:text-slate-900';
+  'inline-flex items-center justify-center gap-1 rounded-full border border-border bg-white px-3 py-1.5 text-xs font-semibold text-fg-muted transition hover:border-border hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary aria-pressed:border-border aria-pressed:text-fg';
 
 const toolbarWrapperClasses =
-  'sticky top-0 z-10 -mx-1 -mt-1 bg-slate-50/95 px-1 pt-2 pb-3 backdrop-blur';
+  'sticky top-0 z-10 -mx-1 -mt-1 bg-bg-muted/95 px-1 pt-2 pb-3 backdrop-blur';
 
 const toolbarContainerClasses =
   'flex flex-wrap items-center gap-2 rounded-2xl border border-border bg-white/70 p-2 shadow-sm';
@@ -381,7 +381,7 @@ const RichTextEditor = forwardRef<RichTextEditorHandle, RichTextEditorProps>(
         <div className="relative">
           <div
             ref={editorRef}
-            className={`min-h-[300px] rounded-2xl border border-border bg-white/90 p-4 text-sm text-slate-700 offer-doc__content overflow-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${className ?? ''}`.trim()}
+            className={`min-h-[300px] rounded-2xl border border-border bg-white/90 p-4 text-sm text-fg offer-doc__content overflow-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${className ?? ''}`.trim()}
             contentEditable
             suppressContentEditableWarning
             role="textbox"
@@ -394,7 +394,7 @@ const RichTextEditor = forwardRef<RichTextEditorHandle, RichTextEditorProps>(
             }}
           />
           {showPlaceholder && placeholder ? (
-            <span className="pointer-events-none absolute left-4 top-4 text-sm text-slate-400">
+            <span className="pointer-events-none absolute left-4 top-4 text-sm text-fg-muted">
               {placeholder}
             </span>
           ) : null}

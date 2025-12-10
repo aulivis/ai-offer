@@ -94,7 +94,7 @@ export default function CookieBar() {
       <button
         type="button"
         onClick={handleRejectNonEssential}
-        className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 transition-colors min-h-[32px] min-w-[32px] flex items-center justify-center rounded hover:bg-gray-100"
+        className="absolute top-2 right-2 text-fg-muted hover:text-fg transition-colors min-h-[32px] min-w-[32px] flex items-center justify-center rounded hover:bg-bg-muted"
         aria-label="Bezárás"
       >
         <X className="w-4 h-4" />
@@ -103,7 +103,7 @@ export default function CookieBar() {
       {/* Content */}
       <div className="mb-3 pr-6">
         <h3 className="font-semibold text-navy-900 text-base mb-1.5">Cookie beállítások</h3>
-        <p className="text-xs text-gray-600 leading-relaxed text-pretty">
+        <p className="text-xs text-fg-muted leading-relaxed text-pretty">
           {t('cookies.bar.message')}
         </p>
       </div>
@@ -120,7 +120,7 @@ export default function CookieBar() {
         <button
           type="button"
           onClick={handleCustomize}
-          className="flex-1 border border-gray-300 hover:border-gray-400 text-gray-700 font-medium px-3 py-2 rounded-lg text-xs transition-all min-h-[36px]"
+          className="flex-1 border border-border hover:border-primary/50 text-fg font-medium px-3 py-2 rounded-lg text-xs transition-all min-h-[36px]"
         >
           {t('cookies.bar.customise')}
         </button>

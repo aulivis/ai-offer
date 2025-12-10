@@ -46,7 +46,7 @@ export function PreviewControls({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-2">
-        <label className="text-xs font-semibold text-slate-700">
+        <label className="text-xs font-semibold text-fg">
           {t('offers.wizard.previewTemplates.heading')}
         </label>
         {onFullscreen && (
@@ -77,7 +77,7 @@ export function PreviewControls({
       {/* Zoom controls */}
       {onZoomChange && (
         <div className="flex items-center gap-2">
-          <label className="text-xs font-semibold text-slate-700">{t('wizard.preview.zoom')}</label>
+          <label className="text-xs font-semibold text-fg">{t('wizard.preview.zoom')}</label>
           <div className="flex flex-1 items-center gap-1">
             <Button
               type="button"
@@ -89,7 +89,7 @@ export function PreviewControls({
             >
               −
             </Button>
-            <span className="min-w-[3rem] text-center text-xs font-medium text-slate-600">
+            <span className="min-w-[3rem] text-center text-xs font-medium text-fg-muted">
               {zoom}%
             </span>
             <Button
@@ -124,7 +124,7 @@ export function PreviewControls({
             onChange={(e) => onToggleMarginGuides(e.target.checked)}
             className="rounded border-border text-primary focus:ring-2 focus:ring-primary"
           />
-          <span className="text-xs text-slate-600">{t('wizard.preview.marginGuides')}</span>
+          <span className="text-xs text-fg-muted">{t('wizard.preview.marginGuides')}</span>
         </label>
       )}
 
@@ -132,15 +132,15 @@ export function PreviewControls({
       <button
         type="button"
         onClick={() => setShowAdvanced(!showAdvanced)}
-        className="w-full text-left text-xs font-medium text-slate-600 hover:text-slate-900"
+        className="w-full text-left text-xs font-medium text-fg-muted hover:text-fg"
       >
         {showAdvanced ? '▼' : '▶'} {t('wizard.preview.advancedSettings')}
       </button>
 
       {showAdvanced && (
-        <div className="space-y-4 rounded-lg border border-border/60 bg-slate-50/50 p-4">
+        <div className="space-y-4 rounded-lg border border-border/60 bg-bg-muted/50 p-4">
           <div className="flex flex-col gap-2">
-            <label className="block text-xs font-semibold text-slate-700">
+            <label className="block text-xs font-semibold text-fg">
               {t('wizard.preview.primaryColor')}
             </label>
             <input
@@ -151,7 +151,7 @@ export function PreviewControls({
             />
           </div>
           <div className="flex flex-col gap-2">
-            <label className="block text-xs font-semibold text-slate-700">
+            <label className="block text-xs font-semibold text-fg">
               {t('wizard.preview.secondaryColor')}
             </label>
             <input

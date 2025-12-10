@@ -62,10 +62,10 @@ export function SettingsBrandingSection({
             <PaintBrushIcon className="relative z-10 h-6 w-6 text-primary" />
           </div>
           <div>
-            <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-1">
+            <h2 className="text-2xl md:text-3xl font-bold text-fg mb-1">
               {t('settings.branding.title')}
             </h2>
-            <p className="text-sm md:text-base text-slate-600">{t('settings.branding.subtitle')}</p>
+            <p className="text-sm md:text-base text-fg-muted">{t('settings.branding.subtitle')}</p>
           </div>
         </div>
       </div>
@@ -93,10 +93,10 @@ export function SettingsBrandingSection({
               <LogoPreview logoPath={profile.brand_logo_path} />
               <div className="flex-1 space-y-2">
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-900">
+                  <h3 className="text-sm font-semibold text-fg">
                     {t('settings.branding.logoUpload.title')}
                   </h3>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-fg-muted">
                     {t('settings.branding.logoUpload.helper')}
                   </p>
                 </div>
@@ -181,11 +181,11 @@ export function SettingsBrandingSection({
                 </div>
                 {logoUploading && logoUploadProgress !== null && (
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between text-xs text-slate-600">
+                    <div className="flex items-center justify-between text-xs text-fg-muted">
                       <span>{t('settings.branding.logoUpload.progress')}</span>
                       <span className="font-semibold">{logoUploadProgress}%</span>
                     </div>
-                    <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200">
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-border">
                       <div
                         className="h-full bg-primary transition-all duration-300 ease-out"
                         style={{ width: `${logoUploadProgress}%` }}
@@ -194,7 +194,7 @@ export function SettingsBrandingSection({
                   </div>
                 )}
                 {!canUploadBrandLogo && (
-                  <p className="flex items-center gap-2 text-xs font-medium text-amber-600">
+                  <p className="flex items-center gap-2 text-xs font-medium text-warning">
                     <LockClosedIcon className="h-3.5 w-3.5" />
                     {t('settings.branding.logoUpload.lockedMessage')}
                   </p>

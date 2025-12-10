@@ -15,6 +15,10 @@ export const tokens = {
     warning: 'var(--color-warning)',
     danger: 'var(--color-danger)',
     dangerInk: 'var(--color-danger-ink)',
+
+    cta: 'var(--color-cta)',
+    ctaHover: 'var(--color-cta-hover)',
+    ctaInk: 'var(--color-cta-ink)',
   },
   radius: { lg: '16px', '2xl': '24px', '3xl': '32px' },
   shadow: { card: 'var(--shadow-card)', pop: 'var(--shadow-pop)' },
