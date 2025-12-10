@@ -67,7 +67,7 @@ export default function EditablePriceTable({
 }: Props) {
   // Defensive check: ensure rows is always an array
   const safeRows = useMemo(() => (Array.isArray(rows) ? rows : []), [rows]);
-  
+
   const totals = useMemo(() => {
     const net = safeRows.reduce((s, r) => s + (Number(r.qty) || 0) * (Number(r.unitPrice) || 0), 0);
     const vat = safeRows.reduce(
