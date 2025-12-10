@@ -197,6 +197,7 @@ const OFFER_SECTIONS_FORMAT: ResponseFormatTextJSONSchemaConfig = {
       'assumptions',
       'next_steps',
       'closing',
+      'client_context',
     ],
     properties: {
       introduction: {
@@ -290,8 +291,8 @@ const OFFER_SECTIONS_FORMAT: ResponseFormatTextJSONSchemaConfig = {
       client_context: {
         type: 'string',
         description:
-          'Opcionális: Ügyfél-specifikus kontextus vagy kapcsolati információk, amelyek segíthetnek a személyre szabásban. Használd a bevezetőben vagy a projekt összefoglalóban, ha releváns (min. 30, max. 200 karakter).',
-        minLength: 30,
+          'Opcionális: Ügyfél-specifikus kontextus vagy kapcsolati információk, amelyek segíthetnek a személyre szabásban. Használd a bevezetőben vagy a projekt összefoglalóban, ha releváns. Ha nincs releváns kontextus, adj vissza üres stringet (max. 200 karakter).',
+        minLength: 0,
         maxLength: 200,
       },
     },
