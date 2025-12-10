@@ -72,7 +72,11 @@ function buildValidation({
     });
   }
 
-  const hasPricingRow = pricingRows.some((row) => row.name.trim().length > 0);
+  const hasPricingRow = pricingRows.some((row) => {
+    if (!row || typeof row !== 'object') return false;
+    const name = typeof row.name === 'string' ? row.name.trim() : '';
+    return name.length > 0;
+  });
 
   if (!hasPricingRow) {
     registerError(2, t('offers.wizard.validation.pricingRequired'), () => {
@@ -166,6 +170,13 @@ export function useOfferWizard(initialRows: PriceRow[] = [createPriceRow()]) {
     [isStepValid, step],
   );
 
+  const restoreStep = useCallback((target: WizardStep) => {
+    // Allow restoring to any step without validation (for draft restoration)
+    if (target >= 1 && target <= 3) {
+      setStep(target as WizardStep);
+    }
+  }, []);
+
   const isNextDisabled = attemptedSteps[step] && !isStepValid(step);
 
   const updatePricingRows = useCallback((rows: PriceRow[]) => {
@@ -184,6 +195,7 @@ export function useOfferWizard(initialRows: PriceRow[] = [createPriceRow()]) {
     goNext,
     goPrev,
     goToStep,
+    restoreStep,
     isNextDisabled,
     attemptedSteps,
     validation,

@@ -20,6 +20,7 @@ import { usePricingRows } from '@/hooks/usePricingRows';
 import { useOfferPreview } from '@/hooks/useOfferPreview';
 import { useDraftPersistence } from '@/hooks/useDraftPersistence';
 import { useWizardKeyboardShortcuts } from '@/hooks/useWizardKeyboardShortcuts';
+import type { PriceRow } from '@/components/EditablePriceTable';
 import { trackWizardEvent } from '@/lib/analytics/wizard';
 import { ApiError, fetchWithSupabaseAuth, isAbortError } from '@/lib/api';
 import { Card, CardHeader } from '@/components/ui/Card';
@@ -43,6 +44,7 @@ export default function NewOfferPage() {
     goNext: goNextInternal,
     goPrev,
     goToStep,
+    restoreStep,
     isNextDisabled,
     attemptedSteps,
     validation,
@@ -69,10 +71,51 @@ export default function NewOfferPage() {
     const saved = loadDraft();
     if (saved) {
       // Restore draft state if available
-      // Note: This would require exposing setters from useOfferWizard
-      // For now, we'll just use it for auto-save
+      if (saved.title && typeof saved.title === 'string') {
+        setTitle(saved.title);
+      }
+      if (saved.projectDetails && typeof saved.projectDetails === 'object') {
+        setProjectDetails(saved.projectDetails);
+      }
+      if (saved.pricingRows && Array.isArray(saved.pricingRows) && saved.pricingRows.length > 0) {
+        // Ensure all rows have required fields and valid structure
+        const validRows = saved.pricingRows
+          .filter((row): row is PriceRow => {
+            return (
+              row &&
+              typeof row === 'object' &&
+              typeof row.id === 'string' &&
+              typeof row.name === 'string' &&
+              typeof row.qty === 'number' &&
+              typeof row.unit === 'string' &&
+              typeof row.unitPrice === 'number' &&
+              typeof row.vat === 'number'
+            );
+          })
+          .map((row) => ({
+            id: row.id,
+            name: row.name ?? '',
+            qty: row.qty ?? 1,
+            unit: row.unit ?? 'db',
+            unitPrice: row.unitPrice ?? 0,
+            vat: row.vat ?? 27,
+          }));
+        if (validRows.length > 0) {
+          setPricingRows(validRows);
+        }
+      }
+      // Restore step after a brief delay to ensure state updates are processed
+      // This allows validation to run with the restored data
+      if (saved.step && typeof saved.step === 'number' && saved.step >= 1 && saved.step <= 3) {
+        // Use restoreStep to bypass validation when restoring draft
+        // Small delay ensures state updates are processed first
+        setTimeout(() => {
+          restoreStep(saved.step as WizardStep);
+        }, 0);
+      }
     }
-  }, [loadDraft]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Preview hook - enabled from Step 2 onwards
   const previewEnabled = step >= 2;
