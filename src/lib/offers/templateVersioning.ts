@@ -129,7 +129,7 @@ export function createTemplateVersion(
     templateId,
     version: nextVersion,
     content,
-    changelog,
+    ...(changelog !== undefined && { changelog }),
     isActive: true,
     createdAt: new Date().toISOString(),
   };
