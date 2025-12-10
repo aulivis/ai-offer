@@ -1992,7 +1992,10 @@ export default function NewOfferWizard() {
         });
       }}
     >
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-slate-50" style={{ pointerEvents: 'auto' }}>
+      <div
+        className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-slate-50"
+        style={{ pointerEvents: 'auto' }}
+      >
         <AppFrame
           title={t('offers.wizard.pageTitle')}
           description={t('offers.wizard.pageDescription')}
