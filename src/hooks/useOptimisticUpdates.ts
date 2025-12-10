@@ -25,13 +25,20 @@ export function useOptimisticUpdate<T>({
   const [value, setValue] = useState<T>(initialValue);
   const [isUpdating, setIsUpdating] = useState(false);
   const previousValueRef = useRef<T>(initialValue);
+  const valueRef = useRef<T>(initialValue);
   const abortControllerRef = useRef<AbortController | null>(null);
 
   // Update initial value when it changes externally
   useEffect(() => {
     setValue(initialValue);
     previousValueRef.current = initialValue;
+    valueRef.current = initialValue;
   }, [initialValue]);
+
+  // Keep valueRef in sync with value
+  useEffect(() => {
+    valueRef.current = value;
+  }, [value]);
 
   const update = useCallback(
     async (optimisticValue: T) => {
@@ -43,11 +50,12 @@ export function useOptimisticUpdate<T>({
       // Create new abort controller
       abortControllerRef.current = new AbortController();
 
-      // Store previous value for rollback
-      previousValueRef.current = value;
+      // Store previous value for rollback (use ref to get current value)
+      previousValueRef.current = valueRef.current;
 
       // Optimistically update UI
       setValue(optimisticValue);
+      valueRef.current = optimisticValue;
       setIsUpdating(true);
 
       try {
@@ -61,6 +69,7 @@ export function useOptimisticUpdate<T>({
 
         // Update with actual result
         setValue(result);
+        valueRef.current = result;
         setIsUpdating(false);
         onSuccess?.(result);
       } catch (error) {
@@ -74,13 +83,14 @@ export function useOptimisticUpdate<T>({
         if (rollbackOnError) {
           // Rollback to previous value
           setValue(previousValueRef.current);
+          valueRef.current = previousValueRef.current;
         }
 
         const err = error instanceof Error ? error : new Error(String(error));
         onError?.(err, previousValueRef.current);
       }
     },
-    [updateFn, onSuccess, onError, rollbackOnError, value],
+    [updateFn, onSuccess, onError, rollbackOnError],
   );
 
   const cancel = useCallback(() => {
