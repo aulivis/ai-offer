@@ -853,8 +853,12 @@ export default function NewOfferWizard() {
   const reloadActivitiesRef = useRef<(() => Promise<void>) | null>(null);
   const reloadGuaranteesRef = useRef<(() => Promise<void>) | null>(null);
   // Refs to store update functions to avoid infinite loops
-  const updateActivitiesOptimisticallyRef = useRef<typeof updateActivitiesOptimistically | null>(null);
-  const updateGuaranteesOptimisticallyRef = useRef<typeof updateGuaranteesOptimistically | null>(null);
+  const updateActivitiesOptimisticallyRef = useRef<typeof updateActivitiesOptimistically | null>(
+    null,
+  );
+  const updateGuaranteesOptimisticallyRef = useRef<typeof updateGuaranteesOptimistically | null>(
+    null,
+  );
 
   // Update refs whenever update functions change
   useEffect(() => {
