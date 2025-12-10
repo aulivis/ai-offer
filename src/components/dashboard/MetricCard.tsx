@@ -30,7 +30,7 @@ export type MetricCardProps = {
   isEmpty?: boolean;
   /** Empty state message */
   emptyMessage?: string;
-};
+} & Omit<React.HTMLAttributes<HTMLDivElement>, 'onClick'>;
 
 /**
  * MetricCard component for displaying KPIs and metrics
@@ -71,6 +71,7 @@ export function MetricCard({
   comparison,
   isEmpty = false,
   emptyMessage,
+  ...restProps
 }: MetricCardProps) {
   const progressPercentage =
     progress && progress.limit !== null
