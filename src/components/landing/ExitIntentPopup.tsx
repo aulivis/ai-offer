@@ -31,7 +31,7 @@ export default function ExitIntentPopup({ onClose, show }: ExitIntentPopupProps)
           }
         } catch (error) {
           // sessionStorage might not be available (private browsing, etc.)
-          clientLogger.warn('Could not access sessionStorage', error);
+          clientLogger.warn('Could not access sessionStorage', { error });
         }
         trackConversion('exit_intent_shown');
       }
