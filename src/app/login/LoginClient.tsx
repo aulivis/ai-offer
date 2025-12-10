@@ -326,7 +326,7 @@ export default function LoginClient() {
   const fromSource = searchParams?.get('from') || 'default';
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-gray-50 to-white py-8 px-4 pt-12 md:pt-16">
+    <main className="min-h-screen bg-gradient-to-br from-bg to-bg-muted py-8 px-4 pt-12 md:pt-16">
       <div className="w-full max-w-7xl mx-auto">
         <div className="grid lg:grid-cols-2 gap-12 items-start">
           {/* Left Column - Login Form */}
@@ -436,21 +436,21 @@ export default function LoginClient() {
                         </svg>
                         <span className="font-semibold">Google Bejelentkezés</span>
                       </div>
-                      <div className="ml-auto bg-success/10 text-success text-xs px-2 py-1 rounded-full font-bold relative z-10">
+                      <div className="ml-auto bg-success/10 text-success text-caption px-2 py-1 rounded-full font-bold relative z-10">
                         5 mp
                       </div>
                       <span className="absolute inset-0 bg-bg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
                     </>
                   )}
                 </button>
-                <p className="text-xs text-fg-muted text-center mt-2">
+                <p className="text-caption text-fg-muted text-center mt-2">
                   Automatikus fiók létrehozás az első bejelentkezéskor
                 </p>
                 {googleStatusMessage && (
                   <div
                     role="alert"
                     aria-live="polite"
-                    className="mt-2 rounded-lg border border-warning/30 bg-warning/10 px-3 py-2 text-xs text-warning"
+                    className="mt-2 rounded-lg border border-warning/30 bg-warning/10 px-3 py-2 text-caption text-warning"
                   >
                     {sanitizeInput(googleStatusMessage)}
                   </div>
@@ -630,9 +630,9 @@ export default function LoginClient() {
                   )}
                 </button>
 
-                <div className="bg-teal-50 border border-teal-200 rounded-lg p-3 flex items-start gap-2">
-                  <Info className="w-5 h-5 text-teal-600 flex-shrink-0 mt-0.5" />
-                  <p className="text-xs text-teal-700">
+                <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 flex items-start gap-2">
+                  <Info className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                  <p className="text-caption text-primary">
                     Küldünk egy belépési linket az emailedre. Nincs jelszó, nincs külön
                     regisztrációs folyamat!
                   </p>
@@ -640,13 +640,13 @@ export default function LoginClient() {
               </form>
 
               {/* Privacy note */}
-              <p className="mt-6 text-center text-xs text-gray-500">
+              <p className="mt-6 text-center text-caption text-fg-muted">
                 A gombra kattintva elfogadod az{' '}
-                <Link href="/adatvedelem" className="underline hover:text-gray-700">
+                <Link href="/adatvedelem" className="underline hover:text-fg">
                   Adatvédelmi szabályzatot
                 </Link>{' '}
                 és a{' '}
-                <Link href="/felhasznalasi-feltetelek" className="underline hover:text-gray-700">
+                <Link href="/felhasznalasi-feltetelek" className="underline hover:text-fg">
                   Felhasználási feltételeket
                 </Link>
               </p>
@@ -658,7 +658,7 @@ export default function LoginClient() {
             <div className="sticky top-24">
               <div className="space-y-8">
                 {/* What you get after signup */}
-                <div className="bg-gradient-to-b from-white to-gray-50 rounded-2xl p-6 border-2 border-gray-100">
+                <div className="bg-gradient-to-b from-bg-muted to-bg rounded-2xl p-6 border-2 border-border">
                   <H2 className="mb-4">Mit kapsz azonnal a regisztráció után?</H2>
 
                   <div className="space-y-4">

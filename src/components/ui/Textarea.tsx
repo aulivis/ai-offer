@@ -80,7 +80,11 @@ export function Textarea({
         </span>
       )}
       {error && (
-        <span id={`${textareaId}-error`} className="block text-xs text-danger">
+        <span
+          id={`${textareaId}-error`}
+          className="block text-xs text-danger transition-all duration-200"
+          role="alert"
+        >
           {error}
         </span>
       )}

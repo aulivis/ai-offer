@@ -14,6 +14,7 @@ const base = [
   'inline-flex items-center justify-center gap-2 rounded-full font-semibold',
   'transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
   'disabled:cursor-not-allowed disabled:opacity-60 disabled:scale-100',
+  'touch-manipulation',
 ].join(' ');
 
 const variantClasses: Record<NonNullable<Props['variant']>, string> = {

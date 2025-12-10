@@ -96,11 +96,11 @@ export function DashboardFiltersSection({
 
         {/* Quick Filter Chips */}
         <div
-          className="flex flex-wrap items-center gap-3"
+          className="flex flex-wrap items-center gap-2 sm:gap-3"
           role="group"
           aria-label={t('dashboard.filters.status.label')}
         >
-          <span className="text-sm font-semibold text-fg">
+          <span className="text-xs sm:text-sm font-semibold text-fg">
             {t('dashboard.filters.status.label')}:
           </span>
           {STATUS_FILTER_OPTIONS.map((status) => {
@@ -161,7 +161,7 @@ export function DashboardFiltersSection({
                     ? t('dashboard.filters.status.options.all')
                     : t(STATUS_LABEL_KEYS[status])
                 }`}
-                className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
+                className={`touch-manipulation min-h-[44px] px-4 py-2 rounded-lg font-semibold text-sm transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
                   statusFilter === status
                     ? 'bg-primary text-primary-ink shadow-md ring-2 ring-primary/30 scale-105'
                     : 'bg-bg-muted text-fg border-2 border-border hover:border-primary/50 hover:bg-bg-muted/80'

@@ -100,6 +100,7 @@ export function MetricCard({
           ? 'cursor-pointer hover:shadow-xl hover:border-primary/40 hover:-translate-y-0.5 ring-1 ring-transparent hover:ring-primary/20'
           : 'hover:shadow-lg'
       } ${isEmptyState ? 'opacity-75' : ''}`}
+      style={{ containerType: 'inline-size' }}
       onClick={onClick}
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
@@ -114,6 +115,7 @@ export function MetricCard({
             }
           : undefined
       }
+      {...(restProps as React.HTMLAttributes<HTMLDivElement>)}
     >
       <div className="flex items-start justify-between">
         <div className="flex-1 min-w-0">

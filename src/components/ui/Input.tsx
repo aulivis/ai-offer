@@ -111,7 +111,11 @@ export function Input({
         </span>
       )}
       {error && (
-        <span id={`${inputId}-error`} className="block text-xs text-danger" role="alert">
+        <span
+          id={`${inputId}-error`}
+          className="block text-xs text-danger transition-all duration-200"
+          role="alert"
+        >
           {error}
         </span>
       )}

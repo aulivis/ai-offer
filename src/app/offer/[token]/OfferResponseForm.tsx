@@ -109,11 +109,15 @@ export default function OfferResponseForm({
 
     return (
       <div
-        className={`rounded-xl ${status.bgColor} border-2 ${status.borderColor} p-6 shadow-lg md:p-8`}
+        className={`rounded-xl ${status.bgColor} border-2 ${status.borderColor} p-4 sm:p-6 md:p-8 shadow-lg`}
       >
-        <div className="mb-6 text-center">
-          <h2 className={`mb-2 text-2xl font-bold ${status.textColor}`}>{status.title}</h2>
-          <p className={`${status.textColor} opacity-90`}>{status.description}</p>
+        <div className="mb-4 sm:mb-6 text-center">
+          <h2 className={`mb-2 text-xl sm:text-2xl md:text-3xl font-bold ${status.textColor}`}>
+            {status.title}
+          </h2>
+          <p className={`text-sm sm:text-base ${status.textColor} opacity-90`}>
+            {status.description}
+          </p>
         </div>
 
         {status.nextSteps && status.nextSteps.length > 0 && (
@@ -175,10 +179,12 @@ export default function OfferResponseForm({
   }
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-lg md:p-8">
-      <div className="mb-6">
-        <h2 className="mb-2 text-2xl font-semibold text-gray-900">Válasz az ajánlatra</h2>
-        <p className="text-sm text-gray-600">
+    <div className="rounded-xl border border-gray-200 bg-white p-4 sm:p-6 md:p-8 shadow-lg">
+      <div className="mb-4 sm:mb-6">
+        <h2 className="mb-2 text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900">
+          Válasz az ajánlatra
+        </h2>
+        <p className="text-xs sm:text-sm md:text-base text-gray-600">
           Válasszon egyet az alábbi lehetőségek közül. A válaszát rögzítjük és értesítjük az ajánlat
           készítőjét.
         </p>
@@ -188,42 +194,42 @@ export default function OfferResponseForm({
         {/* Decision buttons */}
         <div className="space-y-3">
           <p className="text-sm font-semibold text-gray-700 mb-3">Válassza ki a döntését:</p>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 md:gap-4">
             <button
               type="button"
               onClick={() => setDecision('accepted')}
-              className={`flex items-center justify-center gap-3 rounded-lg border-2 p-5 font-semibold transition-all min-h-[70px] focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+              className={`flex items-center justify-center gap-2 sm:gap-3 rounded-lg border-2 p-4 sm:p-5 font-semibold transition-all min-h-[60px] sm:min-h-[70px] md:min-h-[80px] touch-manipulation focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                 decision === 'accepted'
                   ? 'border-green-600 bg-green-600 text-white shadow-md focus:ring-green-500'
                   : 'border-gray-300 bg-white text-gray-700 hover:border-green-400 hover:bg-green-50 hover:shadow-sm focus:ring-green-300'
               }`}
             >
-              <span className="text-2xl">✓</span>
-              <span className="text-base">Elfogadom</span>
+              <span className="text-xl sm:text-2xl">✓</span>
+              <span className="text-sm sm:text-base">Elfogadom</span>
             </button>
             <button
               type="button"
               onClick={() => setDecision('question')}
-              className={`flex items-center justify-center gap-3 rounded-lg border-2 p-5 font-semibold transition-all min-h-[70px] focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+              className={`flex items-center justify-center gap-2 sm:gap-3 rounded-lg border-2 p-4 sm:p-5 font-semibold transition-all min-h-[60px] sm:min-h-[70px] md:min-h-[80px] touch-manipulation focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                 decision === 'question'
                   ? 'border-yellow-500 bg-yellow-500 text-white shadow-md focus:ring-yellow-400'
                   : 'border-gray-300 bg-white text-gray-700 hover:border-yellow-400 hover:bg-yellow-50 hover:shadow-sm focus:ring-yellow-300'
               }`}
             >
-              <span className="text-2xl">?</span>
-              <span className="text-base">Kérdésem van</span>
+              <span className="text-xl sm:text-2xl">?</span>
+              <span className="text-sm sm:text-base">Kérdésem van</span>
             </button>
             <button
               type="button"
               onClick={() => setDecision('rejected')}
-              className={`flex items-center justify-center gap-3 rounded-lg border-2 p-5 font-semibold transition-all min-h-[70px] focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+              className={`flex items-center justify-center gap-2 sm:gap-3 rounded-lg border-2 p-4 sm:p-5 font-semibold transition-all min-h-[60px] sm:min-h-[70px] md:min-h-[80px] touch-manipulation focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                 decision === 'rejected'
                   ? 'border-red-600 bg-red-600 text-white shadow-md focus:ring-red-500'
                   : 'border-gray-300 bg-white text-gray-700 hover:border-red-400 hover:bg-red-50 hover:shadow-sm focus:ring-red-300'
               }`}
             >
-              <span className="text-2xl">✗</span>
-              <span className="text-base">Elutasítom</span>
+              <span className="text-xl sm:text-2xl">✗</span>
+              <span className="text-sm sm:text-base">Elutasítom</span>
             </button>
           </div>
         </div>
@@ -275,7 +281,7 @@ export default function OfferResponseForm({
         <Button
           type="submit"
           disabled={!decision || submitting || (decision === 'question' && !comment.trim())}
-          className="w-full sm:w-auto sm:min-w-[200px]"
+          className="w-full sm:w-auto sm:min-w-[200px] min-h-[44px] touch-manipulation"
           variant={
             decision === 'accepted' ? 'primary' : decision === 'question' ? 'primary' : 'secondary'
           }

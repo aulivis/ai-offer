@@ -25,6 +25,7 @@ import { DashboardFiltersSection } from '@/components/dashboard/DashboardFilters
 import { DashboardEmptyState } from '@/components/dashboard/DashboardEmptyState';
 import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
 import { useDashboardOfferActions } from '@/hooks/useDashboardOfferActions';
+import { StaggeredList } from '@/components/animations';
 
 // Lazy load heavy dashboard components for route-based code splitting
 const OfferListItem = dynamic(
@@ -1269,29 +1270,31 @@ export default function DashboardPage() {
                       onRegeneratePdf={handleRegeneratePdf}
                     />
                   ) : (
-                    <div
-                      className="flex flex-col gap-3"
-                      role="region"
-                      aria-label={t('dashboard.offersList.label') || 'Offers list'}
-                      aria-busy={updatingId !== null || deletingId !== null}
-                    >
-                      {filtered.map((o) => (
-                        <OfferListItem
-                          key={o.id}
-                          offer={o}
-                          isUpdating={updatingId === o.id}
-                          isDownloading={downloadingId === o.id}
-                          isDeleting={deletingId === o.id}
-                          onMarkDecision={(offer, decision, date) =>
-                            markDecision(offer, decision, date)
-                          }
-                          onRevertToSent={(offer) => revertToSent(offer)}
-                          onRevertToDraft={(offer) => revertToDraft(offer)}
-                          onDelete={(offer) => setOfferToDelete(offer)}
-                          onDownload={(offer) => handleDownloadPdf(offer)}
-                        />
-                      ))}
-                    </div>
+                    <StaggeredList className="flex flex-col gap-3" staggerDelay={0.03}>
+                      <div
+                        role="region"
+                        aria-label={t('dashboard.offersList.label') || 'Offers list'}
+                        aria-busy={updatingId !== null || deletingId !== null}
+                        className="contents"
+                      >
+                        {filtered.map((o) => (
+                          <OfferListItem
+                            key={o.id}
+                            offer={o}
+                            isUpdating={updatingId === o.id}
+                            isDownloading={downloadingId === o.id}
+                            isDeleting={deletingId === o.id}
+                            onMarkDecision={(offer, decision, date) =>
+                              markDecision(offer, decision, date)
+                            }
+                            onRevertToSent={(offer) => revertToSent(offer)}
+                            onRevertToDraft={(offer) => revertToDraft(offer)}
+                            onDelete={(offer) => setOfferToDelete(offer)}
+                            onDownload={(offer) => handleDownloadPdf(offer)}
+                          />
+                        ))}
+                      </div>
+                    </StaggeredList>
                   )}
 
                   {/* Progressive Loading - Enhanced with intersection observer for auto-loading */}

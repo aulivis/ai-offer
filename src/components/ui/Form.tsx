@@ -4,6 +4,7 @@ import * as React from 'react';
 import { useForm, FormProvider, type UseFormReturn, type FieldValues } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { z } from 'zod';
+import { AnimatedError } from '@/components/animations';
 
 type FormProps<T extends FieldValues> = {
   schema?: z.ZodSchema<T>;
@@ -145,11 +146,7 @@ export function FormField({
           {help}
         </span>
       )}
-      {fieldError && (
-        <span id={`${fieldId}-error`} className="block text-xs text-danger" role="alert">
-          {String(fieldError)}
-        </span>
-      )}
+      <AnimatedError error={fieldError ? String(fieldError) : null} id={`${fieldId}-error`} />
     </div>
   );
 }

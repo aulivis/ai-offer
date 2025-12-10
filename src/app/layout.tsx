@@ -18,6 +18,7 @@ import { WebVitalsReporter } from '@/components/performance/WebVitalsReporter';
 import { LanguageProvider } from '@/state/LanguageProvider';
 import { withLanguage } from '@/state/lang.server';
 import { getRequestLanguage } from './lib/language';
+import { ViewTransition } from '@/components/animations/ViewTransition';
 
 import { gota, inter, spaceMono } from './fonts';
 
@@ -60,7 +61,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <div className="relative z-10 flex min-h-screen flex-col">
                   <AriaLiveAnnouncer />
                   <WebVitalsReporter />
-                  <ConditionalLayout>{children}</ConditionalLayout>
+                  <ViewTransition>
+                    <ConditionalLayout>{children}</ConditionalLayout>
+                  </ViewTransition>
                 </div>
               </div>
               {/* Global UI elements rendered outside main container to avoid stacking context issues */}

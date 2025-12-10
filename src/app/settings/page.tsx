@@ -190,6 +190,7 @@ export default function SettingsPage() {
                     } catch {
                       showToast({
                         title: t('errors.settings.saveFailed', { message: 'Nem sikerült menteni' }),
+                        description: 'Kérjük, próbálja újra később',
                         variant: 'error',
                       });
                     }
@@ -229,7 +230,7 @@ export default function SettingsPage() {
                       </svg>
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-lg font-bold text-success mb-1">
+                      <h3 className="text-h5 font-bold text-success mb-1">
                         {t('settings.successMessage.title')}
                       </h3>
                       <p className="text-body text-success/90 mb-3">
@@ -281,12 +282,21 @@ export default function SettingsPage() {
               >
                 <div className="relative overflow-hidden rounded-2xl border border-border bg-bg-muted/95 backdrop-blur-sm shadow-pop w-full">
                   <TabsList className="w-full justify-start rounded-none border-b-2 border-border bg-transparent p-0 h-auto">
-                    <div className="flex items-center gap-2 overflow-x-auto px-4 sm:px-6 scrollbar-hide w-full">
+                    <div className="relative flex items-center gap-2 overflow-x-auto px-3 sm:px-4 md:px-6 scrollbar-hide w-full">
+                      {/* Scroll indicators for mobile */}
+                      <div
+                        className="pointer-events-none absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-bg-muted/95 to-transparent md:hidden z-10"
+                        aria-hidden
+                      />
+                      <div
+                        className="pointer-events-none absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-bg-muted/95 to-transparent md:hidden z-10"
+                        aria-hidden
+                      />
                       {tabs.map((tab) => (
                         <TabsTrigger
                           key={tab.id}
                           value={tab.id}
-                          className="group relative flex items-center gap-2 whitespace-nowrap px-5 sm:px-7 py-5 transition-all duration-300 flex-shrink-0 data-[state=active]:text-primary data-[state=active]:font-bold data-[state=active]:text-body data-[state=active]:scale-105 text-fg-muted font-semibold text-body-small hover:text-fg hover:scale-105 rounded-none border-b-2 border-transparent data-[state=active]:border-primary"
+                          className="group relative flex items-center gap-1.5 sm:gap-2 whitespace-nowrap px-3 sm:px-5 md:px-7 py-4 sm:py-5 transition-all duration-300 flex-shrink-0 min-h-[44px] data-[state=active]:text-primary data-[state=active]:font-bold data-[state=active]:text-body data-[state=active]:scale-105 text-fg-muted font-semibold text-body-small hover:text-fg hover:scale-105 rounded-none border-b-2 border-transparent data-[state=active]:border-primary touch-manipulation"
                         >
                           <span className="flex items-center gap-2.5">
                             <span className="flex-shrink-0">{tab.icon}</span>
@@ -298,7 +308,7 @@ export default function SettingsPage() {
                   </TabsList>
 
                   {/* Tab content */}
-                  <div className="relative z-10 p-4 sm:p-6 md:p-8 lg:p-10 w-full min-h-[400px]">
+                  <div className="relative z-10 p-4 sm:p-6 md:p-8 lg:p-10 xl:p-12 w-full min-h-[400px]">
                     <TabsContent value="profile" className="mt-0">
                       {activeTab === 'profile' && (
                         <div className="space-y-8 w-full">

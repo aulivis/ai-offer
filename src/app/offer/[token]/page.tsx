@@ -418,7 +418,7 @@ export default async function PublicOfferPage({ params, searchParams }: PageProp
   return (
     <PageErrorBoundary>
       <div className="min-h-screen bg-gradient-offer">
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+        <div className="mx-auto max-w-7xl px-3 sm:px-4 md:px-6 lg:px-8 py-6 sm:py-8 md:py-10 lg:py-12">
           {/* Back Button and Breadcrumb */}
           {!isPdfMode && (
             <div className="mb-6 flex flex-col gap-4">

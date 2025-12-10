@@ -3,6 +3,7 @@
 import OfferCard from '@/components/dashboard/OfferCard';
 import type { Offer } from '@/app/dashboard/types';
 import { t } from '@/copy';
+import { StaggeredList } from '@/components/animations';
 
 type OffersCardGridProps = {
   offers: Offer[];
@@ -41,31 +42,41 @@ export function OffersCardGrid({
   onRegeneratePdf,
 }: OffersCardGridProps) {
   return (
-    <div
+    <StaggeredList
       className="grid grid-cols-1 gap-4 md:grid-cols-2 items-start"
-      data-offers-section
-      role="list"
-      aria-label={t('dashboard.offersList.label') || 'Offers list'}
-      aria-busy={updatingId !== null || deletingId !== null}
+      staggerDelay={0.03}
     >
-      {offers.map((offer, index) => (
-        <div key={offer.id} role="listitem" aria-posinset={index + 1} aria-setsize={offers.length}>
-          <OfferCard
-            offer={offer}
-            isUpdating={updatingId === offer.id}
-            isDownloading={downloadingId === offer.id}
-            isDeleting={deletingId === offer.id}
-            isRegenerating={regeneratingId === offer.id}
-            onMarkSent={onMarkSent}
-            onMarkDecision={onMarkDecision}
-            onRevertToSent={onRevertToSent}
-            onRevertToDraft={onRevertToDraft}
-            onDelete={onDelete}
-            onDownload={onDownload}
-            {...(onRegeneratePdf && { onRegeneratePdf })}
-          />
-        </div>
-      ))}
-    </div>
+      <div
+        data-offers-section
+        role="list"
+        aria-label={t('dashboard.offersList.label') || 'Offers list'}
+        aria-busy={updatingId !== null || deletingId !== null}
+        className="contents"
+      >
+        {offers.map((offer, index) => (
+          <div
+            key={offer.id}
+            role="listitem"
+            aria-posinset={index + 1}
+            aria-setsize={offers.length}
+          >
+            <OfferCard
+              offer={offer}
+              isUpdating={updatingId === offer.id}
+              isDownloading={downloadingId === offer.id}
+              isDeleting={deletingId === offer.id}
+              isRegenerating={regeneratingId === offer.id}
+              onMarkSent={onMarkSent}
+              onMarkDecision={onMarkDecision}
+              onRevertToSent={onRevertToSent}
+              onRevertToDraft={onRevertToDraft}
+              onDelete={onDelete}
+              onDownload={onDownload}
+              {...(onRegeneratePdf && { onRegeneratePdf })}
+            />
+          </div>
+        ))}
+      </div>
+    </StaggeredList>
   );
 }

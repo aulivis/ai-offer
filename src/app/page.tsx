@@ -8,6 +8,7 @@ import { SolutionSection } from '@/components/solution-section';
 import { NewsletterSubscription } from '@/components/landing/NewsletterSubscription';
 import { AnimatedStat } from '@/components/landing/AnimatedStat';
 import { PageErrorBoundary } from '@/components/PageErrorBoundary';
+import { ScrollReveal } from '@/components/animations';
 import { H1, H2 } from '@/components/ui/Heading';
 import { Card } from '@/components/ui/Card';
 import {
@@ -309,33 +310,51 @@ export default function Home() {
         </section>
 
         {/* HOW IT WORKS - Quick Process Overview */}
-        <HowItWorks />
+        <ScrollReveal>
+          <HowItWorks />
+        </ScrollReveal>
 
         {/* VIDEO DEMO - Show Don't Tell */}
         <section id="product-demo" className="scroll-mt-20">
-          <VideoDemoSection />
+          <ScrollReveal delay={0.1}>
+            <VideoDemoSection />
+          </ScrollReveal>
         </section>
 
         {/* PROBLEM - Establish Pain Points */}
-        <ProblemSection />
+        <ScrollReveal delay={0.2}>
+          <ProblemSection />
+        </ScrollReveal>
 
         {/* SOLUTION - Your Answer with Before/After */}
-        <SolutionSection />
+        <ScrollReveal delay={0.3}>
+          <SolutionSection />
+        </ScrollReveal>
 
         {/* COMPARISON TABLE - Why Choose Us */}
-        <ComparisonTable />
+        <ScrollReveal delay={0.4}>
+          <ComparisonTable />
+        </ScrollReveal>
 
         {/* ROI CALCULATOR - Personalized Value */}
-        <ROICalculatorLanding />
+        <ScrollReveal delay={0.5}>
+          <ROICalculatorLanding />
+        </ScrollReveal>
 
         {/* TESTIMONIALS - Social Proof */}
-        <TestimonialSection />
+        <ScrollReveal delay={0.6}>
+          <TestimonialSection />
+        </ScrollReveal>
 
         {/* INDUSTRY SOLUTIONS - Specific Use Cases */}
-        <IndustrySolutions />
+        <ScrollReveal delay={0.7}>
+          <IndustrySolutions />
+        </ScrollReveal>
 
         {/* FAQ - Address Objections */}
-        <FAQSection />
+        <ScrollReveal delay={0.8}>
+          <FAQSection />
+        </ScrollReveal>
 
         {/* FINAL CTA - Last Conversion Opportunity */}
         <section className="relative py-24 overflow-hidden">
@@ -370,7 +389,7 @@ export default function Home() {
               <NewsletterSubscription source="landing_page" />
 
               {/* Social proof stats - redesigned for better visibility with scroll animations */}
-              <div className="grid grid-cols-3 gap-6 md:gap-8" role="list">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 md:gap-8" role="list">
                 <AnimatedStat
                   value="200+"
                   label="Aktív vállalkozás"
