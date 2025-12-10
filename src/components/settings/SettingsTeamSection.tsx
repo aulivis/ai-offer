@@ -540,9 +540,7 @@ export function SettingsTeamSection({ plan }: SettingsTeamSectionProps) {
                             className="flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50/50 p-3"
                           >
                             <div>
-                              <p className="text-sm font-medium text-fg">
-                                {invitation.email}
-                              </p>
+                              <p className="text-sm font-medium text-fg">{invitation.email}</p>
                               <p className="text-xs text-fg-muted">
                                 Lejár: {new Date(invitation.expires_at).toLocaleDateString('hu-HU')}
                               </p>

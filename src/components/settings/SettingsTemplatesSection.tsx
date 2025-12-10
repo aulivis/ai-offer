@@ -97,9 +97,7 @@ export function SettingsTemplatesSection({
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-2 flex-wrap">
-                        <h3
-                          className={`font-bold ${isSelected ? 'text-primary' : 'text-fg'}`}
-                        >
+                        <h3 className={`font-bold ${isSelected ? 'text-primary' : 'text-fg'}`}>
                           {template.label || template.name}
                         </h3>
                         {isSelected && (

@@ -311,9 +311,7 @@ export function SettingsSecurityTab({
         <h2 className="mb-2 text-2xl font-bold text-fg">
           {t('settings.authMethods.security.email.title')}
         </h2>
-        <p className="mb-6 text-fg-muted">
-          {t('settings.authMethods.security.email.description')}
-        </p>
+        <p className="mb-6 text-fg-muted">{t('settings.authMethods.security.email.description')}</p>
 
         <div className="rounded-2xl border-2 border-slate-200 bg-white p-6">
           <label className="mb-2 block text-sm font-semibold text-fg">

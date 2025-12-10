@@ -20,9 +20,7 @@ export function EmptyState() {
           <div className="w-20 h-20 bg-gradient-to-br from-teal-500 to-blue-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl">
             <SparklesIcon className="w-10 h-10 text-white" />
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-fg mb-4">
-            Üdvözlünk a Vyndi-ben! 👋
-          </h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-fg mb-4">Üdvözlünk a Vyndi-ben! 👋</h1>
           <p className="text-xl text-fg-muted max-w-2xl mx-auto">
             Kezdd el az első professzionális ajánlatod készítését most
           </p>

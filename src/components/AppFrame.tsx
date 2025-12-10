@@ -130,9 +130,7 @@ export default function AppFrame({
       <main id="main" className="flex-1 space-y-8">
         <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <H1 className="tracking-[-0.125rem]">
-              {title}
-            </H1>
+            <H1 className="tracking-[-0.125rem]">{title}</H1>
             {description ? (
               <p className="mt-2 max-w-2xl text-sm text-fg-muted">{description}</p>
             ) : null}

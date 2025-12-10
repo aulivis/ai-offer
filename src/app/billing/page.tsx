@@ -1003,9 +1003,7 @@ function BillingPageContent() {
               as="section"
               header={
                 <CardHeader>
-                  <h2 className="text-xl font-bold text-fg">
-                    {t('billing.comparison.title')}
-                  </h2>
+                  <h2 className="text-xl font-bold text-fg">{t('billing.comparison.title')}</h2>
                   <p className="mt-1 text-sm text-fg-muted">{t('billing.comparison.subtitle')}</p>
                 </CardHeader>
               }
@@ -1287,9 +1285,7 @@ function BillingPageContent() {
             header={
               <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <h2 className="text-lg font-semibold text-fg">
-                    {t('billing.invoices.title')}
-                  </h2>
+                  <h2 className="text-lg font-semibold text-fg">{t('billing.invoices.title')}</h2>
                   <p className="text-xs text-fg-muted">{t('billing.invoices.subtitle')}</p>
                 </div>
               </CardHeader>

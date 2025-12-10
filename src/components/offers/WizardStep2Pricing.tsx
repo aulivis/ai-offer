@@ -806,9 +806,7 @@ export function WizardStep2Pricing({
       {/* Pricing Table */}
       <Card className="border-none bg-white/95 shadow-lg ring-1 ring-fg/5 overflow-hidden">
         <div className="p-5 sm:p-6 border-b border-border">
-          <h3 className="text-base font-semibold text-fg">
-            {t('offers.wizard.steps.pricing')}
-          </h3>
+          <h3 className="text-base font-semibold text-fg">{t('offers.wizard.steps.pricing')}</h3>
         </div>
         <EditablePriceTable
           rows={safeRows}
