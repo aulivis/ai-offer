@@ -194,7 +194,7 @@ export function DashboardFiltersSection({
         </div>
 
         {/* Advanced Filters & Controls */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between pt-4 border-t border-border/60">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between pt-4 sm:pt-5 border-t border-border/60">
           <div className="flex flex-wrap items-end gap-3 flex-1">
             {teamIds.length > 0 && (
               <Select

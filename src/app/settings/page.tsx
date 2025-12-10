@@ -2,7 +2,7 @@
 
 import { t } from '@/copy';
 import { PageErrorBoundary } from '@/components/PageErrorBoundary';
-import { useEffect, useCallback, useState } from 'react';
+import { useEffect, useCallback, useState, useMemo } from 'react';
 import AppFrame from '@/components/AppFrame';
 import { useSupabase } from '@/components/SupabaseProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
@@ -38,6 +38,7 @@ import { H2 } from '@/components/ui/Heading';
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
 import { useToast } from '@/hooks/useToast';
 import Link from 'next/link';
+import { createClientLogger } from '@/lib/clientLogger';
 
 export default function SettingsPage() {
   const supabase = useSupabase();
@@ -74,6 +75,7 @@ export default function SettingsPage() {
     addActivity,
     deleteActivity,
     loadActivities,
+    updateActivityImages,
   } = useActivities();
 
   const {
@@ -92,6 +94,11 @@ export default function SettingsPage() {
   const { activeTab, tabs, handleTabChange } = useSettingsTabs();
   const { errors } = useSettingsValidation(profile);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+
+  const logger = useMemo(
+    () => createClientLogger({ ...(user?.id && { userId: user.id }), component: 'SettingsPage' }),
+    [user?.id],
+  );
 
   // Use the template ID directly from profile for display (enforcement happens on save)
   const selectedTemplateId: TemplateId = profile.offer_template
@@ -139,7 +146,7 @@ export default function SettingsPage() {
               <Card key={i} className="space-y-4">
                 <Skeleton className="h-6 w-48" />
                 <Skeleton className="h-4 w-64" />
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2">
                   <Skeleton className="h-12 w-full" />
                   <Skeleton className="h-12 w-full" />
                 </div>
@@ -394,23 +401,13 @@ export default function SettingsPage() {
                             onAddActivity={addActivity}
                             onDeleteActivity={deleteActivity}
                             onActivityImagesChange={async (activityId, imagePaths) => {
-                              if (!user) return;
                               try {
-                                const { error } = await supabase
-                                  .from('activities')
-                                  .update({ reference_images: imagePaths })
-                                  .eq('id', activityId)
-                                  .eq('user_id', user.id);
-                                if (error) {
-                                  throw error;
-                                }
-                                setActs((prev) =>
-                                  prev.map((a) =>
-                                    a.id === activityId
-                                      ? { ...a, reference_images: imagePaths }
-                                      : a,
-                                  ),
-                                );
+                                await updateActivityImages(activityId, imagePaths);
+                                showToast({
+                                  title: t('toasts.settings.saveSuccess'),
+                                  description: '',
+                                  variant: 'success',
+                                });
                               } catch (error) {
                                 logger.error('Failed to save reference images', error, {
                                   activityId,

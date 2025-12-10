@@ -76,26 +76,42 @@ export default function AppFrame({
     <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-6 pb-20 pt-24 md:flex-row md:gap-10">
       {sidebar ? (
         <>
-          {/* Desktop sidebar - always visible */}
+          {/* Desktop sidebar - always visible with enhanced visual hierarchy */}
           <aside className="hidden md:sticky md:top-36 md:block md:w-64 md:flex-shrink-0">
-            <div className="space-y-4 rounded-3xl border border-border/70 bg-bg/80 p-4 shadow-card backdrop-blur">
+            <div className="space-y-4 rounded-3xl border-2 border-primary/20 bg-gradient-to-br from-bg/95 to-primary/5 p-6 shadow-lg backdrop-blur-lg">
               {sidebar}
             </div>
           </aside>
 
-          {/* Mobile sidebar toggle button */}
+          {/* Mobile sidebar toggle button - Enhanced visual hierarchy */}
           <button
             type="button"
             onClick={() => setIsSidebarOpen(true)}
-            className="flex w-full items-center justify-between rounded-full border border-border/70 bg-bg/80 px-3 py-2 text-sm font-medium text-fg-muted shadow-card backdrop-blur transition hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary md:hidden"
+            className="flex w-full items-center justify-between rounded-xl border-2 border-primary/30 bg-gradient-to-r from-primary/10 to-turquoise-50/50 px-4 py-3 text-sm font-bold text-fg shadow-lg backdrop-blur transition-all duration-200 hover:border-primary/50 hover:from-primary/15 hover:to-turquoise-100/50 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 md:hidden"
             aria-expanded={isSidebarOpen}
             aria-controls="appframe-sidebar"
             aria-label={t('app.sidebar.open')}
           >
-            <span>{t('app.sidebar.open')}</span>
+            <span className="flex items-center gap-2">
+              <svg
+                aria-hidden="true"
+                className="h-5 w-5 text-primary"
+                viewBox="0 0 20 20"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M3 5h14M3 10h14M3 15h14"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+              <span className="text-primary font-bold">{t('app.sidebar.open')}</span>
+            </span>
             <svg
               aria-hidden="true"
-              className="h-4 w-4"
+              className="h-5 w-5 text-primary transition-transform"
               viewBox="0 0 20 20"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
@@ -103,7 +119,7 @@ export default function AppFrame({
               <path
                 d="M5 7.5L10 12.5L15 7.5"
                 stroke="currentColor"
-                strokeWidth="1.5"
+                strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />

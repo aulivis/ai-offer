@@ -300,6 +300,98 @@ const noHardcodedUiStringsPlugin = {
         };
       },
     },
+    'no-hardcoded-colors': {
+      meta: {
+        type: 'problem',
+        docs: {
+          description:
+            'Disallow hardcoded Tailwind color classes. Use semantic color tokens instead.',
+        },
+        schema: [],
+        messages: {
+          noHardcodedColor:
+            'Hardcoded color detected: "{{color}}". Use semantic tokens (text-fg, bg-primary, etc.) instead. See BRAND_COLOR_GUIDELINES.md',
+        },
+      },
+      create(context) {
+        const filename = context.getFilename();
+
+        // Only check TSX/JSX files in src directory
+        if (
+          !filename.endsWith('.tsx') &&
+          !filename.endsWith('.jsx') &&
+          !/(\\|\/)src(\\|\/)/.test(filename)
+        ) {
+          return {};
+        }
+
+        // Skip test files
+        if (isTestLikeFile(filename)) {
+          return {};
+        }
+
+        // Pattern to match hardcoded Tailwind colors
+        const hardcodedColorPattern =
+          /(?:text|bg|border|ring|outline|divide|from|via|to|placeholder|caret|accent|shadow|decoration|underline|stroke|fill)-(?:gray|slate|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-\d+/g;
+
+        // Allowed semantic tokens
+        const allowedTokens = new Set([
+          'text-fg',
+          'text-fg-muted',
+          'bg-bg',
+          'bg-bg-muted',
+          'bg-primary',
+          'bg-primary-ink',
+          'text-primary',
+          'text-primary-ink',
+          'border-border',
+          'text-success',
+          'text-warning',
+          'text-danger',
+          'bg-success',
+          'bg-warning',
+          'bg-danger',
+          'text-accent',
+          'bg-accent',
+          'text-cta',
+          'bg-cta',
+          'text-cta-ink',
+          'bg-cta-ink',
+        ]);
+
+        function checkStringValue(value, node) {
+          if (typeof value !== 'string' || value.length === 0) {
+            return;
+          }
+
+          const matches = value.matchAll(hardcodedColorPattern);
+          for (const match of matches) {
+            const colorClass = match[0];
+            // Check if it's an allowed semantic token
+            if (!allowedTokens.has(colorClass)) {
+              context.report({
+                node,
+                messageId: 'noHardcodedColor',
+                data: { color: colorClass },
+              });
+            }
+          }
+        }
+
+        return {
+          Literal(node) {
+            if (typeof node.value === 'string') {
+              checkStringValue(node.value, node);
+            }
+          },
+          TemplateElement(node) {
+            if (node.value?.raw) {
+              checkStringValue(node.value.raw, node);
+            }
+          },
+        };
+      },
+    },
     'pdf-no-plain-html': {
       meta: {
         type: 'problem',
@@ -411,6 +503,7 @@ const eslintConfig = [
       'no-hardcoded-ui-strings/pdf-templates-no-untrusted-assets': 'error',
       'no-hardcoded-ui-strings/pdf-templates-no-inline-styles-outside-tokens': 'error',
       'no-hardcoded-ui-strings/pdf-no-plain-html': 'error',
+      'no-hardcoded-ui-strings/no-hardcoded-colors': 'warn',
       '@typescript-eslint/no-unused-vars': [
         'warn',
         {

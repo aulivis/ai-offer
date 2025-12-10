@@ -62,7 +62,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                   <AriaLiveAnnouncer />
                   <WebVitalsReporter />
                   <ViewTransition>
-                    <ConditionalLayout>{children}</ConditionalLayout>
+                    <div style={{ viewTransitionName: 'main-content' }}>
+                      <ConditionalLayout>{children}</ConditionalLayout>
+                    </div>
                   </ViewTransition>
                 </div>
               </div>

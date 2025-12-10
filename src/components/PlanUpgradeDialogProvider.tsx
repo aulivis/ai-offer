@@ -74,17 +74,17 @@ export function PlanUpgradeDialogProvider({ children }: { children: ReactNode })
       <Modal open={open} onClose={handleClose} labelledBy={titleId} describedBy={descriptionId}>
         <div className="space-y-6">
           <div className="flex items-start gap-4">
-            <div className="mt-1 inline-flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-2xl">
+            <div className="mt-1 inline-flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-primary to-turquoise-600 text-3xl shadow-lg ring-4 ring-primary/20">
               <span aria-hidden>🚀</span>
             </div>
-            <div className="space-y-2">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+            <div className="space-y-3 flex-1">
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
                 {t('app.planUpgradeModal.badge')}
               </p>
-              <h2 id={titleId} className="text-2xl font-semibold text-fg">
+              <h2 id={titleId} className="text-2xl md:text-3xl font-bold text-fg leading-tight">
                 {content.title}
               </h2>
-              <p id={descriptionId} className="text-sm leading-6 text-fg-muted">
+              <p id={descriptionId} className="text-base leading-7 text-fg-muted">
                 {content.description}
               </p>
             </div>
@@ -94,22 +94,23 @@ export function PlanUpgradeDialogProvider({ children }: { children: ReactNode })
               type="button"
               variant="ghost"
               onClick={handleClose}
-              className="justify-center px-4 py-2 text-sm font-semibold text-fg"
+              className="justify-center px-5 py-3 text-sm font-semibold text-fg hover:bg-bg-muted"
             >
               {content.secondaryCtaLabel}
             </Button>
             <Button
               type="button"
               onClick={handlePrimaryAction}
-              className="justify-center px-5 py-2 text-sm font-semibold shadow-lg shadow-primary/30"
+              size="lg"
+              className="justify-center px-8 py-4 text-base font-bold shadow-xl shadow-primary/40 hover:scale-105 active:scale-95 transition-all duration-200"
             >
-              {content.primaryCtaLabel}
+              {content.primaryCtaLabel} →
             </Button>
           </div>
-          <p className="text-xs text-fg-muted">
+          <p className="text-sm text-center text-fg-muted pt-2 border-t border-border/50">
             <Link
               href="/billing"
-              className="font-medium text-primary underline-offset-4 transition hover:underline"
+              className="font-semibold text-primary underline-offset-4 transition-all hover:underline hover:text-turquoise-700"
             >
               {t('app.planUpgradeModal.linkHelper')}
             </Link>

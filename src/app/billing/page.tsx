@@ -671,7 +671,7 @@ function BillingPageContent() {
             <div className="rounded-2xl border border-emerald-200 bg-gradient-to-r from-emerald-50 to-emerald-100/50 p-5 shadow-sm">
               <div className="flex items-start gap-3">
                 <svg
-                  className="h-5 w-5 flex-shrink-0 text-emerald-600"
+                  className="h-5 w-5 flex-shrink-0 text-success"
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >
@@ -681,7 +681,7 @@ function BillingPageContent() {
                     clipRule="evenodd"
                   />
                 </svg>
-                <p className="text-body-small font-medium text-emerald-800">
+                <p className="text-body-small font-medium text-success">
                   {t('billing.status.success')}
                 </p>
               </div>
@@ -691,7 +691,7 @@ function BillingPageContent() {
             <div className="rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 to-amber-100/50 p-5 shadow-sm">
               <div className="flex items-start gap-3">
                 <svg
-                  className="h-5 w-5 flex-shrink-0 text-amber-600"
+                  className="h-5 w-5 flex-shrink-0 text-warning"
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >
@@ -701,7 +701,7 @@ function BillingPageContent() {
                     clipRule="evenodd"
                   />
                 </svg>
-                <p className="text-body-small font-medium text-amber-800">
+                <p className="text-body-small font-medium text-warning">
                   {t('billing.status.cancel')}
                 </p>
               </div>
@@ -870,7 +870,7 @@ function BillingPageContent() {
                         : '0'}{' '}
                     Ft
                   </div>
-                  <div className="text-body-small text-gray-600 mb-4">havonta számlázva</div>
+                  <div className="text-body-small text-fg-muted mb-4">havonta számlázva</div>
 
                   {plan === 'pro' && (
                     <button
@@ -954,11 +954,11 @@ function BillingPageContent() {
                   <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center mb-4">
                     <Sparkles className="w-6 h-6 text-white" />
                   </div>
-                  <h4 className="text-h5 font-bold text-gray-900 mb-2">AI szövegírás</h4>
-                  <p className="text-body-small text-gray-700 mb-4">
+                  <h4 className="text-h5 font-bold text-fg mb-2">AI szövegírás</h4>
+                  <p className="text-body-small text-fg-muted mb-4">
                     Generálj professzionális ajánlatszövegeket mesterséges intelligenciával.
                   </p>
-                  <div className="flex items-center gap-2 text-body-small text-purple-700">
+                  <div className="flex items-center gap-2 text-body-small text-primary">
                     <Check className="w-4 h-4" />
                     <span className="font-semibold">Aktív előnyöd</span>
                   </div>
@@ -969,11 +969,11 @@ function BillingPageContent() {
                   <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-amber-600 rounded-xl flex items-center justify-center mb-4">
                     <Palette className="w-6 h-6 text-white" />
                   </div>
-                  <h4 className="text-h5 font-bold text-gray-900 mb-2">Prémium sablonok</h4>
-                  <p className="text-body-small text-gray-700 mb-4">
+                  <h4 className="text-h5 font-bold text-fg mb-2">Prémium sablonok</h4>
+                  <p className="text-body-small text-fg-muted mb-4">
                     Hozzáférés 15+ exkluzív, professzionális ajánlat sablonhoz.
                   </p>
-                  <div className="flex items-center gap-2 text-body-small text-orange-700">
+                  <div className="flex items-center gap-2 text-body-small text-warning">
                     <Check className="w-4 h-4" />
                     <span className="font-semibold">Aktív előnyöd</span>
                   </div>
@@ -984,11 +984,11 @@ function BillingPageContent() {
                   <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mb-4">
                     <Headphones className="w-6 h-6 text-white" />
                   </div>
-                  <h4 className="text-h5 font-bold text-gray-900 mb-2">Prioritásos support</h4>
-                  <p className="text-body-small text-gray-700 mb-4">
+                  <h4 className="text-h5 font-bold text-fg mb-2">Prioritásos support</h4>
+                  <p className="text-body-small text-fg-muted mb-4">
                     1 órán belüli válaszidő minden kérdésedre és problémádra.
                   </p>
-                  <div className="flex items-center gap-2 text-body-small text-green-700">
+                  <div className="flex items-center gap-2 text-body-small text-success">
                     <Check className="w-4 h-4" />
                     <span className="font-semibold">Aktív előnyöd</span>
                   </div>
@@ -999,11 +999,11 @@ function BillingPageContent() {
                   <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl flex items-center justify-center mb-4">
                     <FileText className="w-6 h-6 text-white" />
                   </div>
-                  <h4 className="text-h5 font-bold text-gray-900 mb-2">PDF export márkázással</h4>
-                  <p className="text-body-small text-gray-700 mb-4">
+                  <h4 className="text-h5 font-bold text-fg mb-2">PDF export márkázással</h4>
+                  <p className="text-body-small text-fg-muted mb-4">
                     Töltsd le ajánlataidat professzionális PDF formátumban, saját logóval.
                   </p>
-                  <div className="flex items-center gap-2 text-body-small text-blue-700">
+                  <div className="flex items-center gap-2 text-body-small text-primary">
                     <Check className="w-4 h-4" />
                     <span className="font-semibold">Aktív előnyöd</span>
                   </div>
@@ -1014,11 +1014,11 @@ function BillingPageContent() {
                   <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl flex items-center justify-center mb-4">
                     <Target className="w-6 h-6 text-white" />
                   </div>
-                  <h4 className="text-h5 font-bold text-gray-900 mb-2">Haladó elemzések</h4>
-                  <p className="text-body-small text-gray-700 mb-4">
+                  <h4 className="text-h5 font-bold text-fg mb-2">Haladó elemzések</h4>
+                  <p className="text-body-small text-fg-muted mb-4">
                     Részletes statisztikák az ajánlataidról és az ügyfél interakciókról.
                   </p>
-                  <div className="flex items-center gap-2 text-body-small text-indigo-700">
+                  <div className="flex items-center gap-2 text-body-small text-primary">
                     <Check className="w-4 h-4" />
                     <span className="font-semibold">Aktív előnyöd</span>
                   </div>
@@ -1123,7 +1123,7 @@ function BillingPageContent() {
                     className={`px-4 py-2 text-body-small font-semibold rounded-lg transition-all ${
                       billingInterval === 'monthly'
                         ? 'bg-primary text-white shadow-md'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        : 'bg-bg-muted text-fg-muted hover:bg-bg'
                     }`}
                   >
                     Havi
@@ -1131,10 +1131,10 @@ function BillingPageContent() {
                   <button
                     type="button"
                     onClick={() => setBillingInterval('annual')}
-                    className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all relative ${
+                    className={`px-4 py-2 text-body-small font-semibold rounded-lg transition-all relative ${
                       billingInterval === 'annual'
                         ? 'bg-primary text-white shadow-md'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        : 'bg-bg-muted text-fg-muted hover:bg-bg'
                     }`}
                   >
                     Éves
@@ -1179,15 +1179,15 @@ function BillingPageContent() {
           {/* Subscription Management Section */}
           {(plan === 'pro' || plan === 'standard') && (
             <div id="subscription-management" className="mb-12 scroll-mt-8">
-              <h3 className="text-h3 font-bold text-gray-900 mb-6">Előfizetés kezelése</h3>
+              <h3 className="text-h3 font-bold text-fg mb-6">Előfizetés kezelése</h3>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Payment method card */}
                 <Card className="border-2 border-gray-200">
                   <div className="p-6">
                     <div className="flex items-center gap-3 mb-4">
-                      <CreditCard className="w-6 h-6 text-gray-900" />
-                      <h4 className="text-h5 font-bold text-gray-900">Fizetési mód</h4>
+                      <CreditCard className="w-6 h-6 text-fg" />
+                      <h4 className="text-h5 font-bold text-fg">Fizetési mód</h4>
                     </div>
 
                     <div className="flex items-center gap-4 mb-4">
@@ -1195,8 +1195,8 @@ function BillingPageContent() {
                         <CreditCard className="w-6 h-6 text-white" />
                       </div>
                       <div className="flex-1">
-                        <div className="font-semibold text-gray-900">Nincs mentett kártya</div>
-                        <div className="text-body-small text-gray-600 leading-typography-normal">
+                        <div className="font-semibold text-fg">Nincs mentett kártya</div>
+                        <div className="text-body-small text-fg-muted leading-typography-normal">
                           A fizetés a Stripe-en keresztül történik
                         </div>
                       </div>
@@ -1222,14 +1222,14 @@ function BillingPageContent() {
                 <Card className="border-2 border-gray-200">
                   <div className="p-6">
                     <div className="flex items-center gap-3 mb-4">
-                      <Calendar className="w-6 h-6 text-gray-900" />
-                      <h4 className="text-h5 font-bold text-gray-900">Számlázási gyakoriság</h4>
+                      <Calendar className="w-6 h-6 text-fg" />
+                      <h4 className="text-h5 font-bold text-fg">Számlázási gyakoriság</h4>
                     </div>
 
                     <div className="flex items-center justify-between mb-4">
                       <div>
-                        <div className="font-semibold text-gray-900">Havi fizetés</div>
-                        <div className="text-sm text-gray-600">
+                        <div className="font-semibold text-fg">Havi fizetés</div>
+                        <div className="text-body-small text-fg-muted">
                           {plan === 'pro'
                             ? formatPrice(MONTHLY_PRICES.pro)
                             : formatPrice(MONTHLY_PRICES.standard)}{' '}
@@ -1244,12 +1244,12 @@ function BillingPageContent() {
                     {plan === 'pro' && (
                       <div className="bg-gradient-to-r from-green-50 to-teal-50 border-2 border-green-200 rounded-xl p-4 mb-4">
                         <div className="flex items-start gap-3">
-                          <TrendingDown className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                          <TrendingDown className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
                           <div>
-                            <p className="text-sm font-semibold text-green-900 mb-1">
+                            <p className="text-body-small font-semibold text-success mb-1">
                               Takarítsd meg 13 980 Ft-ot évente!
                             </p>
-                            <p className="text-xs text-green-700">
+                            <p className="text-caption text-success">
                               Éves fizetéssel 2 hónap ingyen: 6 290 Ft/hó (75 480 Ft/év)
                             </p>
                           </div>
@@ -1315,7 +1315,7 @@ function BillingPageContent() {
               <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <h2 className="text-h5 font-semibold text-fg">{t('billing.invoices.title')}</h2>
-                  <p className="text-xs text-fg-muted">{t('billing.invoices.subtitle')}</p>
+                  <p className="text-caption text-fg-muted">{t('billing.invoices.subtitle')}</p>
                 </div>
               </CardHeader>
             }
@@ -1330,7 +1330,7 @@ function BillingPageContent() {
               <h4 className="text-h4 font-bold text-fg mb-3 text-center">
                 {t('billing.invoices.emptyState.title')}
               </h4>
-              <p className="text-gray-600 mb-8 max-w-md mx-auto text-center">
+              <p className="text-fg-muted mb-8 max-w-md mx-auto text-center">
                 Az első számlád automatikusan generálódik a következő fizetési időpontban
               </p>
 
@@ -1338,19 +1338,19 @@ function BillingPageContent() {
               {(plan === 'pro' || plan === 'standard') && (
                 <div className="bg-gradient-to-br from-blue-50 to-purple-50 border-2 border-blue-200 rounded-2xl p-6 max-w-lg mx-auto mb-6">
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                      <Calendar className="w-6 h-6 text-blue-600" />
+                    <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <Calendar className="w-6 h-6 text-primary" />
                     </div>
                     <div className="flex-1">
-                      <h5 className="font-bold text-gray-900 mb-3">Következő számla</h5>
-                      <div className="space-y-2 text-sm">
+                      <h5 className="font-bold text-fg mb-3">Következő számla</h5>
+                      <div className="space-y-2 text-body-small">
                         <div className="flex items-center justify-between">
-                          <span className="text-gray-600">Dátum:</span>
-                          <span className="font-semibold text-gray-900">{resetLabel}</span>
+                          <span className="text-fg-muted">Dátum:</span>
+                          <span className="font-semibold text-fg">{resetLabel}</span>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-gray-600">Összeg:</span>
-                          <span className="font-semibold text-gray-900">
+                          <span className="text-fg-muted">Összeg:</span>
+                          <span className="font-semibold text-fg">
                             {plan === 'pro'
                               ? formatPrice(MONTHLY_PRICES.pro)
                               : formatPrice(MONTHLY_PRICES.standard)}{' '}
@@ -1358,12 +1358,12 @@ function BillingPageContent() {
                           </span>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-gray-600">Formátum:</span>
-                          <span className="font-semibold text-gray-900">PDF letöltés</span>
+                          <span className="text-fg-muted">Formátum:</span>
+                          <span className="font-semibold text-fg">PDF letöltés</span>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-gray-600">Email:</span>
-                          <span className="font-semibold text-gray-900">Automatikus</span>
+                          <span className="text-fg-muted">Email:</span>
+                          <span className="font-semibold text-fg">Automatikus</span>
                         </div>
                       </div>
                     </div>
@@ -1390,7 +1390,7 @@ function BillingPageContent() {
           {/* Security Section */}
           <Card
             as="section"
-            className="bg-gradient-to-br from-slate-50 to-white"
+            className="bg-gradient-to-br from-bg to-bg-muted"
             header={
               <CardHeader>
                 <h2 className="text-h5 font-semibold text-fg">
@@ -1401,7 +1401,7 @@ function BillingPageContent() {
           >
             <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
               <div className="max-w-xl space-y-2">
-                <p className="text-sm leading-relaxed text-fg-muted">
+                <p className="text-body-small leading-relaxed text-fg-muted">
                   {t('billing.stripeSecurity.description')}
                 </p>
               </div>
@@ -1425,8 +1425,8 @@ function BillingPageContent() {
           {/* Subscription Actions - for paid plans */}
           {(plan === 'pro' || plan === 'standard') && (
             <div className="mb-12">
-              <div className="bg-gray-50 border-2 border-gray-200 rounded-2xl p-8">
-                <h3 className="text-h4 font-bold text-gray-900 mb-6">Előfizetés módosítása</h3>
+              <div className="bg-bg-muted border-2 border-border rounded-2xl p-8">
+                <h3 className="text-h4 font-bold text-fg mb-6">Előfizetés módosítása</h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {/* Downgrade to Standard */}
@@ -1445,14 +1445,14 @@ function BillingPageContent() {
                           );
                         }
                       }}
-                      className="flex items-start gap-4 p-5 bg-white hover:bg-gray-50 border-2 border-gray-200 hover:border-gray-300 rounded-xl transition-all text-left"
+                      className="flex items-start gap-4 p-5 bg-bg-muted hover:bg-bg border-2 border-border hover:border-primary/30 rounded-xl transition-all text-left"
                     >
-                      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <TrendingDown className="w-5 h-5 text-blue-600" />
+                      <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <TrendingDown className="w-5 h-5 text-primary" />
                       </div>
                       <div>
-                        <div className="font-bold text-gray-900 mb-1">Visszalépés Standard-ra</div>
-                        <p className="text-sm text-fg-muted">5 500 Ft/hó megtakarítás</p>
+                        <div className="font-bold text-fg mb-1">Visszalépés Standard-ra</div>
+                        <p className="text-body-small text-fg-muted">5 500 Ft/hó megtakarítás</p>
                       </div>
                     </button>
                   )}
@@ -1466,13 +1466,13 @@ function BillingPageContent() {
                         variant: 'info',
                       });
                     }}
-                    className="flex items-start gap-4 p-5 bg-white hover:bg-gray-50 border-2 border-gray-200 hover:border-gray-300 rounded-xl transition-all text-left"
+                    className="flex items-start gap-4 p-5 bg-bg-muted hover:bg-bg border-2 border-border hover:border-warning/30 rounded-xl transition-all text-left"
                   >
-                    <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Pause className="w-5 h-5 text-amber-600" />
+                    <div className="w-10 h-10 bg-warning/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Pause className="w-5 h-5 text-warning" />
                     </div>
                     <div>
-                      <div className="font-bold text-gray-900 mb-1">Előfizetés szüneteltetése</div>
+                      <div className="font-bold text-fg mb-1">Előfizetés szüneteltetése</div>
                       <p className="text-sm text-fg-muted">Ideiglenesen leállítás</p>
                     </div>
                   </button>
@@ -1493,19 +1493,19 @@ function BillingPageContent() {
                         });
                       }
                     }}
-                    className="flex items-start gap-4 p-5 bg-white hover:bg-red-50 border-2 border-gray-200 hover:border-red-300 rounded-xl transition-all text-left"
+                    className="flex items-start gap-4 p-5 bg-bg-muted hover:bg-danger/10 border-2 border-border hover:border-danger/30 rounded-xl transition-all text-left"
                   >
-                    <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <X className="w-5 h-5 text-red-600" />
+                    <div className="w-10 h-10 bg-danger/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <X className="w-5 h-5 text-danger" />
                     </div>
                     <div>
-                      <div className="font-bold text-gray-900 mb-1">Előfizetés lemondása</div>
+                      <div className="font-bold text-fg mb-1">Előfizetés lemondása</div>
                       <p className="text-sm text-fg-muted">Véglegesen leállítás</p>
                     </div>
                   </button>
                 </div>
 
-                <p className="text-xs text-gray-500 mt-4 text-center">
+                <p className="text-caption text-fg-muted mt-4 text-center">
                   Bármilyen módosítás után a jelenlegi számlázási időszak végéig (
                   {resetDate.toLocaleDateString('hu-HU', { month: 'short', day: 'numeric' })})
                   továbbra is elérheted a {plan === 'pro' ? 'Pro' : 'Standard'} funkciókat
@@ -1520,7 +1520,7 @@ function BillingPageContent() {
               {t('billing.account.emailLabel')}{' '}
               <span className="font-semibold text-fg">{email ?? '—'}</span>
               {hasUnlimitedEmail && (
-                <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-success/10 px-2.5 py-1 text-caption font-semibold text-success">
                   <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
                     <path
                       fillRule="evenodd"
@@ -1565,7 +1565,7 @@ function PublicBillingLanding() {
         {/* Decorative background */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-20 left-20 w-96 h-96 bg-primary/20 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-20 right-20 w-96 h-96 bg-blue-400 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-20 w-96 h-96 bg-primary/20 rounded-full blur-3xl"></div>
         </div>
 
         <div className="container mx-auto px-4 relative z-10">
@@ -1573,7 +1573,7 @@ function PublicBillingLanding() {
             {/* Limited time badge */}
             <div className="inline-flex items-center gap-2 bg-gradient-to-r from-teal-500 to-green-500 text-white px-5 py-2 rounded-full mb-6 animate-pulse">
               <Sparkles className="w-4 h-4" />
-              <span className="font-semibold text-sm">
+              <span className="font-semibold text-body-small">
                 🎉 Különleges ajánlat: 30% kedvezmény az első 3 hónapra
               </span>
             </div>
@@ -1586,7 +1586,7 @@ function PublicBillingLanding() {
               professzionális ajánlatokat
             </H1>
 
-            <p className="text-h6 text-gray-300 mb-8 max-w-3xl mx-auto leading-typography-relaxed text-pretty">
+            <p className="text-h6 text-white/80 mb-8 max-w-3xl mx-auto leading-typography-relaxed text-pretty">
               Már több mint 200 vállalkozás használja a Vyndit márkahű ajánlatok készítésére.
               Indítsd el ingyen — nincs bankkártya, nincs kockázat.
             </p>
@@ -1594,18 +1594,18 @@ function PublicBillingLanding() {
             {/* Social proof numbers */}
             <div className="flex items-center justify-center gap-8 mb-8 text-white flex-wrap">
               <div>
-                <div className="text-h2 font-bold text-teal-400">10K+</div>
-                <div className="text-gray-300 text-sm">Ajánlat készült</div>
+                <div className="text-h2 font-bold text-primary">10K+</div>
+                <div className="text-white/70 text-body-small">Ajánlat készült</div>
               </div>
-              <div className="w-px h-12 bg-gray-600"></div>
+              <div className="w-px h-12 bg-white/20"></div>
               <div>
-                <div className="text-h2 font-bold text-teal-400">150K+</div>
-                <div className="text-gray-300 text-sm">Sor generált tartalom</div>
+                <div className="text-h2 font-bold text-primary">150K+</div>
+                <div className="text-white/70 text-body-small">Sor generált tartalom</div>
               </div>
-              <div className="w-px h-12 bg-gray-600"></div>
+              <div className="w-px h-12 bg-white/20"></div>
               <div>
-                <div className="text-h2 font-bold text-teal-400">4.9★</div>
-                <div className="text-gray-300 text-sm">Átlagos értékelés</div>
+                <div className="text-h2 font-bold text-primary">4.9★</div>
+                <div className="text-white/70 text-body-small">Átlagos értékelés</div>
               </div>
             </div>
 
@@ -1613,7 +1613,7 @@ function PublicBillingLanding() {
             <div className="flex flex-col items-center gap-4 mb-8">
               <Link
                 href="/login?redirect=/new"
-                className="group bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl px-8 py-4 min-h-[56px] w-full sm:w-auto flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all duration-300 active:scale-95 relative overflow-hidden"
+                className="group bg-cta hover:bg-cta-hover text-cta-ink font-semibold rounded-xl px-8 py-4 min-h-[56px] w-full sm:w-auto flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all duration-300 active:scale-95 relative overflow-hidden"
               >
                 <span className="relative z-10 text-body md:text-h5 text-white">
                   Kezdd el ingyen
@@ -1623,15 +1623,15 @@ function PublicBillingLanding() {
               </Link>
               <div className="flex flex-wrap justify-center gap-6 text-white/90">
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-300" />
+                  <CheckCircle className="w-5 h-5 text-success" />
                   <span>Kezdd el teljesen ingyen</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-300" />
+                  <CheckCircle className="w-5 h-5 text-success" />
                   <span>Nem kérünk bankkártyát</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-300" />
+                  <CheckCircle className="w-5 h-5 text-success" />
                   <span>Kész ajánlat 5 perc alatt</span>
                 </div>
               </div>
@@ -1643,7 +1643,7 @@ function PublicBillingLanding() {
                   className="text-white/80 hover:text-white transition-colors flex flex-col items-center gap-2 group"
                   aria-label="Scroll to pricing"
                 >
-                  <span className="text-sm font-medium">💰 Nézd meg az árakat</span>
+                  <span className="text-body-small font-medium">💰 Nézd meg az árakat</span>
                   <ChevronDown className="w-6 h-6 group-hover:translate-y-1 transition-transform" />
                 </button>
               </div>
@@ -1663,7 +1663,7 @@ function PublicBillingLanding() {
               <h2 className="text-h1 md:text-display font-bold text-navy-900 mb-4 text-balance">
                 Válassz csomagot
               </h2>
-              <p className="text-h6 text-gray-600 max-w-2xl mx-auto text-pretty leading-typography-relaxed">
+              <p className="text-h6 text-fg-muted max-w-2xl mx-auto text-pretty leading-typography-relaxed">
                 Minden csomag 30 napos pénzvisszafizetési garanciával
               </p>
             </div>
@@ -1671,21 +1671,21 @@ function PublicBillingLanding() {
               {/* Free Plan */}
               <div className="bg-white rounded-2xl border-2 border-gray-200 p-8 hover:border-gray-300 transition-all h-full flex flex-col">
                 <div className="mb-6">
-                  <h3 className="text-h3 font-bold text-gray-900 mb-2">Ingyenes</h3>
-                  <p className="text-gray-600 text-sm mb-6">
+                  <h3 className="text-h3 font-bold text-fg mb-2">Ingyenes</h3>
+                  <p className="text-fg-muted text-body-small mb-6">
                     Kezdd el kockázat nélkül — ideális az első ajánlatokhoz
                   </p>
 
                   <div className="mb-6">
                     <div className="flex items-baseline gap-2">
-                      <span className="text-display font-bold text-gray-900">0 Ft</span>
+                      <span className="text-display font-bold text-fg">0 Ft</span>
                     </div>
-                    <p className="text-gray-600 text-sm mt-2">Örökre ingyenes</p>
+                    <p className="text-fg-muted text-body-small mt-2">Örökre ingyenes</p>
                   </div>
 
                   <Link
                     href="/login?redirect=/new"
-                    className="w-full bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-colors text-center min-h-[44px] flex items-center justify-center"
+                    className="w-full bg-bg-muted text-fg-muted py-3 rounded-xl font-semibold hover:bg-bg transition-colors text-center min-h-[44px] flex items-center justify-center"
                   >
                     Kezdd el ingyen
                   </Link>
@@ -1693,28 +1693,30 @@ function PublicBillingLanding() {
 
                 <div className="space-y-3 flex-1">
                   <div className="flex items-start gap-2">
-                    <Check className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700 text-sm">2 ajánlat / hónap</span>
+                    <Check className="w-5 h-5 text-fg-muted flex-shrink-0 mt-0.5" />
+                    <span className="text-fg-muted text-body-small">2 ajánlat / hónap</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <Check className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700 text-sm">Alap sablon</span>
+                    <Check className="w-5 h-5 text-fg-muted flex-shrink-0 mt-0.5" />
+                    <span className="text-fg-muted text-body-small">Alap sablon</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <Check className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700 text-sm">PDF-export</span>
+                    <Check className="w-5 h-5 text-fg-muted flex-shrink-0 mt-0.5" />
+                    <span className="text-fg-muted text-body-small">PDF-export</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <Check className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700 text-sm">Korlátozott branding (színek)</span>
+                    <Check className="w-5 h-5 text-fg-muted flex-shrink-0 mt-0.5" />
+                    <span className="text-fg-muted text-body-small">
+                      Korlátozott branding (színek)
+                    </span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <Check className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700 text-sm">Tevékenység sablonok</span>
+                    <Check className="w-5 h-5 text-fg-muted flex-shrink-0 mt-0.5" />
+                    <span className="text-fg-muted text-body-small">Tevékenység sablonok</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <Check className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700 text-sm">Email támogatás</span>
+                    <Check className="w-5 h-5 text-fg-muted flex-shrink-0 mt-0.5" />
+                    <span className="text-fg-muted text-body-small">Email támogatás</span>
                   </div>
                 </div>
               </div>
@@ -1722,25 +1724,25 @@ function PublicBillingLanding() {
               {/* Standard Plan */}
               <div className="bg-white rounded-2xl border-2 border-gray-200 p-8 hover:border-gray-300 transition-all h-full flex flex-col">
                 <div className="mb-6">
-                  <h3 className="text-h3 font-bold text-gray-900 mb-2">Vyndi Standard</h3>
-                  <p className="text-gray-600 text-sm mb-6">
+                  <h3 className="text-h3 font-bold text-fg mb-2">Vyndi Standard</h3>
+                  <p className="text-fg-muted text-body-small mb-6">
                     A legjobb választás kisvállalkozásoknak, akik rendszeresen készítenek
                     ajánlatokat
                   </p>
 
                   <div className="mb-6">
                     <div className="flex items-baseline gap-2">
-                      <span className="text-display font-bold text-gray-900">
+                      <span className="text-display font-bold text-fg">
                         {standardMonthly.toLocaleString('hu-HU')}
                       </span>
-                      <span className="text-gray-600 text-h5">Ft/hó</span>
+                      <span className="text-fg-muted text-h5">Ft/hó</span>
                     </div>
-                    <p className="text-gray-600 text-sm mt-2">Havi számlázás</p>
+                    <p className="text-fg-muted text-body-small mt-2">Havi számlázás</p>
                   </div>
 
                   <Link
                     href="/login?redirect=/billing"
-                    className="w-full bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-colors text-center min-h-[44px] flex items-center justify-center"
+                    className="w-full bg-bg-muted text-fg-muted py-3 rounded-xl font-semibold hover:bg-bg transition-colors text-center min-h-[44px] flex items-center justify-center"
                   >
                     Frissítés Standardra
                   </Link>
@@ -1748,28 +1750,30 @@ function PublicBillingLanding() {
 
                 <div className="space-y-3 flex-1">
                   <div className="flex items-start gap-2">
-                    <Check className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700 text-sm">5 ajánlat / hónap</span>
+                    <Check className="w-5 h-5 text-fg-muted flex-shrink-0 mt-0.5" />
+                    <span className="text-fg-muted text-body-small">5 ajánlat / hónap</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <Check className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700 text-sm">Alap sablon</span>
+                    <Check className="w-5 h-5 text-fg-muted flex-shrink-0 mt-0.5" />
+                    <span className="text-fg-muted text-body-small">Alap sablon</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <Check className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700 text-sm">PDF-export</span>
+                    <Check className="w-5 h-5 text-fg-muted flex-shrink-0 mt-0.5" />
+                    <span className="text-fg-muted text-body-small">PDF-export</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <Check className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700 text-sm">Korlátozott branding (színek)</span>
+                    <Check className="w-5 h-5 text-fg-muted flex-shrink-0 mt-0.5" />
+                    <span className="text-fg-muted text-body-small">
+                      Korlátozott branding (színek)
+                    </span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <Check className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700 text-sm">Tevékenység sablonok</span>
+                    <Check className="w-5 h-5 text-fg-muted flex-shrink-0 mt-0.5" />
+                    <span className="text-fg-muted text-body-small">Tevékenység sablonok</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <Check className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700 text-sm">Email támogatás</span>
+                    <Check className="w-5 h-5 text-fg-muted flex-shrink-0 mt-0.5" />
+                    <span className="text-fg-muted text-body-small">Email támogatás</span>
                   </div>
                 </div>
               </div>
@@ -1807,45 +1811,51 @@ function PublicBillingLanding() {
                   </Link>
 
                   {/* Social proof */}
-                  <p className="text-teal-100 text-xs text-center mt-3">⭐ 500+ elégedett ügyfél</p>
+                  <p className="text-primary-ink/80 text-caption text-center mt-3">
+                    ⭐ 500+ elégedett ügyfél
+                  </p>
                 </div>
 
                 <div className="space-y-3 flex-1">
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-white flex-shrink-0 mt-0.5" />
-                    <span className="text-white text-sm font-medium">Korlátlan ajánlat</span>
+                    <span className="text-primary-ink text-body-small font-medium">
+                      Korlátlan ajánlat
+                    </span>
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-white flex-shrink-0 mt-0.5" />
-                    <span className="text-white text-sm font-medium">
+                    <span className="text-primary-ink text-body-small font-medium">
                       Online megosztás elfogadással & PDF-export
                     </span>
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-white flex-shrink-0 mt-0.5" />
-                    <span className="text-white text-sm font-medium">
+                    <span className="text-primary-ink text-body-small font-medium">
                       Teljes branding (színek és logó)
                     </span>
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-white flex-shrink-0 mt-0.5" />
-                    <span className="text-white text-sm font-medium">
+                    <span className="text-primary-ink text-body-small font-medium">
                       Tevékenység sablonok referenciafotókkal
                     </span>
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-white flex-shrink-0 mt-0.5" />
-                    <span className="text-white text-sm font-medium">
+                    <span className="text-primary-ink text-body-small font-medium">
                       Ajánlások integrálása az ajánlatokba
                     </span>
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-white flex-shrink-0 mt-0.5" />
-                    <span className="text-white text-sm font-medium">Csapattag hozzáadása</span>
+                    <span className="text-primary-ink text-body-small font-medium">
+                      Csapattag hozzáadása
+                    </span>
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-white flex-shrink-0 mt-0.5" />
-                    <span className="text-white text-sm font-medium">
+                    <span className="text-primary-ink text-body-small font-medium">
                       Prioritásos ügyfélszolgálat
                     </span>
                   </div>
@@ -1862,14 +1872,14 @@ function PublicBillingLanding() {
           <div className="max-w-6xl mx-auto">
             <div className="grid md:grid-cols-2 gap-12 items-center">
               <div>
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-turquoise-500/20 text-turquoise-300 rounded-full font-semibold text-sm mb-6 border border-turquoise-500/30">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/20 text-primary rounded-full font-semibold text-body-small mb-6 border border-primary/30">
                   <Building2 className="w-4 h-4" />
                   Vállalatoknak
                 </div>
                 <h2 className="text-h1 md:text-display font-bold mb-6 leading-typography-tight text-balance">
                   Nagyobb csapatban dolgoztok? Egyedi igényeitek vannak?
                 </h2>
-                <p className="text-h6 text-gray-300 mb-8 leading-typography-relaxed text-pretty">
+                <p className="text-h6 text-white/80 mb-8 leading-typography-relaxed text-pretty">
                   Kérj személyre szabott ajánlatot a Vyndi Business csomagra.
                 </p>
                 <ul className="space-y-4 mb-10">
@@ -1882,17 +1892,17 @@ function PublicBillingLanding() {
                   ].map((feature, index) => (
                     <li key={index} className="flex items-start gap-3">
                       <Check
-                        className="mt-0.5 h-6 w-6 flex-shrink-0 text-turquoise-400"
+                        className="mt-0.5 h-6 w-6 flex-shrink-0 text-primary"
                         strokeWidth={3}
                       />
-                      <span className="text-h5 text-gray-200 text-pretty">{feature}</span>
+                      <span className="text-h5 text-white/90 text-pretty">{feature}</span>
                     </li>
                   ))}
                 </ul>
                 <div className="flex flex-wrap gap-4">
                   <a
                     href="mailto:info@vyndi.com?subject=Enterprise megoldás érdeklődés"
-                    className="inline-flex items-center justify-center gap-2 bg-turquoise-600 hover:bg-turquoise-700 text-white font-bold px-8 py-4 rounded-xl text-h5 shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 min-h-[44px]"
+                    className="inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-primary-ink font-bold px-8 py-4 rounded-xl text-h5 shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 min-h-[44px]"
                   >
                     Lépj kapcsolatba velünk
                     <ArrowRight className="w-5 h-5" />
@@ -1903,8 +1913,8 @@ function PublicBillingLanding() {
                 <div className="bg-gradient-to-br from-turquoise-500/20 to-blue-500/20 rounded-3xl p-8 border border-turquoise-500/30 backdrop-blur">
                   <div className="space-y-6">
                     <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 bg-turquoise-500/30 rounded-2xl flex items-center justify-center">
-                        <Users className="w-8 h-8 text-turquoise-300" />
+                      <div className="w-16 h-16 bg-primary/30 rounded-2xl flex items-center justify-center">
+                        <Users className="w-8 h-8 text-primary" />
                       </div>
                       <div className="flex-1">
                         <div className="h-5 w-3/4 bg-white/20 rounded mb-2"></div>
@@ -1912,8 +1922,8 @@ function PublicBillingLanding() {
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 bg-blue-500/30 rounded-2xl flex items-center justify-center">
-                        <Shield className="w-8 h-8 text-blue-300" />
+                      <div className="w-16 h-16 bg-primary/30 rounded-2xl flex items-center justify-center">
+                        <Shield className="w-8 h-8 text-primary" />
                       </div>
                       <div className="flex-1">
                         <div className="h-5 w-3/4 bg-white/20 rounded mb-2"></div>
@@ -1921,8 +1931,8 @@ function PublicBillingLanding() {
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 bg-purple-500/30 rounded-2xl flex items-center justify-center">
-                        <Sparkles className="w-8 h-8 text-purple-300" />
+                      <div className="w-16 h-16 bg-accent/30 rounded-2xl flex items-center justify-center">
+                        <Sparkles className="w-8 h-8 text-accent" />
                       </div>
                       <div className="flex-1">
                         <div className="h-5 w-3/4 bg-white/20 rounded mb-2"></div>
@@ -1945,7 +1955,7 @@ function PublicBillingLanding() {
               <h2 className="text-h1 md:text-display font-bold text-navy-900 mb-4 text-balance">
                 Hasonlítsd össze a Vyndi csomagokat
               </h2>
-              <p className="text-xl text-gray-600 text-pretty">
+              <p className="text-h5 text-fg-muted text-pretty">
                 Válaszd ki a vállalkozásodhoz legjobbat
               </p>
             </div>
@@ -1958,10 +1968,8 @@ function PublicBillingLanding() {
                     <tr className="bg-gradient-to-r from-navy-900 to-navy-800 text-white">
                       <th className="px-8 py-5 text-left font-bold text-h5">Funkció</th>
                       <th className="px-8 py-5 text-center font-bold">Ingyenes</th>
-                      <th className="px-8 py-5 text-center font-bold bg-turquoise-600/30">
-                        Standard
-                      </th>
-                      <th className="px-8 py-5 text-center font-bold bg-turquoise-600">
+                      <th className="px-8 py-5 text-center font-bold bg-primary/30">Standard</th>
+                      <th className="px-8 py-5 text-center font-bold bg-primary">
                         Pro <Star className="inline w-5 h-5 ml-1" fill="currentColor" />
                       </th>
                     </tr>
@@ -2042,67 +2050,67 @@ function PublicBillingLanding() {
                         type: 'text' | 'check';
                       }>
                     ).map((row, idx) => (
-                      <tr key={idx} className="transition-colors hover:bg-gray-50">
+                      <tr key={idx} className="transition-colors hover:bg-bg">
                         <td className="px-8 py-5 font-semibold text-navy-900">{row.feature}</td>
                         <td className="px-8 py-5 text-center">
                           {row.type === 'check' ? (
                             typeof row.free === 'boolean' ? (
                               row.free === true ? (
                                 <div className="flex justify-center">
-                                  <div className="w-7 h-7 bg-turquoise-100 rounded-full flex items-center justify-center">
-                                    <Check className="w-5 h-5 text-turquoise-600" strokeWidth={3} />
+                                  <div className="w-7 h-7 bg-primary/20 rounded-full flex items-center justify-center">
+                                    <Check className="w-5 h-5 text-primary" strokeWidth={3} />
                                   </div>
                                 </div>
                               ) : (
                                 <div className="flex justify-center">
-                                  <X className="w-6 h-6 text-gray-300" />
+                                  <X className="w-6 h-6 text-fg-muted" />
                                 </div>
                               )
                             ) : (
-                              <span className="text-gray-700 font-medium">{row.free}</span>
+                              <span className="text-fg-muted font-medium">{row.free}</span>
                             )
                           ) : (
-                            <span className="text-gray-700 font-medium">{row.free}</span>
+                            <span className="text-fg-muted font-medium">{row.free}</span>
                           )}
                         </td>
-                        <td className="px-8 py-5 text-center bg-turquoise-50/20">
+                        <td className="px-8 py-5 text-center bg-primary/10">
                           {row.type === 'check' ? (
                             typeof row.standard === 'boolean' ? (
                               row.standard === true ? (
                                 <div className="flex justify-center">
-                                  <div className="w-7 h-7 bg-turquoise-100 rounded-full flex items-center justify-center">
-                                    <Check className="w-5 h-5 text-turquoise-600" strokeWidth={3} />
+                                  <div className="w-7 h-7 bg-primary/20 rounded-full flex items-center justify-center">
+                                    <Check className="w-5 h-5 text-primary" strokeWidth={3} />
                                   </div>
                                 </div>
                               ) : (
                                 <div className="flex justify-center">
-                                  <X className="w-6 h-6 text-gray-300" />
+                                  <X className="w-6 h-6 text-fg-muted" />
                                 </div>
                               )
                             ) : row.standardGray ? (
-                              <span className="text-gray-400 font-medium">{row.standard}</span>
+                              <span className="text-fg-muted/60 font-medium">{row.standard}</span>
                             ) : (
-                              <span className="text-gray-700 font-medium">{row.standard}</span>
+                              <span className="text-fg-muted font-medium">{row.standard}</span>
                             )
                           ) : (
-                            <span className="text-gray-700 font-medium">{row.standard}</span>
+                            <span className="text-fg-muted font-medium">{row.standard}</span>
                           )}
                         </td>
-                        <td className="px-8 py-5 text-center bg-turquoise-50/40">
+                        <td className="px-8 py-5 text-center bg-primary/20">
                           {row.type === 'check' ? (
                             row.pro === true ? (
                               <div className="flex justify-center">
-                                <div className="w-7 h-7 bg-turquoise-200 rounded-full flex items-center justify-center">
-                                  <Check className="w-5 h-5 text-turquoise-700" strokeWidth={3} />
+                                <div className="w-7 h-7 bg-primary/30 rounded-full flex items-center justify-center">
+                                  <Check className="w-5 h-5 text-primary" strokeWidth={3} />
                                 </div>
                               </div>
                             ) : (
                               <div className="flex justify-center">
-                                <X className="w-6 h-6 text-gray-300" />
+                                <X className="w-6 h-6 text-fg-muted" />
                               </div>
                             )
                           ) : (
-                            <span className="text-gray-900 font-bold">{row.pro}</span>
+                            <span className="text-fg font-bold">{row.pro}</span>
                           )}
                         </td>
                       </tr>
@@ -2112,7 +2120,7 @@ function PublicBillingLanding() {
               </div>
 
               {/* Mobile hint */}
-              <div className="lg:hidden px-6 py-4 bg-gray-100 text-center text-sm text-gray-600 border-t border-gray-200">
+              <div className="lg:hidden px-6 py-4 bg-bg-muted text-center text-body-small text-fg-muted border-t border-border">
                 ← Görgess vízszintesen a teljes táblázatért →
               </div>
             </div>
@@ -2121,14 +2129,14 @@ function PublicBillingLanding() {
       </section>
 
       {/* Enhanced Testimonials Section */}
-      <section className="py-20 bg-gradient-to-b from-white to-gray-50">
+      <section className="py-20 bg-gradient-to-b from-bg-muted to-bg">
         <div className="container mx-auto px-4">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-16">
               <h2 className="text-h1 md:text-display font-bold text-navy-900 mb-4 text-balance">
                 Mit mondanak a Vyndiről a felhasználóink?
               </h2>
-              <p className="text-xl text-gray-600 text-pretty">
+              <p className="text-h5 text-fg-muted text-pretty">
                 Több mint 200 elégedett vállalkozás készít gyorsabban és professzionálisabban
                 ajánlatokat a Vyndivel.
               </p>
@@ -2183,16 +2191,16 @@ function PublicBillingLanding() {
               <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-8 border-2 border-purple-200">
                 <div className="flex items-center justify-center gap-1 mb-4">
                   {[1, 2, 3, 4, 5].map((i) => (
-                    <Star key={i} className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                    <Star key={i} className="w-5 h-5 text-warning fill-warning" />
                   ))}
                 </div>
 
-                <div className="bg-white rounded-xl p-4 mb-4 border border-purple-200 text-center">
-                  <div className="text-h2 font-bold text-purple-600 mb-1">15 óra</div>
-                  <div className="text-sm text-gray-600">megtakarítás hetente</div>
+                <div className="bg-bg-muted rounded-xl p-4 mb-4 border border-primary/30 text-center">
+                  <div className="text-h2 font-bold text-primary mb-1">15 óra</div>
+                  <div className="text-body-small text-fg-muted">megtakarítás hetente</div>
                 </div>
 
-                <p className="text-gray-700 mb-6 leading-relaxed text-pretty text-center">
+                <p className="text-fg-muted mb-6 leading-relaxed text-pretty text-center">
                   &ldquo;Korábban 2-3 napig tartott egy ajánlat elkészítése. Most 30 perc alatt kész
                   vagyok, és még profibb is lett az eredmény.&rdquo;
                 </p>
@@ -2206,14 +2214,14 @@ function PublicBillingLanding() {
                     className="w-14 h-14 rounded-full border-2 border-white shadow-md object-cover"
                   />
                   <div className="text-center">
-                    <div className="font-bold text-gray-900">{TESTIMONIALS[1].author}</div>
-                    <div className="text-sm text-gray-600">{TESTIMONIALS[1].role}</div>
-                    <div className="text-sm text-gray-500">{TESTIMONIALS[1].company}</div>
+                    <div className="font-bold text-fg">{TESTIMONIALS[1].author}</div>
+                    <div className="text-body-small text-fg-muted">{TESTIMONIALS[1].role}</div>
+                    <div className="text-body-small text-fg-muted">{TESTIMONIALS[1].company}</div>
                   </div>
                 </div>
 
-                <div className="mt-4 pt-4 border-t border-purple-200">
-                  <div className="flex items-center justify-center gap-2 text-purple-600 text-sm">
+                <div className="mt-4 pt-4 border-t border-primary/30">
+                  <div className="flex items-center justify-center gap-2 text-primary text-body-small">
                     <CheckCircle className="w-4 h-4" />
                     <span>Ellenőrzött vásárló</span>
                   </div>
@@ -2221,19 +2229,19 @@ function PublicBillingLanding() {
               </div>
 
               {/* Testimonial with ROI */}
-              <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-2xl p-8 border-2 border-orange-200">
+              <div className="bg-gradient-to-br from-warning/10 to-warning/5 rounded-2xl p-8 border-2 border-warning/30">
                 <div className="flex items-center justify-center gap-1 mb-4">
                   {[1, 2, 3, 4, 5].map((i) => (
-                    <Star key={i} className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                    <Star key={i} className="w-5 h-5 text-warning fill-warning" />
                   ))}
                 </div>
 
-                <div className="bg-white rounded-xl p-4 mb-4 border border-orange-200 text-center">
-                  <div className="text-h2 font-bold text-orange-600 mb-1">5M Ft</div>
-                  <div className="text-sm text-gray-600">új bevétel ajánlatokból</div>
+                <div className="bg-bg-muted rounded-xl p-4 mb-4 border border-warning/30 text-center">
+                  <div className="text-h2 font-bold text-warning mb-1">5M Ft</div>
+                  <div className="text-body-small text-fg-muted">új bevétel ajánlatokból</div>
                 </div>
 
-                <p className="text-gray-700 mb-6 leading-relaxed text-pretty text-center">
+                <p className="text-fg-muted mb-6 leading-relaxed text-pretty text-center">
                   &ldquo;A professzionális ajánlatok segítségével több nagy ügyfelet tudtunk
                   megnyerni. A befektetés megtérült már az első hónapban.&rdquo;
                 </p>
@@ -2247,14 +2255,14 @@ function PublicBillingLanding() {
                     className="w-14 h-14 rounded-full border-2 border-white shadow-md object-cover"
                   />
                   <div className="text-center">
-                    <div className="font-bold text-gray-900">{TESTIMONIALS[2].author}</div>
-                    <div className="text-sm text-gray-600">{TESTIMONIALS[2].role}</div>
-                    <div className="text-sm text-gray-500">{TESTIMONIALS[2].company}</div>
+                    <div className="font-bold text-fg">{TESTIMONIALS[2].author}</div>
+                    <div className="text-body-small text-fg-muted">{TESTIMONIALS[2].role}</div>
+                    <div className="text-body-small text-fg-muted">{TESTIMONIALS[2].company}</div>
                   </div>
                 </div>
 
                 <div className="mt-4 pt-4 border-t border-orange-200">
-                  <div className="flex items-center justify-center gap-2 text-orange-600 text-sm">
+                  <div className="flex items-center justify-center gap-2 text-warning text-body-small">
                     <CheckCircle className="w-4 h-4" />
                     <span>Ellenőrzött vásárló</span>
                   </div>
@@ -2400,7 +2408,7 @@ function PublicBillingLanding() {
                   </h3>
 
                   {/* Description */}
-                  <p className="text-gray-600 text-sm leading-relaxed text-pretty">
+                  <p className="text-fg-muted text-body-small leading-relaxed text-pretty">
                     {benefit.description}
                   </p>
                 </div>

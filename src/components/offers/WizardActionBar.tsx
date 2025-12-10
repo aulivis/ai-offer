@@ -1,6 +1,5 @@
 'use client';
 
-import { t } from '@/copy';
 import { memo, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
 import type { WizardStep } from '@/types/wizard';
@@ -47,9 +46,6 @@ export const WizardActionBar = memo(function WizardActionBar({
     }
   }, [step]);
 
-  const nextButtonLabel = t('offers.wizard.actions.next');
-  const backButtonLabel = t('offers.wizard.actions.back');
-
   const isDisabled = isQuotaExhausted || isQuotaLoading;
 
   return (
@@ -66,10 +62,10 @@ export const WizardActionBar = memo(function WizardActionBar({
           onClick={onPrev}
           disabled={step === 1}
           variant="secondary"
-          className="w-full rounded-full border border-border/70 px-5 py-3 text-sm font-semibold transition hover:border-primary/50 hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:border-border disabled:text-fg-muted touch-manipulation min-h-[44px] sm:w-auto"
+          className="w-full rounded-full border-2 border-border/70 px-5 py-3 text-sm font-bold transition-all duration-200 hover:border-primary/50 hover:text-fg hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:border-border disabled:text-fg-muted disabled:scale-100 touch-manipulation min-h-[44px] sm:w-auto"
           aria-label={`Go back to previous step${step > 1 ? ` (Step ${step - 1})` : ''}`}
         >
-          ← {backButtonLabel}
+          ← Vissza
         </Button>
 
         {step < 3 ? (
@@ -77,10 +73,10 @@ export const WizardActionBar = memo(function WizardActionBar({
             ref={nextButtonRef}
             onClick={onNext}
             disabled={isNextDisabled || isDisabled}
-            className="w-full rounded-full bg-fg px-6 py-3 text-sm font-semibold text-primary-ink shadow-sm transition hover:bg-fg/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-fg-muted disabled:text-fg-muted touch-manipulation min-h-[44px] sm:w-auto"
+            className="w-full rounded-full bg-fg px-6 py-3 text-sm font-bold text-primary-ink shadow-md transition-all duration-200 hover:bg-fg/90 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-fg-muted disabled:text-fg-muted disabled:scale-100 touch-manipulation min-h-[44px] sm:w-auto"
             aria-label={`Continue to next step${step < 3 ? ` (Step ${step + 1})` : ''}`}
           >
-            {nextButtonLabel} →
+            Folytatás →
             <span className="ml-2 hidden text-xs opacity-70 sm:inline">(Ctrl+Enter)</span>
           </Button>
         ) : (
@@ -100,7 +96,7 @@ export const WizardActionBar = memo(function WizardActionBar({
               ) : (
                 <>
                   <span className="mr-2">✓</span>
-                  Ajánlat létrehozása és mentés
+                  Ajánlat létrehozása
                   <span className="ml-2 hidden text-xs opacity-80 sm:inline">(Ctrl+Enter)</span>
                 </>
               )}

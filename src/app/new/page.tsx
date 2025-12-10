@@ -2204,7 +2204,7 @@ export default function NewOfferWizard() {
                         {t('offers.wizard.forms.details.sections.styleHelper')}
                       </p>
                     </div>
-                    <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="grid gap-4 sm:gap-4 sm:grid-cols-2">
                       {[
                         {
                           value: 'compact' as const,
@@ -2229,7 +2229,7 @@ export default function NewOfferWizard() {
                             onClick={() => setForm((f) => ({ ...f, style: option.value }))}
                             className={`flex h-full w-full flex-col items-start gap-1 rounded-2xl border px-4 py-4 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                               active
-                                ? 'border-slate-900 bg-slate-900 text-white shadow-pop'
+                                ? 'border-fg bg-fg text-bg-muted shadow-pop'
                                 : 'border-border/70 bg-white text-fg-muted hover:border-border hover:text-fg hover:shadow-sm'
                             }`}
                           >
@@ -2594,8 +2594,8 @@ export default function NewOfferWizard() {
                             ).length;
                             if (textLength > 4000) {
                               return (
-                                <div className="mt-2 rounded-2xl border border-amber-300 bg-amber-50 p-2">
-                                  <p className="text-xs font-medium text-amber-800">
+                                <div className="mt-2 rounded-2xl border border-warning/30 bg-warning/10 p-2">
+                                  <p className="text-caption font-medium text-warning">
                                     {t('wizard.preview.longContentWarning', { length: textLength })}
                                   </p>
                                 </div>
@@ -2794,7 +2794,7 @@ export default function NewOfferWizard() {
                   </Card>
 
                   {/* Preview and Summary Section - 2 Column Layout */}
-                  <div className="grid grid-cols-1 gap-5 md:gap-6 lg:grid-cols-2">
+                  <div className="grid grid-cols-1 gap-5 sm:gap-6 md:grid-cols-2 lg:grid-cols-2">
                     {/* Left Column: Preview Section */}
                     <Card className="space-y-4 border-none bg-white/95 p-5 shadow-pop ring-1 ring-slate-900/5 sm:p-6">
                       <div>
@@ -2868,17 +2868,15 @@ export default function NewOfferWizard() {
                       <dl className="space-y-3 text-sm text-fg-muted">
                         <div className="flex items-center justify-between gap-4">
                           <dt className="text-fg-muted">Cím</dt>
-                          <dd className="font-medium text-slate-800">{form.title || '—'}</dd>
+                          <dd className="font-medium text-fg">{form.title || '—'}</dd>
                         </div>
                         <div className="flex items-center justify-between gap-4">
                           <dt className="text-fg-muted">Címzett</dt>
-                          <dd className="font-medium text-slate-800">
-                            {client.company_name || '—'}
-                          </dd>
+                          <dd className="font-medium text-fg">{client.company_name || '—'}</dd>
                         </div>
                         <div className="flex items-center justify-between gap-4">
                           <dt className="text-fg-muted">Stílus</dt>
-                          <dd className="font-medium text-slate-800">
+                          <dd className="font-medium text-fg">
                             {form.style === 'compact' ? 'Kompakt' : 'Részletes'}
                           </dd>
                         </div>
@@ -2886,7 +2884,7 @@ export default function NewOfferWizard() {
                           <dt className="text-fg-muted">
                             {t('offers.wizard.previewTemplates.summaryLabel')}
                           </dt>
-                          <dd className="font-medium text-slate-800">
+                          <dd className="font-medium text-fg">
                             {selectedPdfTemplateLabel || availablePdfTemplates[0]?.name || '—'}
                           </dd>
                         </div>
@@ -3054,7 +3052,7 @@ export default function NewOfferWizard() {
                   {showLockedTemplates && (
                     <div className="space-y-3 rounded-xl border border-dashed border-border bg-bg-muted/80 p-4">
                       <div className="flex items-start gap-2.5">
-                        <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-slate-200 text-fg-muted">
+                        <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-border text-fg-muted">
                           <LockBadgeIcon className="h-3.5 w-3.5" />
                         </span>
                         <div className="space-y-0.5">
@@ -3062,7 +3060,7 @@ export default function NewOfferWizard() {
                             <p className="text-sm font-semibold text-fg">
                               {t('offers.wizard.previewTemplates.lockedTitle')}
                             </p>
-                            <span className="inline-flex items-center gap-1 rounded-full bg-slate-200 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-fg-muted">
+                            <span className="inline-flex items-center gap-1 rounded-full bg-border px-1.5 py-0.5 text-caption font-semibold uppercase tracking-[0.14em] text-fg-muted">
                               {t('app.planUpgradeModal.badge')}
                             </span>
                           </div>
@@ -3077,7 +3075,7 @@ export default function NewOfferWizard() {
                             key={template.label}
                             className="flex items-start gap-2 rounded-xl border border-border bg-white/90 px-3 py-2 shadow-sm"
                           >
-                            <span className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-slate-100 text-fg-muted">
+                            <span className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-bg text-fg-muted">
                               <LockBadgeIcon className="h-3 w-3" />
                             </span>
                             <div className="space-y-0.5">
@@ -3120,7 +3118,7 @@ export default function NewOfferWizard() {
                           step="25"
                           value={previewZoom}
                           onChange={(e) => setPreviewZoom(Number(e.target.value))}
-                          className="h-2 flex-1 rounded-2xl bg-slate-200"
+                          className="h-2 flex-1 rounded-2xl bg-border"
                           aria-label={t('wizard.preview.zoomAria')}
                         />
                         <span className="min-w-[3rem] text-sm font-medium text-fg text-right">

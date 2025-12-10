@@ -23,6 +23,7 @@ export function useViewTransition() {
 /**
  * Component wrapper that enables View Transitions API
  * The actual transitions are handled by CSS in globals.css
+ * Enhanced with consistent animation patterns
  */
 export function ViewTransition({ children }: { children: React.ReactNode }) {
   useViewTransition();

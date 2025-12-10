@@ -74,9 +74,9 @@ export default function OfferResponseForm({
             'A következő lépésekről egyeztetünk Önnel.',
             'Letöltheti az ajánlat PDF verzióját az alábbi gombbal.',
           ],
-          bgColor: 'bg-green-50',
-          textColor: 'text-green-800',
-          borderColor: 'border-green-200',
+          bgColor: 'bg-success/10',
+          textColor: 'text-success',
+          borderColor: 'border-success/30',
         };
       } else if (decision === 'rejected') {
         return {
@@ -86,9 +86,9 @@ export default function OfferResponseForm({
             'Az ajánlat készítője értesítve lett a döntéséről.',
             'Ha később változna a véleménye, kérjük lépjen kapcsolatba velünk.',
           ],
-          bgColor: 'bg-red-50',
-          textColor: 'text-red-800',
-          borderColor: 'border-red-200',
+          bgColor: 'bg-danger/10',
+          textColor: 'text-danger',
+          borderColor: 'border-danger/30',
         };
       } else {
         return {
@@ -98,9 +98,9 @@ export default function OfferResponseForm({
             'Az ajánlat készítője hamarosan válaszol kérdésére.',
             'A választ emailben vagy telefonon kapja meg.',
           ],
-          bgColor: 'bg-yellow-50',
-          textColor: 'text-yellow-800',
-          borderColor: 'border-yellow-200',
+          bgColor: 'bg-warning/10',
+          textColor: 'text-warning',
+          borderColor: 'border-warning/30',
         };
       }
     };
@@ -179,12 +179,10 @@ export default function OfferResponseForm({
   }
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-4 sm:p-6 md:p-8 shadow-lg">
+    <div className="rounded-xl border border-border bg-bg-muted p-4 sm:p-6 md:p-8 shadow-lg">
       <div className="mb-4 sm:mb-6">
-        <h2 className="mb-2 text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900">
-          Válasz az ajánlatra
-        </h2>
-        <p className="text-xs sm:text-sm md:text-base text-gray-600">
+        <h2 className="mb-2 text-h3 font-semibold text-fg">Válasz az ajánlatra</h2>
+        <p className="text-body-small text-fg-muted">
           Válasszon egyet az alábbi lehetőségek közül. A válaszát rögzítjük és értesítjük az ajánlat
           készítőjét.
         </p>
@@ -193,15 +191,15 @@ export default function OfferResponseForm({
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Decision buttons */}
         <div className="space-y-3">
-          <p className="text-sm font-semibold text-gray-700 mb-3">Válassza ki a döntését:</p>
+          <p className="text-body-small font-semibold text-fg mb-3">Válassza ki a döntését:</p>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 md:gap-4">
             <button
               type="button"
               onClick={() => setDecision('accepted')}
               className={`flex items-center justify-center gap-2 sm:gap-3 rounded-lg border-2 p-4 sm:p-5 font-semibold transition-all min-h-[60px] sm:min-h-[70px] md:min-h-[80px] touch-manipulation focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                 decision === 'accepted'
-                  ? 'border-green-600 bg-green-600 text-white shadow-md focus:ring-green-500'
-                  : 'border-gray-300 bg-white text-gray-700 hover:border-green-400 hover:bg-green-50 hover:shadow-sm focus:ring-green-300'
+                  ? 'border-success bg-success text-white shadow-md focus:ring-success'
+                  : 'border-border bg-bg-muted text-fg-muted hover:border-success/50 hover:bg-success/10 hover:shadow-sm focus:ring-success/30'
               }`}
             >
               <span className="text-xl sm:text-2xl">✓</span>
@@ -212,8 +210,8 @@ export default function OfferResponseForm({
               onClick={() => setDecision('question')}
               className={`flex items-center justify-center gap-2 sm:gap-3 rounded-lg border-2 p-4 sm:p-5 font-semibold transition-all min-h-[60px] sm:min-h-[70px] md:min-h-[80px] touch-manipulation focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                 decision === 'question'
-                  ? 'border-yellow-500 bg-yellow-500 text-white shadow-md focus:ring-yellow-400'
-                  : 'border-gray-300 bg-white text-gray-700 hover:border-yellow-400 hover:bg-yellow-50 hover:shadow-sm focus:ring-yellow-300'
+                  ? 'border-warning bg-warning text-white shadow-md focus:ring-warning'
+                  : 'border-border bg-bg-muted text-fg-muted hover:border-warning/50 hover:bg-warning/10 hover:shadow-sm focus:ring-warning/30'
               }`}
             >
               <span className="text-xl sm:text-2xl">?</span>
@@ -224,8 +222,8 @@ export default function OfferResponseForm({
               onClick={() => setDecision('rejected')}
               className={`flex items-center justify-center gap-2 sm:gap-3 rounded-lg border-2 p-4 sm:p-5 font-semibold transition-all min-h-[60px] sm:min-h-[70px] md:min-h-[80px] touch-manipulation focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                 decision === 'rejected'
-                  ? 'border-red-600 bg-red-600 text-white shadow-md focus:ring-red-500'
-                  : 'border-gray-300 bg-white text-gray-700 hover:border-red-400 hover:bg-red-50 hover:shadow-sm focus:ring-red-300'
+                  ? 'border-danger bg-danger text-white shadow-md focus:ring-danger'
+                  : 'border-border bg-bg-muted text-fg-muted hover:border-danger/50 hover:bg-danger/10 hover:shadow-sm focus:ring-danger/30'
               }`}
             >
               <span className="text-xl sm:text-2xl">✗</span>
@@ -236,7 +234,7 @@ export default function OfferResponseForm({
 
         {/* Optional fields - only show after decision is made */}
         {decision && (
-          <div className="space-y-4 border-t border-gray-200 pt-6">
+          <div className="space-y-4 border-t border-border pt-6">
             <div className="space-y-4">
               <Input
                 type="text"
@@ -253,7 +251,7 @@ export default function OfferResponseForm({
                 className="w-full"
               />
               <textarea
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                className="w-full rounded-lg border border-border px-4 py-3 text-body-small transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                 rows={4}
                 placeholder={
                   decision === 'question'
@@ -273,7 +271,7 @@ export default function OfferResponseForm({
         )}
 
         {error && (
-          <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          <div className="rounded-lg border border-danger/30 bg-danger/10 p-4 text-body-small text-danger">
             {error}
           </div>
         )}

@@ -232,21 +232,33 @@ body {
   left: 1rem;
   top: 1rem;
   transform: translateY(-150%);
-  padding: 0.75rem 1.5rem;
+  padding: 0.875rem 1.75rem;
   border-radius: 9999px;
-  background-color: rgb(var(--color-bg-rgb) / 0.95);
-  color: rgb(var(--color-fg-rgb) / 1);
-  font-weight: 600;
-  box-shadow: var(--shadow-card);
+  background-color: var(--color-primary);
+  color: var(--color-primary-ink);
+  font-weight: 700;
+  font-size: 0.9375rem;
+  box-shadow: var(--shadow-pop);
+  border: 2px solid var(--color-primary);
   transition:
-    transform 150ms ease,
-    box-shadow 150ms ease;
+    transform 200ms cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 200ms ease,
+    background-color 200ms ease;
   z-index: 1000;
+  text-decoration: none;
 }
 
 .skip-link:focus {
   transform: translateY(0);
-  box-shadow: var(--shadow-pop);
+  box-shadow: 0 8px 24px rgba(0, 150, 136, 0.4);
+  background-color: var(--color-turquoise-700);
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.skip-link:hover {
+  background-color: var(--color-turquoise-700);
+  transform: translateY(0);
 }
 
 a {
@@ -512,6 +524,49 @@ p {
     }
   }
 
+  @keyframes slideInFromTop {
+    from {
+      transform: translateY(-20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes shake {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    10%,
+    30%,
+    50%,
+    70%,
+    90% {
+      transform: translateX(-4px);
+    }
+    20%,
+    40%,
+    60%,
+    80% {
+      transform: translateX(4px);
+    }
+  }
+
+  .animate-in {
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  .slide-in-from-top-1 {
+    animation: slideInFromTop 0.3s ease-out;
+  }
+
+  .shake {
+    animation: shake 0.5s ease-in-out;
+  }
+
   @keyframes float {
     0%,
     100% {
@@ -567,10 +622,10 @@ p {
     }
   }
 
-  /* Smooth page transitions */
+  /* Smooth page transitions with consistent timing */
   ::view-transition-old(root),
   ::view-transition-new(root) {
-    animation-duration: 0.3s;
+    animation-duration: 0.35s;
     animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
@@ -581,7 +636,7 @@ p {
     animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  /* Main content transition */
+  /* Main content transition - enhanced */
   ::view-transition-old(main-content),
   ::view-transition-new(main-content) {
     animation-duration: 0.4s;
@@ -591,6 +646,13 @@ p {
   /* Footer transition */
   ::view-transition-old(footer),
   ::view-transition-new(footer) {
+    animation-duration: 0.3s;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Card transitions */
+  ::view-transition-old(card),
+  ::view-transition-new(card) {
     animation-duration: 0.3s;
     animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
