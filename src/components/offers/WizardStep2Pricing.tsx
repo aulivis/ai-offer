@@ -230,14 +230,14 @@ export function WizardStep2Pricing({
           // Type guard for testimonials data
           if (Array.isArray(data)) {
             const validTestimonials = data.filter(
-              (item): item is { id: string; text: string; activity_id?: string | null } =>
+              (item: unknown): item is { id: string; text: string; activity_id?: string | null } =>
                 typeof item === 'object' &&
                 item !== null &&
-                typeof item.id === 'string' &&
-                typeof item.text === 'string' &&
-                (item.activity_id === null ||
-                  item.activity_id === undefined ||
-                  typeof item.activity_id === 'string'),
+                typeof (item as Record<string, unknown>).id === 'string' &&
+                typeof (item as Record<string, unknown>).text === 'string' &&
+                ((item as Record<string, unknown>).activity_id === null ||
+                  (item as Record<string, unknown>).activity_id === undefined ||
+                  typeof (item as Record<string, unknown>).activity_id === 'string'),
             );
             setAvailableTestimonials(validTestimonials);
           } else {
