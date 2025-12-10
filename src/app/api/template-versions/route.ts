@@ -53,7 +53,13 @@ export const POST = withAuth(
     const supabase = await supabaseServer();
 
     // Check admin privileges
-    await requireAdmin(supabase, request.user.id);
+    const { isAdmin: userIsAdmin } = await requireAdmin(request.user.id);
+    if (!userIsAdmin) {
+      return NextResponse.json(
+        { error: 'Admin privileges required' },
+        { status: 403 },
+      );
+    }
 
     const body = await request.json();
     const {
@@ -122,7 +128,13 @@ export const PATCH = withAuth(
     const supabase = await supabaseServer();
 
     // Check admin privileges
-    await requireAdmin(supabase, request.user.id);
+    const { isAdmin: userIsAdmin } = await requireAdmin(request.user.id);
+    if (!userIsAdmin) {
+      return NextResponse.json(
+        { error: 'Admin privileges required' },
+        { status: 403 },
+      );
+    }
 
     const body = await request.json();
     const { id, ...updates }: { id: string; [key: string]: unknown } = body;
@@ -153,7 +165,13 @@ export const DELETE = withAuth(
     const supabase = await supabaseServer();
 
     // Check admin privileges
-    await requireAdmin(supabase, request.user.id);
+    const { isAdmin: userIsAdmin } = await requireAdmin(request.user.id);
+    if (!userIsAdmin) {
+      return NextResponse.json(
+        { error: 'Admin privileges required' },
+        { status: 403 },
+      );
+    }
 
     const searchParams = request.nextUrl.searchParams;
     const id = searchParams.get('id');
