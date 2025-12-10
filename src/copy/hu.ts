@@ -2204,6 +2204,11 @@ export const hu = {
       logoTooLarge: 'A fájl mérete túl nagy. Maximum 4 MB.',
       logoStorageUnavailable: 'A tárhely jelenleg nem elérhető. Kérjük, próbáld újra később.',
       autoSaveFailed: 'Nem sikerült automatikusan menteni.',
+      sectionError: {
+        title: 'Hiba történt a {section} szekció betöltésekor',
+        description: 'Nem sikerült betölteni ezt a szekciót. Kérjük, frissítsd az oldalt vagy próbáld újra később.',
+        retry: 'Újrapróbálás',
+      },
     },
     preview: {
       authError: 'Nem sikerült hitelesíteni az előnézet lekérését. Jelentkezz be újra.',
