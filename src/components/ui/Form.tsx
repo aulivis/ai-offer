@@ -1,14 +1,14 @@
 'use client';
 
 import * as React from 'react';
-import { useForm, FormProvider, type UseFormReturn, type FieldValues } from 'react-hook-form';
+import { useForm, FormProvider, type UseFormReturn, type FieldValues, type DefaultValues } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { z } from 'zod';
 import { AnimatedError } from '@/components/animations';
 
 type FormProps<T extends FieldValues> = {
   schema?: z.ZodSchema<T>;
-  defaultValues?: Partial<T>;
+  defaultValues?: DefaultValues<T>;
   onSubmit: (data: T) => void | Promise<void>;
   children: (methods: UseFormReturn<T>) => React.ReactNode;
   className?: string;
@@ -49,7 +49,7 @@ export function Form<T extends FieldValues>({
 }: FormProps<T>) {
   const methods = useForm<T>({
     resolver: schema ? zodResolver(schema) : undefined,
-    defaultValues: defaultValues as T,
+    defaultValues,
   });
 
   const handleSubmit = methods.handleSubmit(async (data) => {
