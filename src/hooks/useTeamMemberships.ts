@@ -46,4 +46,3 @@ export function useTeamMemberships() {
 
   return { teamIds };
 }
-
