@@ -44,9 +44,9 @@ interface BlockCustomizationSettingsProps {
 }
 
 export function BlockCustomizationSettings({ offerId }: BlockCustomizationSettingsProps) {
-  const { settings, loading, savePreferences, resetToDefaults } = useBlockCustomization({
-    offerId,
-  });
+  const { settings, loading, savePreferences, resetToDefaults } = useBlockCustomization(
+    offerId ? { offerId } : {},
+  );
   const { showToast } = useToast();
   const [localSettings, setLocalSettings] = useState<OfferBlockSettings>(settings);
   const [hasChanges, setHasChanges] = useState(false);
