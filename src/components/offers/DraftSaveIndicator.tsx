@@ -70,7 +70,7 @@ export function DraftSaveIndicator({
         </div>
       ) : hasError && showError ? (
         <div className="flex items-center gap-2">
-          <ExclamationTriangleIcon className="h-4 w-4 text-amber-600" aria-hidden="true" />
+          <ExclamationTriangleIcon className="h-4 w-4 text-warning" aria-hidden="true" />
           <div className="flex flex-col gap-0.5">
             <span className="text-xs font-medium text-fg">
               {t('wizard.draft.saveError') || 'Mentési hiba'}
@@ -92,7 +92,7 @@ export function DraftSaveIndicator({
         </div>
       ) : showSaved ? (
         <div className="flex items-center gap-2">
-          <CheckCircleIcon className="h-4 w-4 text-emerald-600" aria-hidden="true" />
+          <CheckCircleIcon className="h-4 w-4 text-success" aria-hidden="true" />
           <span className="text-xs font-medium text-fg">
             {lastSaved
               ? t('wizard.draft.savedWithTime', {

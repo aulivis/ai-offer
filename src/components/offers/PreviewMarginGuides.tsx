@@ -16,32 +16,34 @@ export function PreviewMarginGuides({ enabled = true }: { enabled?: boolean }) {
   const leftMarginPercent = (15 / 210) * 100;
   const rightMarginPercent = (15 / 210) * 100;
 
+  const guideColor = 'rgb(var(--color-primary-rgb) / 0.1)';
+
   return (
     <div
       className="pointer-events-none absolute inset-0 z-10"
       aria-hidden="true"
       style={{
         background: `
-          linear-gradient(to right, 
-            rgba(59, 130, 246, 0.1) 0%, 
-            rgba(59, 130, 246, 0.1) ${leftMarginPercent}%, 
-            transparent ${leftMarginPercent}%, 
-            transparent ${100 - rightMarginPercent}%, 
-            rgba(59, 130, 246, 0.1) ${100 - rightMarginPercent}%
+          linear-gradient(to right,
+            ${guideColor} 0%,
+            ${guideColor} ${leftMarginPercent}%,
+            transparent ${leftMarginPercent}%,
+            transparent ${100 - rightMarginPercent}%,
+            ${guideColor} ${100 - rightMarginPercent}%
           ),
-          linear-gradient(to bottom, 
-            rgba(59, 130, 246, 0.1) 0%, 
-            rgba(59, 130, 246, 0.1) ${topMarginPercent}%, 
-            transparent ${topMarginPercent}%, 
-            transparent ${100 - bottomMarginPercent}%, 
-            rgba(59, 130, 246, 0.1) ${100 - bottomMarginPercent}%
+          linear-gradient(to bottom,
+            ${guideColor} 0%,
+            ${guideColor} ${topMarginPercent}%,
+            transparent ${topMarginPercent}%,
+            transparent ${100 - bottomMarginPercent}%,
+            ${guideColor} ${100 - bottomMarginPercent}%
           )
         `,
       }}
     >
       {/* Corner indicators */}
       <div
-        className="absolute border-t-2 border-l-2 border-blue-400 opacity-50"
+        className="absolute border-t-2 border-l-2 border-primary/50 opacity-50"
         style={{
           top: `${topMarginPercent}%`,
           left: `${leftMarginPercent}%`,
@@ -50,7 +52,7 @@ export function PreviewMarginGuides({ enabled = true }: { enabled?: boolean }) {
         }}
       />
       <div
-        className="absolute border-t-2 border-r-2 border-blue-400 opacity-50"
+        className="absolute border-t-2 border-r-2 border-primary/50 opacity-50"
         style={{
           top: `${topMarginPercent}%`,
           right: `${rightMarginPercent}%`,
@@ -59,7 +61,7 @@ export function PreviewMarginGuides({ enabled = true }: { enabled?: boolean }) {
         }}
       />
       <div
-        className="absolute border-b-2 border-l-2 border-blue-400 opacity-50"
+        className="absolute border-b-2 border-l-2 border-primary/50 opacity-50"
         style={{
           bottom: `${bottomMarginPercent}%`,
           left: `${leftMarginPercent}%`,
@@ -68,7 +70,7 @@ export function PreviewMarginGuides({ enabled = true }: { enabled?: boolean }) {
         }}
       />
       <div
-        className="absolute border-b-2 border-r-2 border-blue-400 opacity-50"
+        className="absolute border-b-2 border-r-2 border-primary/50 opacity-50"
         style={{
           bottom: `${bottomMarginPercent}%`,
           right: `${rightMarginPercent}%`,

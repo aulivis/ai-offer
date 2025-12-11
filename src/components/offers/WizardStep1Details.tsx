@@ -113,7 +113,7 @@ export function WizardStep1Details({
 
   return (
     <Card
-      className="space-y-6 border-none bg-white/95 p-5 shadow-lg ring-1 ring-slate-900/5 sm:p-6 sm:space-y-8"
+      className="space-y-6 border-none bg-white/95 p-5 shadow-lg ring-1 ring-fg/5 sm:p-6 sm:space-y-8"
       aria-label={t('wizard.details.ariaLabel')}
     >
       {/* Header */}

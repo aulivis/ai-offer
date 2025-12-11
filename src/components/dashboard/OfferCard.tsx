@@ -168,7 +168,7 @@ export function OfferCard({
         <div className="p-5">
           {/* Main Header */}
           <div className="flex items-start gap-3 mb-4">
-            <div className="relative flex h-12 w-12 flex-none items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 via-primary/10 to-sky-100 text-base font-bold text-primary shadow-sm shrink-0">
+            <div className="relative flex h-12 w-12 flex-none items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 via-primary/10 to-bg-muted text-base font-bold text-primary shadow-sm shrink-0">
               {initials ? (
                 <span aria-hidden="true" title={companyName || undefined}>
                   {initials}

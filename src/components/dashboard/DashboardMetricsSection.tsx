@@ -199,7 +199,7 @@ export function DashboardMetricsSection({
               {/* Full metrics for power users with 5+ offers */}
               {/* PRIMARY METRICS - Top Row: Quota (Featured) + Created Offers (Main KPI) */}
               <div className="col-span-full sm:col-span-2 lg:col-span-4">
-                <div className="bg-gradient-to-br from-teal-500 via-teal-600 to-blue-600 rounded-2xl p-6 text-white shadow-2xl h-full relative overflow-hidden">
+                <div className="bg-gradient-dashboard rounded-2xl p-6 text-white shadow-2xl h-full relative overflow-hidden">
                   {/* Decorative pattern */}
                   <div
                     className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-3xl"

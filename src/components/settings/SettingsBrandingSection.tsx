@@ -88,7 +88,7 @@ export function SettingsBrandingSection({
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
-          <div className="space-y-4 rounded-xl border-2 border-dashed border-border bg-gradient-to-br from-slate-50 to-white p-6">
+          <div className="space-y-4 rounded-xl border-2 border-dashed border-border bg-gradient-settings p-6">
             <div className="flex items-start gap-4">
               <LogoPreview logoPath={profile.brand_logo_path} />
               <div className="flex-1 space-y-2">

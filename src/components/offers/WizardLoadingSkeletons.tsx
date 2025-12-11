@@ -8,7 +8,7 @@ import { Card } from '@/components/ui/Card';
  */
 export function Step1Skeleton() {
   return (
-    <Card className="space-y-5 border-none bg-white/95 p-4 shadow-lg ring-1 ring-slate-900/5 sm:p-5 sm:space-y-6">
+    <Card className="space-y-5 border-none bg-white/95 p-4 shadow-lg ring-1 ring-fg/5 sm:p-5 sm:space-y-6">
       <div className="space-y-1.5">
         <Skeleton height="1.5rem" width="40%" />
         <Skeleton height="0.75rem" width="60%" />
@@ -30,7 +30,7 @@ export function Step1Skeleton() {
 export function Step2Skeleton() {
   return (
     <div className="space-y-4">
-      <Card className="space-y-3 border-none bg-white/95 p-4 shadow-lg ring-1 ring-slate-900/5 sm:p-5">
+      <Card className="space-y-3 border-none bg-white/95 p-4 shadow-lg ring-1 ring-fg/5 sm:p-5">
         <div className="space-y-2">
           <Skeleton height="1.25rem" width="40%" />
           <Skeleton height="0.75rem" width="60%" />
@@ -41,7 +41,7 @@ export function Step2Skeleton() {
           ))}
         </div>
       </Card>
-      <Card className="space-y-3 border-none bg-white/95 p-4 shadow-lg ring-1 ring-slate-900/5 sm:p-5">
+      <Card className="space-y-3 border-none bg-white/95 p-4 shadow-lg ring-1 ring-fg/5 sm:p-5">
         <div className="space-y-2">
           <Skeleton height="1.25rem" width="40%" />
           <Skeleton height="0.75rem" width="60%" />
