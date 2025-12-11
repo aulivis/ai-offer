@@ -228,19 +228,21 @@ export function ShareModal({ offerId, offerTitle, open, onClose }: ShareModalPro
 
         {/* Create new share form */}
         <div
-          className={`rounded-lg border p-4 ${isFreeUser ? 'border-amber-200 bg-amber-50/50' : 'border-border bg-bg-muted/50'}`}
+          className={`rounded-lg border p-4 ${
+            isFreeUser ? 'border-warning/30 bg-warning/10' : 'border-border bg-bg-muted/50'
+          }`}
         >
           <div className="mb-3 flex items-center justify-between">
             <h3 className="text-sm font-semibold text-fg">Új megosztási link</h3>
             {isFreeUser && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-700">
+              <span className="inline-flex items-center gap-1 rounded-full bg-warning/20 px-2 py-1 text-xs font-semibold text-warning">
                 <LockClosedIcon className="h-3 w-3" />
                 Prémium funkció
               </span>
             )}
           </div>
           {isFreeUser && (
-            <div className="mb-3 rounded-lg bg-white p-3 border border-amber-200">
+            <div className="mb-3 rounded-lg bg-bg-muted p-3 border border-warning/30">
               <p className="text-sm text-fg mb-2">
                 <strong>Frissíts előfizetésedet</strong> az ajánlatok megosztásához és az
                 automatikus értesítésekhez, amikor az ügyfelek válaszolnak.
@@ -308,8 +310,8 @@ export function ShareModal({ offerId, offerTitle, open, onClose }: ShareModalPro
                   key={share.id}
                   className={`rounded-lg border p-4 ${
                     share.isActive
-                      ? 'border-border bg-white'
-                      : 'border-gray-300 bg-gray-50 opacity-60'
+                      ? 'border-border bg-bg-muted'
+                      : 'border-border/70 bg-bg-muted/70 opacity-60'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-4">
@@ -320,7 +322,7 @@ export function ShareModal({ offerId, offerTitle, open, onClose }: ShareModalPro
                           {share.shareUrl}
                         </span>
                         {!share.isActive && (
-                          <span className="text-xs text-red-600 font-semibold">(Visszavonva)</span>
+                          <span className="text-xs text-danger font-semibold">(Visszavonva)</span>
                         )}
                       </div>
 
@@ -361,7 +363,7 @@ export function ShareModal({ offerId, offerTitle, open, onClose }: ShareModalPro
                         title="Másolás"
                       >
                         {copiedId === share.id ? (
-                          <CheckIcon className="h-4 w-4 text-green-600" />
+                          <CheckIcon className="h-4 w-4 text-success" />
                         ) : (
                           <ClipboardIcon className="h-4 w-4 text-fg-muted" />
                         )}
@@ -370,7 +372,7 @@ export function ShareModal({ offerId, offerTitle, open, onClose }: ShareModalPro
                         <button
                           type="button"
                           onClick={() => revokeShare(share.id)}
-                          className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-red-300 text-red-600 hover:bg-red-50 transition"
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-danger/40 text-danger hover:bg-danger/10 transition"
                           title="Visszavonás"
                         >
                           <TrashIcon className="h-4 w-4" />

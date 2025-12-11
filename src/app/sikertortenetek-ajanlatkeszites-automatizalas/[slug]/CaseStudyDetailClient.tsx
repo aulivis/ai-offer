@@ -1,4 +1,3 @@
-/* eslint-disable no-hardcoded-ui-strings/no-hardcoded-ui-strings */
 'use client';
 
 import { useState } from 'react';
@@ -165,8 +164,8 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
                 // Use static Tailwind classes
                 const colorClasses = [
                   { bg: 'bg-primary/10', text: 'text-primary', icon: 'text-primary' },
-                  { bg: 'bg-blue-50', text: 'text-accent', icon: 'text-accent' },
-                  { bg: 'bg-purple-50', text: 'text-purple-600', icon: 'text-purple-600' },
+                  { bg: 'bg-accent/10', text: 'text-accent', icon: 'text-accent' },
+                  { bg: 'bg-success/10', text: 'text-success', icon: 'text-success' },
                 ];
                 const colors = colorClasses[index] || colorClasses[0];
 

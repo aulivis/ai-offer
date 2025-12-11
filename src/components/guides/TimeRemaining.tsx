@@ -35,9 +35,9 @@ export function TimeRemaining({ totalMinutes }: TimeRemainingProps) {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 bg-white rounded-full shadow-xl px-6 py-3 flex items-center gap-2 border-2 border-gray-200 z-40">
-      <Clock className="w-5 h-5 text-teal-500" />
-      <span className="text-sm font-semibold text-gray-700">Még {remainingTime} perc</span>
+    <div className="fixed bottom-6 right-6 bg-bg rounded-full shadow-xl px-6 py-3 flex items-center gap-2 border-2 border-border z-40">
+      <Clock className="w-5 h-5 text-primary" />
+      <span className="text-sm font-semibold text-fg">Még {remainingTime} perc</span>
     </div>
   );
 }

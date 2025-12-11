@@ -95,7 +95,7 @@ export function OfferListItem({
               isExpanded ? t('dashboard.offerCard.collapse') : t('dashboard.offerCard.expand')
             }
           >
-            <div className="flex h-11 w-11 flex-none items-center justify-center rounded-lg bg-gradient-to-br from-primary/20 via-primary/10 to-sky-100 text-sm font-bold text-primary shadow-sm">
+            <div className="flex h-11 w-11 flex-none items-center justify-center rounded-lg bg-gradient-to-br from-primary/20 via-primary/10 to-bg-muted text-sm font-bold text-primary shadow-sm">
               {initials ? (
                 <span aria-hidden="true" title={companyName || undefined}>
                   {initials}
@@ -355,24 +355,24 @@ const STATUS_CARD_THEMES: Record<
   { container: string; accentText: string; accentIcon: string }
 > = {
   draft: {
-    container: 'border-amber-200 bg-gradient-to-br from-amber-50 via-white to-amber-100/40',
+    container: 'border-warning/30 bg-gradient-to-br from-warning/10 via-bg-muted to-warning/5',
     accentText: 'text-warning',
     accentIcon: 'text-warning',
   },
   sent: {
-    container: 'border-sky-200 bg-gradient-to-br from-sky-50 via-white to-sky-100/40',
-    accentText: 'text-sky-600',
-    accentIcon: 'text-sky-500',
+    container: 'border-primary/30 bg-gradient-to-br from-primary/10 via-bg-muted to-primary/5',
+    accentText: 'text-primary',
+    accentIcon: 'text-primary',
   },
   accepted: {
-    container: 'border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-emerald-100/40',
-    accentText: 'text-emerald-700',
-    accentIcon: 'text-emerald-600',
+    container: 'border-success/30 bg-gradient-to-br from-success/10 via-bg-muted to-success/5',
+    accentText: 'text-success',
+    accentIcon: 'text-success',
   },
   lost: {
-    container: 'border-rose-200 bg-gradient-to-br from-rose-50 via-white to-rose-100/40',
-    accentText: 'text-rose-700',
-    accentIcon: 'text-rose-600',
+    container: 'border-danger/30 bg-gradient-to-br from-danger/10 via-bg-muted to-danger/5',
+    accentText: 'text-danger',
+    accentIcon: 'text-danger',
   },
 };
 

@@ -74,15 +74,15 @@ export function BlogTOC({ items, mobile = false }: BlogTOCProps) {
       <div className="mb-8">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="w-full bg-white border-2 border-gray-200 rounded-xl p-4 flex items-center justify-between hover:border-teal-500 transition-colors"
+          className="w-full bg-bg-muted border border-border rounded-xl p-4 flex items-center justify-between hover:border-primary transition-colors"
           aria-expanded={isOpen}
           aria-label="Tartalomjegyzék megnyitása"
         >
-          <span className="font-semibold text-gray-900">Tartalomjegyzék</span>
+          <span className="font-semibold text-fg">Tartalomjegyzék</span>
           <ChevronDown className={`w-5 h-5 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
         </button>
         {isOpen && (
-          <div className="mt-2 bg-white border-2 border-gray-200 rounded-xl p-4">
+          <div className="mt-2 bg-bg-muted border border-border rounded-xl p-4">
             <nav className="space-y-2">
               {items.map((item, index) => (
                 <a
@@ -94,8 +94,8 @@ export function BlogTOC({ items, mobile = false }: BlogTOCProps) {
                   }}
                   className={`block py-2 px-3 rounded-lg text-sm transition-colors ${
                     activeSection === item.id
-                      ? 'bg-teal-50 text-teal-700 font-semibold'
-                      : 'text-gray-600 hover:bg-gray-50'
+                      ? 'bg-primary/10 text-primary font-semibold'
+                      : 'text-fg-muted hover:bg-bg'
                   }`}
                 >
                   {index + 1}. {item.title}
@@ -109,9 +109,9 @@ export function BlogTOC({ items, mobile = false }: BlogTOCProps) {
   }
 
   return (
-    <div className="bg-white rounded-xl border-2 border-gray-200 p-6">
-      <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-        <List className="w-5 h-5 text-teal-500" />
+    <div className="bg-bg-muted rounded-xl border border-border p-6">
+      <h3 className="font-bold text-fg mb-4 flex items-center gap-2">
+        <List className="w-5 h-5 text-primary" />
         <span>Tartalomjegyzék</span>
       </h3>
       <nav className="space-y-2">
@@ -125,8 +125,8 @@ export function BlogTOC({ items, mobile = false }: BlogTOCProps) {
             }}
             className={`block py-2 px-3 rounded-lg text-sm transition-colors ${
               activeSection === item.id
-                ? 'bg-teal-50 text-teal-700 font-semibold'
-                : 'text-gray-600 hover:bg-gray-50'
+                ? 'bg-primary/10 text-primary font-semibold'
+                : 'text-fg-muted hover:bg-bg'
             }`}
           >
             {index + 1}. {item.title}
@@ -135,14 +135,14 @@ export function BlogTOC({ items, mobile = false }: BlogTOCProps) {
       </nav>
 
       {/* Reading progress */}
-      <div className="mt-6 pt-6 border-t border-gray-200">
-        <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
+      <div className="mt-6 pt-6 border-t border-border">
+        <div className="flex items-center justify-between text-sm text-fg-muted mb-2">
           <span>Haladás</span>
-          <span className="font-semibold">{Math.round(progressPercent)}%</span>
+          <span className="font-semibold text-fg">{Math.round(progressPercent)}%</span>
         </div>
-        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+        <div className="h-2 bg-border/40 rounded-full overflow-hidden">
           <div
-            className="h-full bg-teal-500 rounded-full transition-all"
+            className="h-full bg-primary rounded-full transition-all"
             style={{ width: `${progressPercent}%` }}
           ></div>
         </div>

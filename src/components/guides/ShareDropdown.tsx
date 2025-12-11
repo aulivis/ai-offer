@@ -58,7 +58,7 @@ export function ShareDropdown({ url, title }: ShareDropdownProps) {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setShowShare(!showShare)}
-        className="bg-white text-gray-700 px-6 py-3 rounded-xl font-semibold border-2 border-gray-200 hover:border-teal-500 transition-colors flex items-center gap-2 min-h-[44px]"
+        className="bg-bg text-fg px-6 py-3 rounded-xl font-semibold border-2 border-border hover:border-primary transition-colors flex items-center gap-2 min-h-[44px]"
         aria-expanded={showShare}
         aria-label="Megosztás"
       >
@@ -67,12 +67,12 @@ export function ShareDropdown({ url, title }: ShareDropdownProps) {
       </button>
 
       {showShare && (
-        <div className="absolute top-full right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 p-4 min-w-[250px] z-50">
+        <div className="absolute top-full right-0 mt-2 bg-bg rounded-xl shadow-2xl border border-border p-4 min-w-[250px] z-50">
           <div className="flex items-center justify-between mb-3">
-            <p className="text-sm font-semibold text-gray-700">Megosztás itt:</p>
+            <p className="text-sm font-semibold text-fg">Megosztás itt:</p>
             <button
               onClick={() => setShowShare(false)}
-              className="p-1 hover:bg-gray-100 rounded transition-colors"
+              className="p-1 hover:bg-bg-muted rounded transition-colors"
               aria-label="Bezárás"
             >
               <X className="w-4 h-4" />
@@ -81,40 +81,40 @@ export function ShareDropdown({ url, title }: ShareDropdownProps) {
           <div className="space-y-2">
             <button
               onClick={() => handleShare('facebook')}
-              className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"
+              className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-bg-muted transition-colors"
             >
-              <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                <Facebook className="w-4 h-4 text-white" />
+              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                <Facebook className="w-4 h-4 text-primary-ink" />
               </div>
-              <span className="text-gray-700 font-medium">Facebook</span>
+              <span className="text-fg font-medium">Facebook</span>
             </button>
             <button
               onClick={() => handleShare('twitter')}
-              className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"
+              className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-bg-muted transition-colors"
             >
-              <div className="w-8 h-8 bg-blue-400 rounded-full flex items-center justify-center">
-                <Twitter className="w-4 h-4 text-white" />
+              <div className="w-8 h-8 bg-accent rounded-full flex items-center justify-center">
+                <Twitter className="w-4 h-4 text-primary-ink" />
               </div>
-              <span className="text-gray-700 font-medium">Twitter</span>
+              <span className="text-fg font-medium">Twitter</span>
             </button>
             <button
               onClick={() => handleShare('linkedin')}
-              className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"
+              className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-bg-muted transition-colors"
             >
-              <div className="w-8 h-8 bg-blue-700 rounded-full flex items-center justify-center">
-                <Linkedin className="w-4 h-4 text-white" />
+              <div className="w-8 h-8 bg-cta rounded-full flex items-center justify-center">
+                <Linkedin className="w-4 h-4 text-cta-ink" />
               </div>
-              <span className="text-gray-700 font-medium">LinkedIn</span>
+              <span className="text-fg font-medium">LinkedIn</span>
             </button>
-            <div className="pt-2 border-t border-gray-200">
+            <div className="pt-2 border-t border-border">
               <button
                 onClick={copyLink}
-                className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"
+                className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-bg-muted transition-colors"
               >
-                <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center">
-                  <LinkIcon className="w-4 h-4 text-white" />
+                <div className="w-8 h-8 bg-primary/80 rounded-full flex items-center justify-center">
+                  <LinkIcon className="w-4 h-4 text-primary-ink" />
                 </div>
-                <span className="text-gray-700 font-medium">Link másolása</span>
+                <span className="text-fg font-medium">Link másolása</span>
               </button>
             </div>
           </div>
