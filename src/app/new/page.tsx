@@ -11,6 +11,21 @@ import { useSupabase } from '@/components/SupabaseProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { StepErrorBoundary } from '@/components/offers/StepErrorBoundary';
 import { PageErrorBoundary } from '@/components/PageErrorBoundary';
+import { DEFAULT_OFFER_TEMPLATE_ID } from '@/app/lib/offerTemplates';
+import { useToast } from '@/hooks/useToast';
+import { useOfferWizard } from '@/hooks/useOfferWizard';
+import { usePricingRows } from '@/hooks/usePricingRows';
+import { useOfferPreview } from '@/hooks/useOfferPreview';
+import { useDraftPersistence } from '@/hooks/useDraftPersistence';
+import { useWizardKeyboardShortcuts } from '@/hooks/useWizardKeyboardShortcuts';
+import type { PriceRow } from '@/components/EditablePriceTable';
+import { trackWizardEvent } from '@/lib/analytics/wizard';
+import { ApiError, fetchWithSupabaseAuth, isAbortError } from '@/lib/api';
+import { Card, CardHeader } from '@/components/ui/Card';
+import type { OfferPreviewTab } from '@/types/preview';
+import { listTemplates } from '@/lib/offers/templates/index';
+import type { TemplateId } from '@/lib/offers/templates/types';
+import type { WizardStep } from '@/types/wizard';
 
 // Lazy load wizard step components for route-based code splitting
 const OfferProjectDetailsSection = dynamic(
@@ -55,21 +70,6 @@ const PreviewAsCustomerButton = dynamic(
     loading: () => <div className="h-12 animate-pulse rounded-lg bg-bg-muted" />,
   },
 );
-import { DEFAULT_OFFER_TEMPLATE_ID } from '@/app/lib/offerTemplates';
-import { useToast } from '@/hooks/useToast';
-import { useOfferWizard } from '@/hooks/useOfferWizard';
-import { usePricingRows } from '@/hooks/usePricingRows';
-import { useOfferPreview } from '@/hooks/useOfferPreview';
-import { useDraftPersistence } from '@/hooks/useDraftPersistence';
-import { useWizardKeyboardShortcuts } from '@/hooks/useWizardKeyboardShortcuts';
-import type { PriceRow } from '@/components/EditablePriceTable';
-import { trackWizardEvent } from '@/lib/analytics/wizard';
-import { ApiError, fetchWithSupabaseAuth, isAbortError } from '@/lib/api';
-import { Card, CardHeader } from '@/components/ui/Card';
-import type { OfferPreviewTab } from '@/types/preview';
-import { listTemplates } from '@/lib/offers/templates/index';
-import type { TemplateId } from '@/lib/offers/templates/types';
-import type { WizardStep } from '@/types/wizard';
 
 const PREVIEW_DEBOUNCE_MS = 600;
 

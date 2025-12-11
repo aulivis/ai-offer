@@ -36,7 +36,17 @@ export function useSettingsTabs() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { showToast } = useToast();
-  const [activeTab, setActiveTab] = useState<SettingsTabId>('profile');
+  
+  // Initialize activeTab from URL hash if present, otherwise default to 'profile'
+  // Use lazy initializer to ensure it runs on client-side only
+  const [activeTab, setActiveTab] = useState<SettingsTabId>(() => {
+    if (typeof window === 'undefined') return 'profile';
+    const hash = window.location.hash.replace('#', '');
+    if (hash && VALID_TABS.includes(hash as SettingsTabId)) {
+      return hash as SettingsTabId;
+    }
+    return 'profile';
+  });
 
   // Handle Google link status from URL params
   useEffect(() => {
@@ -62,13 +72,26 @@ export function useSettingsTabs() {
     router.replace('/settings', { scroll: false });
   }, [router, searchParams, showToast]);
 
-  // Initialize tab from URL hash if present
+  // Initialize tab from URL hash if present and listen for hash changes
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const hash = window.location.hash.replace('#', '');
-    if (hash && VALID_TABS.includes(hash as SettingsTabId)) {
-      setActiveTab(hash as SettingsTabId);
-    }
+
+    const updateTabFromHash = () => {
+      const hash = window.location.hash.replace('#', '');
+      if (hash && VALID_TABS.includes(hash as SettingsTabId)) {
+        setActiveTab(hash as SettingsTabId);
+      }
+    };
+
+    // Initialize from hash on mount
+    updateTabFromHash();
+
+    // Listen for hash changes (e.g., browser back/forward, direct navigation)
+    window.addEventListener('hashchange', updateTabFromHash);
+
+    return () => {
+      window.removeEventListener('hashchange', updateTabFromHash);
+    };
   }, []);
 
   const handleTabChange = (tabId: SettingsTabId) => {
