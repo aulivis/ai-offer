@@ -574,43 +574,44 @@ export default function SettingsPage() {
                     </TabsContent>
 
                     <TabsContent value="testimonials" className="mt-0">
-                      <SectionErrorBoundary sectionName={t('settings.testimonials.title')}>
-                        <section
-                          // eslint-disable-next-line no-hardcoded-ui-strings/no-hardcoded-ui-strings
-                          aria-labelledby="testimonials-settings-heading"
-                          className="space-y-8 w-full"
-                        >
-                          <h2 id="testimonials-settings-heading" className="sr-only">
-                            {t('settings.testimonials.heading')}
-                          </h2>
-                          <div className="mb-8">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-4">
-                                <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 via-turquoise-100 to-primary/10 shadow-sm">
-                                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/50 to-transparent"></div>
-                                  <ChatBubbleLeftRightIcon className="relative z-10 h-6 w-6 text-primary" />
-                                </div>
-                                <div>
-                                  <H2 className="mb-1" fluid>
-                                    {t('settings.testimonials.title')}
-                                  </H2>
-                                  <p className="text-body-small md:text-body text-fg-muted">
-                                    {t('settings.testimonials.subtitle')}
-                                  </p>
+                      {activeTab === 'testimonials' && (
+                        <SectionErrorBoundary sectionName={t('settings.testimonials.title')}>
+                          <section
+                            // eslint-disable-next-line no-hardcoded-ui-strings/no-hardcoded-ui-strings
+                            aria-labelledby="testimonials-settings-heading"
+                            className="space-y-8 w-full"
+                          >
+                            <h2 id="testimonials-settings-heading" className="sr-only">
+                              {t('settings.testimonials.heading')}
+                            </h2>
+                            <div className="mb-8">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                  <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 via-turquoise-100 to-primary/10 shadow-sm">
+                                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/50 to-transparent"></div>
+                                    <ChatBubbleLeftRightIcon className="relative z-10 h-6 w-6 text-primary" />
+                                  </div>
+                                  <div>
+                                    <H2 className="mb-1" fluid>
+                                      {t('settings.testimonials.title')}
+                                    </H2>
+                                    <p className="text-body-small md:text-body text-fg-muted">
+                                      {t('settings.testimonials.subtitle')}
+                                    </p>
+                                  </div>
                                 </div>
                               </div>
                             </div>
-                          </div>
-                          <div className="space-y-6">
-                            {plan === 'pro' ? (
-                              <TestimonialsManager
-                                testimonials={testimonials}
-                                activities={acts}
-                                enabled={true}
-                                plan={plan}
-                                onTestimonialsChange={reloadTestimonials}
-                              />
-                            ) : (
+                            <div className="space-y-6">
+                              {plan === 'pro' ? (
+                                <TestimonialsManager
+                                  testimonials={testimonials || []}
+                                  activities={acts || []}
+                                  enabled={true}
+                                  plan={plan}
+                                  onTestimonialsChange={reloadTestimonials}
+                                />
+                              ) : (
                               <div className="rounded-xl border-2 border-border bg-bg-muted/50 p-8 text-center">
                                 <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-warning/10">
                                   <LockClosedIcon className="h-6 w-6 text-warning" />
@@ -639,18 +640,21 @@ export default function SettingsPage() {
                           </div>
                         </section>
                       </SectionErrorBoundary>
+                      )}
                     </TabsContent>
 
                     <TabsContent value="team" className="mt-0">
-                      <SectionErrorBoundary sectionName={t('settings.team.title')}>
-                        {/* eslint-disable-next-line no-hardcoded-ui-strings/no-hardcoded-ui-strings */}
-                        <section aria-labelledby="team-settings-heading">
-                          <h2 id="team-settings-heading" className="sr-only">
-                            {t('settings.team.heading')}
-                          </h2>
-                          <SettingsTeamSection plan={plan} />
-                        </section>
-                      </SectionErrorBoundary>
+                      {activeTab === 'team' && (
+                        <SectionErrorBoundary sectionName={t('settings.team.title')}>
+                          {/* eslint-disable-next-line no-hardcoded-ui-strings/no-hardcoded-ui-strings */}
+                          <section aria-labelledby="team-settings-heading">
+                            <h2 id="team-settings-heading" className="sr-only">
+                              {t('settings.team.heading')}
+                            </h2>
+                            <SettingsTeamSection plan={plan} />
+                          </section>
+                        </SectionErrorBoundary>
+                      )}
                     </TabsContent>
                   </div>
                 </div>

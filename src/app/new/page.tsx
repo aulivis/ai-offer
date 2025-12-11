@@ -10,6 +10,7 @@ import StepIndicator, { type StepIndicatorStep } from '@/components/StepIndicato
 import { useSupabase } from '@/components/SupabaseProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { StepErrorBoundary } from '@/components/offers/StepErrorBoundary';
+import { PageErrorBoundary } from '@/components/PageErrorBoundary';
 
 // Lazy load wizard step components for route-based code splitting
 const OfferProjectDetailsSection = dynamic(
@@ -1100,7 +1101,8 @@ export default function NewOfferPage() {
   const pricingSectionError = attemptedSteps[2] ? validation.fields[2]?.pricing : undefined;
 
   return (
-    <AppFrame title={t('offers.wizard.pageTitle')} description={t('offers.wizard.pageDescription')}>
+    <PageErrorBoundary>
+      <AppFrame title={t('offers.wizard.pageTitle')} description={t('offers.wizard.pageDescription')}>
       <div
         className="flex flex-col gap-8 md:grid md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] md:items-start md:gap-10 lg:gap-12"
         style={columnWidthStyle}
@@ -1267,5 +1269,6 @@ export default function NewOfferPage() {
         />
       </div>
     </AppFrame>
+    </PageErrorBoundary>
   );
 }

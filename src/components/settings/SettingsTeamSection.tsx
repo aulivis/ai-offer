@@ -131,8 +131,14 @@ export function SettingsTeamSection({ plan }: SettingsTeamSectionProps) {
   }, [user, teams, isPro, supabase]);
 
   useEffect(() => {
-    loadTeams();
-  }, [loadTeams]);
+    // Only load teams for Pro users
+    if (isPro) {
+      loadTeams();
+    } else {
+      // For non-Pro users, set loading to false immediately
+      setLoading(false);
+    }
+  }, [loadTeams, isPro]);
 
   useEffect(() => {
     if (teams.length > 0) {
