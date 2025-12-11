@@ -362,9 +362,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                           <Check className="w-4 h-4 text-primary group-hover:text-white" />
                         </div>
                         <div className="flex-1">
-                          <p className="text-fg font-medium">
-                            Vizualizálj minden fontos dolgot
-                          </p>
+                          <p className="text-fg font-medium">Vizualizálj minden fontos dolgot</p>
                         </div>
                       </div>
 

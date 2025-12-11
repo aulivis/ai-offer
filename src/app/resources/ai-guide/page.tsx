@@ -375,9 +375,7 @@ export default function AIGuidePage() {
                   lassú weboldal betöltési idővel. A megoldás egy gyors, optimalizált, modern
                   weboldal fejlesztése.&quot;
                 </p>
-                <p className="mb-3 text-sm font-semibold text-fg">
-                  Generált szöveg (részlet):
-                </p>
+                <p className="mb-3 text-sm font-semibold text-fg">Generált szöveg (részlet):</p>
                 <p className="rounded bg-white p-4 text-sm text-fg shadow-sm">
                   &quot;Értjük, hogy a lassú weboldal betöltési idő negatívan befolyásolja az üzleti
                   teljesítményét. Megoldásunk egy gyors, optimalizált, modern weboldal fejlesztése,
@@ -397,9 +395,7 @@ export default function AIGuidePage() {
                   &quot;Írj egy rövid, üzleti hangvételű leírást a következő szolgáltatásokról: SEO
                   optimalizálás, tartalomszabályozás, social media marketing&quot;
                 </p>
-                <p className="mb-3 text-sm font-semibold text-fg">
-                  Generált szöveg (részlet):
-                </p>
+                <p className="mb-3 text-sm font-semibold text-fg">Generált szöveg (részlet):</p>
                 <p className="rounded bg-white p-4 text-sm text-fg shadow-sm">
                   &quot;Kínáljuk a digitális marketing teljes spektrumát: SEO optimalizálást a
                   keresőmotorokban való jobb láthatóságért, professzionális tartalomszabályozást a

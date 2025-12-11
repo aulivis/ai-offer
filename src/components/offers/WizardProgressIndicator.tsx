@@ -71,9 +71,7 @@ export function WizardProgressIndicator({
       <div className="flex items-center justify-between gap-3">
         <div className="flex-1">
           <div className="mb-1 flex items-center justify-between">
-            <span className="text-xs font-semibold text-fg">
-              {t('wizard.progress.label')}
-            </span>
+            <span className="text-xs font-semibold text-fg">{t('wizard.progress.label')}</span>
             <span className="text-sm font-bold text-fg">{progress}%</span>
           </div>
           <div className="h-2 overflow-hidden rounded-full bg-border/60">

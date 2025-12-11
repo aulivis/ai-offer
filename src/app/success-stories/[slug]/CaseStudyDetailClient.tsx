@@ -162,9 +162,7 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
           </h2>
           <div className="container mx-auto px-4">
             <div className="max-w-6xl mx-auto">
-              <h2 className="text-3xl font-bold text-fg text-center mb-12">
-                Elért eredmények
-              </h2>
+              <h2 className="text-3xl font-bold text-fg text-center mb-12">Elért eredmények</h2>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
                 {caseStudy.metrics.map((metric, index) => {

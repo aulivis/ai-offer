@@ -171,7 +171,7 @@ export function SettingsActivitiesSection({
                     type="button"
                     onClick={() => onDeleteActivity(a.id)}
                     disabled={deletingId === a.id}
-                  className="flex-shrink-0 rounded-lg p-2 text-danger transition-colors hover:bg-danger/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-danger disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-shrink-0 rounded-lg p-2 text-danger transition-colors hover:bg-danger/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-danger disabled:opacity-50 disabled:cursor-not-allowed"
                     aria-label={t('settings.activities.deleteAriaLabel', { name: a.name })}
                   >
                     {deletingId === a.id ? (

@@ -842,18 +842,18 @@ export function WizardStep2Pricing({
           />
           {showClientDropdown && filteredClients.length > 0 && (
             <div className="absolute z-10 mt-1.5 max-h-48 w-full overflow-auto rounded-xl border border-border/70 bg-white shadow-xl">
-                  {filteredClients.map((c) => (
-                    <Button
-                      key={c.id}
-                      type="button"
+              {filteredClients.map((c) => (
+                <Button
+                  key={c.id}
+                  type="button"
                   className="flex w-full flex-col items-start gap-0.5 rounded-none border-none px-3 py-1.5 text-left text-xs text-fg-muted transition hover:bg-bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                      onMouseDown={() => pickClient(c)}
-                    >
-                      <span className="font-medium text-fg">{c.company_name}</span>
-                      {c.email ? <span className="text-[11px] text-fg-muted">{c.email}</span> : null}
-                    </Button>
-                  ))}
-                </div>
+                  onMouseDown={() => pickClient(c)}
+                >
+                  <span className="font-medium text-fg">{c.company_name}</span>
+                  {c.email ? <span className="text-[11px] text-fg-muted">{c.email}</span> : null}
+                </Button>
+              ))}
+            </div>
           )}
         </div>
         <div className="grid gap-4 sm:grid-cols-2">

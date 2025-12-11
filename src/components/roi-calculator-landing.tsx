@@ -231,9 +231,9 @@ export function ROICalculatorLanding() {
             <div className="grid grid-cols-2 gap-4">
               {/* Current Time */}
               <div className="bg-white/5 backdrop-blur-lg rounded-2xl p-6 border border-white/10">
-              <div className="flex items-center gap-2 mb-3">
-                <Clock className="w-5 h-5 text-danger" />
-                <span className="text-fg-muted font-semibold">Jelenlegi ráfordítás</span>
+                <div className="flex items-center gap-2 mb-3">
+                  <Clock className="w-5 h-5 text-danger" />
+                  <span className="text-fg-muted font-semibold">Jelenlegi ráfordítás</span>
                 </div>
                 <div className="text-4xl font-bold text-white mb-1">{currentMonthlyHours} óra</div>
                 <div className="text-sm text-fg-muted">havonta</div>
@@ -253,7 +253,7 @@ export function ROICalculatorLanding() {
             </div>
 
             {/* Annual Projection - Moved below monthly calculation */}
-              <div className="rounded-2xl bg-warning/15 p-6 shadow-xl border-2 border-warning">
+            <div className="rounded-2xl bg-warning/15 p-6 shadow-xl border-2 border-warning">
               <div className="flex items-center gap-2 mb-3">
                 <DollarSign className="w-6 h-6 text-white" />
                 <h4 className="text-white font-bold text-lg">Éves szinten</h4>

@@ -162,9 +162,7 @@ export function FullscreenPreviewModal({
               {/* Zoom controls */}
               {onZoomChange && (
                 <div className="flex items-center gap-2">
-                  <label className="text-sm font-medium text-fg">
-                    {t('wizard.preview.zoom')}:
-                  </label>
+                  <label className="text-sm font-medium text-fg">{t('wizard.preview.zoom')}:</label>
                   <div className="flex items-center gap-1">
                     <Button
                       type="button"
