@@ -48,9 +48,7 @@ const TimeRemaining = dynamic(
 );
 const NewsletterSubscription = dynamic(
   () =>
-    import('@/components/landing/NewsletterSubscription').then(
-      (mod) => mod.NewsletterSubscription,
-    ),
+    import('@/components/landing/NewsletterSubscription').then((mod) => mod.NewsletterSubscription),
   {
     loading: () => <div className="h-32 animate-pulse rounded-lg bg-bg-muted" />,
   },

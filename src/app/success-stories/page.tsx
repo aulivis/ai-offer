@@ -11,8 +11,7 @@ import { getAuthorImage } from '@/lib/testimonial-images';
 
 // Lazy load ROI calculator for route-based code splitting
 const ROICalculatorLanding = dynamic(
-  () =>
-    import('@/components/roi-calculator-landing').then((mod) => mod.ROICalculatorLanding),
+  () => import('@/components/roi-calculator-landing').then((mod) => mod.ROICalculatorLanding),
   {
     loading: () => <div className="h-96 animate-pulse rounded-lg bg-bg-muted" />,
   },

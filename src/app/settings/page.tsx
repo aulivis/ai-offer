@@ -86,15 +86,13 @@ const SettingsEmailSubscriptionSection = dynamic(
   },
 );
 const TestimonialsManager = dynamic(
-  () =>
-    import('@/components/settings/TestimonialsManager').then((mod) => mod.TestimonialsManager),
+  () => import('@/components/settings/TestimonialsManager').then((mod) => mod.TestimonialsManager),
   {
     loading: () => <div className="h-96 animate-pulse rounded-lg bg-bg-muted" />,
   },
 );
 const SettingsTeamSection = dynamic(
-  () =>
-    import('@/components/settings/SettingsTeamSection').then((mod) => mod.SettingsTeamSection),
+  () => import('@/components/settings/SettingsTeamSection').then((mod) => mod.SettingsTeamSection),
   {
     loading: () => <div className="h-64 animate-pulse rounded-lg bg-bg-muted" />,
   },

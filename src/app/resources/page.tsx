@@ -36,17 +36,14 @@ const ResourceCard = dynamic(
   },
 );
 const ResourceFiltersComponent = dynamic(
-  () =>
-    import('@/components/resource-filters').then((mod) => mod.ResourceFiltersComponent),
+  () => import('@/components/resource-filters').then((mod) => mod.ResourceFiltersComponent),
   {
     loading: () => <div className="h-32 animate-pulse rounded-lg bg-bg-muted" />,
   },
 );
 const NewsletterSubscription = dynamic(
   () =>
-    import('@/components/landing/NewsletterSubscription').then(
-      (mod) => mod.NewsletterSubscription,
-    ),
+    import('@/components/landing/NewsletterSubscription').then((mod) => mod.NewsletterSubscription),
   {
     loading: () => <div className="h-32 animate-pulse rounded-lg bg-bg-muted" />,
   },

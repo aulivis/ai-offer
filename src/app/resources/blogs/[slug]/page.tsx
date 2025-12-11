@@ -37,12 +37,9 @@ const ShareDropdown = dynamic(
     loading: () => <div className="h-10 animate-pulse rounded-lg bg-bg-muted" />,
   },
 );
-const BlogTOC = dynamic(
-  () => import('@/components/blogs/BlogTOC').then((mod) => mod.BlogTOC),
-  {
-    loading: () => <div className="h-64 animate-pulse rounded-lg bg-bg-muted" />,
-  },
-);
+const BlogTOC = dynamic(() => import('@/components/blogs/BlogTOC').then((mod) => mod.BlogTOC), {
+  loading: () => <div className="h-64 animate-pulse rounded-lg bg-bg-muted" />,
+});
 const BackToTop = dynamic(
   () => import('@/components/blogs/BackToTop').then((mod) => mod.BackToTop),
   {
@@ -51,9 +48,7 @@ const BackToTop = dynamic(
 );
 const NewsletterSubscription = dynamic(
   () =>
-    import('@/components/landing/NewsletterSubscription').then(
-      (mod) => mod.NewsletterSubscription,
-    ),
+    import('@/components/landing/NewsletterSubscription').then((mod) => mod.NewsletterSubscription),
   {
     loading: () => <div className="h-32 animate-pulse rounded-lg bg-bg-muted" />,
   },
