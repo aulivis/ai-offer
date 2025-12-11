@@ -36,7 +36,7 @@ export function useSettingsTabs() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { showToast } = useToast();
-  
+
   // Initialize activeTab from URL hash if present, otherwise default to 'profile'
   // Use lazy initializer to ensure it runs on client-side only
   const [activeTab, setActiveTab] = useState<SettingsTabId>(() => {
