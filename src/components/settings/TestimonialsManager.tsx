@@ -106,7 +106,7 @@ export function TestimonialsManager({
   onTestimonialsChange,
 }: TestimonialsManagerProps) {
   const supabase = useSupabase();
-  const { user } = useRequireAuth();
+  const { user, status: authStatus } = useRequireAuth();
   const { showToast } = useToast();
   const [newTestimonial, setNewTestimonial] = useState({
     text: '',
@@ -126,7 +126,28 @@ export function TestimonialsManager({
     return null;
   }
 
+  // Don't render if auth is not ready or supabase is not available
+  if (authStatus === 'loading') {
+    return (
+      <div className="rounded-xl border-2 border-border bg-bg-muted/50 p-8 text-center">
+        <p className="text-sm text-fg-muted">{t('common.loading')}</p>
+      </div>
+    );
+  }
+
+  if (authStatus !== 'authenticated' || !user || !supabase) {
+    return null;
+  }
+
   const handleAdd = async () => {
+    if (!user?.id || !supabase) {
+      showToast({
+        description: t('errors.auth.verificationUnknown'),
+        variant: 'error',
+      });
+      return;
+    }
+
     if (!newTestimonial.text.trim()) {
       showToast({
         description: t('settings.testimonials.textRequired'),
@@ -147,7 +168,7 @@ export function TestimonialsManager({
     setSaving(true);
     try {
       const { error } = await supabase.from('testimonials').insert({
-        user_id: user?.id,
+        user_id: user.id,
         text: newTestimonial.text.trim(),
         activity_id: newTestimonial.activityId || null,
         star_rating: newTestimonial.showStars ? newTestimonial.starRating || null : null,
@@ -192,6 +213,14 @@ export function TestimonialsManager({
   };
 
   const handleDelete = async (id: string) => {
+    if (!user?.id || !supabase) {
+      showToast({
+        description: t('errors.auth.verificationUnknown'),
+        variant: 'error',
+      });
+      return;
+    }
+
     setDeleting(id);
     try {
       const { error } = await supabase.from('testimonials').delete().eq('id', id);

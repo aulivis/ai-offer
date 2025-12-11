@@ -125,7 +125,7 @@ export default function NewOfferPage() {
   const router = useRouter();
   const logger = useMemo(() => createClientLogger({ component: 'NewOfferPage' }), []);
   const supabase = useSupabase();
-  const { user } = useRequireAuth();
+  const { user, status: authStatus } = useRequireAuth();
 
   // Preview hook - enabled from Step 2 onwards
   const previewEnabled = step >= 2;
@@ -227,7 +227,13 @@ export default function NewOfferPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const templateOptions = useMemo(() => {
     try {
-      return listTemplates();
+      const templates = listTemplates();
+      // Validate templates have required structure
+      if (!Array.isArray(templates)) {
+        logger.error('listTemplates returned non-array', { templates });
+        return [];
+      }
+      return templates;
     } catch (error) {
       logger.error('Failed to load templates', error);
       // Return empty array as fallback - defaultTemplateId will handle it
@@ -236,15 +242,19 @@ export default function NewOfferPage() {
   }, [logger]);
   const defaultTemplateId = useMemo<TemplateId>(() => {
     try {
+      // Ensure templateOptions is valid
+      if (!Array.isArray(templateOptions) || templateOptions.length === 0) {
+        return DEFAULT_OFFER_TEMPLATE_ID as TemplateId;
+      }
       // Find template matching default ID, or use first available
       const defaultMatch = templateOptions.find(
-        (template) => template.id === DEFAULT_OFFER_TEMPLATE_ID,
+        (template) => template?.id === DEFAULT_OFFER_TEMPLATE_ID,
       );
-      if (defaultMatch) {
+      if (defaultMatch?.id) {
         return defaultMatch.id;
       }
       // If no match and templates exist, use first one
-      if (templateOptions.length > 0 && templateOptions[0]?.id) {
+      if (templateOptions[0]?.id) {
         return templateOptions[0].id;
       }
       // Fallback to default ID (will be validated later)
@@ -254,7 +264,14 @@ export default function NewOfferPage() {
       return DEFAULT_OFFER_TEMPLATE_ID as TemplateId;
     }
   }, [templateOptions, logger]);
-  const [selectedTemplateId, setSelectedTemplateId] = useState<TemplateId>(() => defaultTemplateId);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<TemplateId>(() => {
+    try {
+      return defaultTemplateId;
+    } catch (error) {
+      logger.error('Failed to initialize selectedTemplateId', error);
+      return DEFAULT_OFFER_TEMPLATE_ID as TemplateId;
+    }
+  });
   const [brandingPrimary, setBrandingPrimary] = useState('#1c274c');
   const [brandingSecondary, setBrandingSecondary] = useState('#e2e8f0');
   const [brandingLogoUrl, setBrandingLogoUrl] = useState('');
@@ -1146,6 +1163,26 @@ export default function NewOfferPage() {
         })()
       : undefined;
   const pricingSectionError = attemptedSteps[2] ? validation.fields[2]?.pricing : undefined;
+
+  // Safety check: show loading state if auth is still loading
+  // This prevents errors if user data is not yet available
+  if (authStatus === 'loading') {
+    return (
+      <PageErrorBoundary>
+        <AppFrame
+          title={t('offers.wizard.pageTitle')}
+          description={t('offers.wizard.pageDescription')}
+        >
+          <div className="flex h-96 items-center justify-center">
+            <div className="text-center">
+              <div className="mb-4 h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto" />
+              <p className="text-sm text-fg-muted">{t('app.loading')}</p>
+            </div>
+          </div>
+        </AppFrame>
+      </PageErrorBoundary>
+    );
+  }
 
   return (
     <PageErrorBoundary>

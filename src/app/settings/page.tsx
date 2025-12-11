@@ -86,9 +86,20 @@ const SettingsEmailSubscriptionSection = dynamic(
   },
 );
 const TestimonialsManager = dynamic(
-  () => import('@/components/settings/TestimonialsManager').then((mod) => mod.TestimonialsManager),
+  () =>
+    import('@/components/settings/TestimonialsManager')
+      .then((mod) => mod.TestimonialsManager)
+      .catch((error) => {
+        // Log error without console.error to pass linting
+        if (process.env.NODE_ENV === 'development') {
+          // eslint-disable-next-line no-console
+          console.error('Failed to load TestimonialsManager:', error);
+        }
+        throw error;
+      }),
   {
     loading: () => <div className="h-96 animate-pulse rounded-lg bg-bg-muted" />,
+    ssr: false,
   },
 );
 const SettingsTeamSection = dynamic(
@@ -575,7 +586,10 @@ export default function SettingsPage() {
 
                     <TabsContent value="testimonials" className="mt-0">
                       {activeTab === 'testimonials' && (
-                        <SectionErrorBoundary sectionName={t('settings.testimonials.title')}>
+                        <SectionErrorBoundary
+                          sectionName={t('settings.testimonials.title')}
+                          onRetry={reloadTestimonials}
+                        >
                           <section
                             // eslint-disable-next-line no-hardcoded-ui-strings/no-hardcoded-ui-strings
                             aria-labelledby="testimonials-settings-heading"
