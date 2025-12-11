@@ -49,7 +49,7 @@
 **Files Updated**:
 
 - ✅ `web/src/app/new/page.tsx` - Passes formality, tone, customerName to preview render
-- ✅ `web/src/app/(dashboard)/dashboard/offers/new/page.tsx` - Passes default formality/tone
+- ✅ `web/src/app/new/page.tsx` - Passes default formality/tone
 
 ## Block Structure Implementation
 
@@ -137,7 +137,7 @@
 
 12. `web/src/app/offer/[token]/page.tsx`
 13. `web/src/app/new/page.tsx`
-14. `web/src/app/(dashboard)/dashboard/offers/new/page.tsx`
+14. `web/src/app/new/page.tsx`
 
 ### AI Prompt
 

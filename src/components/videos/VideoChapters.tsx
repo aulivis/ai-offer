@@ -56,6 +56,8 @@ export function VideoChapters({ chapters }: VideoChaptersProps) {
                     alt={chapter.title}
                     fill
                     className="object-cover"
+                    sizes="96px"
+                    loading="lazy"
                   />
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center">

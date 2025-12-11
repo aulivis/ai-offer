@@ -269,6 +269,8 @@ export default function SuccessStoriesPage() {
                               width={40}
                               height={40}
                               className="w-full h-full object-cover"
+                              sizes="(max-width: 768px) 32px, 40px"
+                              loading="lazy"
                             />
                           </div>
                           <div className="min-w-0 flex-1">

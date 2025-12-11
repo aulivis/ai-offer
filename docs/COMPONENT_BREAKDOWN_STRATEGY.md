@@ -20,7 +20,7 @@ Large components reduce maintainability, testability, and reusability. This docu
   - Difficult to test individual features
 - **Priority:** High
 
-### 2. New Offer Wizard (`web/src/app/(dashboard)/dashboard/offers/new/page.tsx`)
+### 2. New Offer Wizard (`web/src/app/new/page.tsx`)
 
 - **Size:** Large (exact line count to be verified)
 - **Issues:**
@@ -101,7 +101,7 @@ Large components reduce maintainability, testability, and reusability. This docu
 
 1. **WizardStep Components**
    - Extract each wizard step
-   - `WizardStep1Details.tsx`
+   - `OfferProjectDetailsSection.tsx` (replaces WizardStep1Details)
    - `WizardStep2Pricing.tsx` (already exists)
    - `WizardStep3Preview.tsx`
 

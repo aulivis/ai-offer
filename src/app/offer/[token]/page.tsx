@@ -12,9 +12,11 @@ import { getRequestIp } from '@/lib/auditLogging';
 import { headers } from 'next/headers';
 import { logger } from '@/lib/logger';
 import { renderOfferHtml } from '@/lib/offers/renderer';
-import OfferResponseForm from './OfferResponseForm';
-import { DownloadPdfButton } from './DownloadPdfButton';
-import { OfferDisplay } from './OfferDisplay';
+import {
+  OfferResponseForm,
+  DownloadPdfButton,
+  OfferDisplay,
+} from './OfferClientComponents';
 import { PageErrorBoundary } from '@/components/PageErrorBoundary';
 import { H2 } from '@/components/ui/Heading';
 import { BackButton } from '@/components/ui/BackButton';

@@ -17,13 +17,44 @@ import {
   Printer,
 } from 'lucide-react';
 import { notFound } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { getResourceBySlug, getRelatedResources } from '@/lib/resources';
-import { ResourceCard } from '@/components/resource-card';
 import { ResourceStructuredData } from '@/components/resource-structured-data';
-import { ShareDropdown } from '@/components/guides/ShareDropdown';
-import { GuideFeedback } from '@/components/guides/GuideFeedback';
-import { TimeRemaining } from '@/components/guides/TimeRemaining';
-import { NewsletterSubscription } from '@/components/landing/NewsletterSubscription';
+
+// Lazy load below-the-fold components for route-based code splitting
+const ResourceCard = dynamic(
+  () => import('@/components/resource-card').then((mod) => mod.ResourceCard),
+  {
+    loading: () => <div className="h-64 animate-pulse rounded-lg bg-bg-muted" />,
+  },
+);
+const ShareDropdown = dynamic(
+  () => import('@/components/guides/ShareDropdown').then((mod) => mod.ShareDropdown),
+  {
+    loading: () => <div className="h-10 animate-pulse rounded-lg bg-bg-muted" />,
+  },
+);
+const GuideFeedback = dynamic(
+  () => import('@/components/guides/GuideFeedback').then((mod) => mod.GuideFeedback),
+  {
+    loading: () => <div className="h-32 animate-pulse rounded-lg bg-bg-muted" />,
+  },
+);
+const TimeRemaining = dynamic(
+  () => import('@/components/guides/TimeRemaining').then((mod) => mod.TimeRemaining),
+  {
+    loading: () => <div className="h-8 animate-pulse rounded-lg bg-bg-muted" />,
+  },
+);
+const NewsletterSubscription = dynamic(
+  () =>
+    import('@/components/landing/NewsletterSubscription').then(
+      (mod) => mod.NewsletterSubscription,
+    ),
+  {
+    loading: () => <div className="h-32 animate-pulse rounded-lg bg-bg-muted" />,
+  },
+);
 
 export async function generateMetadata({
   params,
@@ -197,6 +228,8 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
                     alt={resource.title}
                     fill
                     className="object-cover"
+                    priority
+                    sizes="(max-width: 768px) 100vw, 1200px"
                   />
                 </div>
               )}
@@ -245,6 +278,8 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
                               alt={step.title}
                               fill
                               className="object-cover"
+                              sizes="(max-width: 768px) 100vw, 800px"
+                              loading="lazy"
                             />
                           </div>
                         )}

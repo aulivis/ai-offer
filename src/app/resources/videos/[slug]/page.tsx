@@ -2,16 +2,62 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 import { ArrowRight, ChevronRight, Clock, Bookmark } from 'lucide-react';
 import { notFound } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { getResourceBySlug, getRelatedResources } from '@/lib/resources';
-import { ResourceCard } from '@/components/resource-card';
 import { ResourceStructuredData } from '@/components/resource-structured-data';
-import { VideoPlayer } from '@/components/videos/VideoPlayer';
-import { VideoChapters } from '@/components/videos/VideoChapters';
-import { VideoSeries } from '@/components/videos/VideoSeries';
-import { VideoTranscript } from '@/components/videos/VideoTranscript';
-import { VideoDescription } from '@/components/videos/VideoDescription';
-import { ShareDropdown } from '@/components/guides/ShareDropdown';
-import { NewsletterSubscription } from '@/components/landing/NewsletterSubscription';
+
+// Lazy load video components for route-based code splitting
+const VideoPlayer = dynamic(
+  () => import('@/components/videos/VideoPlayer').then((mod) => mod.VideoPlayer),
+  {
+    loading: () => <div className="h-96 animate-pulse rounded-lg bg-bg-muted" />,
+  },
+);
+const VideoChapters = dynamic(
+  () => import('@/components/videos/VideoChapters').then((mod) => mod.VideoChapters),
+  {
+    loading: () => <div className="h-64 animate-pulse rounded-lg bg-bg-muted" />,
+  },
+);
+const VideoSeries = dynamic(
+  () => import('@/components/videos/VideoSeries').then((mod) => mod.VideoSeries),
+  {
+    loading: () => <div className="h-32 animate-pulse rounded-lg bg-bg-muted" />,
+  },
+);
+const VideoTranscript = dynamic(
+  () => import('@/components/videos/VideoTranscript').then((mod) => mod.VideoTranscript),
+  {
+    loading: () => <div className="h-64 animate-pulse rounded-lg bg-bg-muted" />,
+  },
+);
+const VideoDescription = dynamic(
+  () => import('@/components/videos/VideoDescription').then((mod) => mod.VideoDescription),
+  {
+    loading: () => <div className="h-32 animate-pulse rounded-lg bg-bg-muted" />,
+  },
+);
+const ResourceCard = dynamic(
+  () => import('@/components/resource-card').then((mod) => mod.ResourceCard),
+  {
+    loading: () => <div className="h-64 animate-pulse rounded-lg bg-bg-muted" />,
+  },
+);
+const ShareDropdown = dynamic(
+  () => import('@/components/guides/ShareDropdown').then((mod) => mod.ShareDropdown),
+  {
+    loading: () => <div className="h-10 animate-pulse rounded-lg bg-bg-muted" />,
+  },
+);
+const NewsletterSubscription = dynamic(
+  () =>
+    import('@/components/landing/NewsletterSubscription').then(
+      (mod) => mod.NewsletterSubscription,
+    ),
+  {
+    loading: () => <div className="h-32 animate-pulse rounded-lg bg-bg-muted" />,
+  },
+);
 
 export async function generateMetadata({
   params,

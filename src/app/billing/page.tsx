@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useEffect, useMemo, useState, type JSX } from 'react';
 import { useSearchParams } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import {
   Check,
   X,
@@ -2173,6 +2174,8 @@ function PublicBillingLanding() {
                     width={56}
                     height={56}
                     className="w-14 h-14 rounded-full border-2 border-bg-muted shadow-md object-cover"
+                    sizes="56px"
+                    loading="lazy"
                   />
                   <div className="text-center">
                     <div className="font-bold text-fg">{TESTIMONIALS[0].author}</div>
@@ -2212,6 +2215,8 @@ function PublicBillingLanding() {
                   <Image
                     src={TESTIMONIALS[1].image}
                     alt={TESTIMONIALS[1].author}
+                    sizes="56px"
+                    loading="lazy"
                     width={56}
                     height={56}
                     className="w-14 h-14 rounded-full border-2 border-white shadow-md object-cover"
@@ -2256,6 +2261,8 @@ function PublicBillingLanding() {
                     width={56}
                     height={56}
                     className="w-14 h-14 rounded-full border-2 border-white shadow-md object-cover"
+                    sizes="56px"
+                    loading="lazy"
                   />
                   <div className="text-center">
                     <div className="font-bold text-fg">{TESTIMONIALS[2].author}</div>

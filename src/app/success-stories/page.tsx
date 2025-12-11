@@ -1,13 +1,22 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight, CheckCircle, ChevronDown } from 'lucide-react';
 import { t } from '@/copy';
 import { getCaseStudies } from '@/lib/case-studies';
-import { ROICalculatorLanding } from '@/components/roi-calculator-landing';
 import { getAuthorImage } from '@/lib/testimonial-images';
+
+// Lazy load ROI calculator for route-based code splitting
+const ROICalculatorLanding = dynamic(
+  () =>
+    import('@/components/roi-calculator-landing').then((mod) => mod.ROICalculatorLanding),
+  {
+    loading: () => <div className="h-96 animate-pulse rounded-lg bg-bg-muted" />,
+  },
+);
 
 // Company logos for showcase (placeholder data)
 const customerLogos = [
@@ -256,6 +265,8 @@ export default function SuccessStoriesPage() {
                             width={40}
                             height={40}
                             className="w-full h-full object-cover"
+                            sizes="(max-width: 768px) 32px, 40px"
+                            loading="lazy"
                           />
                         </div>
                         <div className="min-w-0 flex-1">

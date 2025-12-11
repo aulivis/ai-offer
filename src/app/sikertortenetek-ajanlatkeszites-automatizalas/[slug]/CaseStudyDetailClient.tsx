@@ -76,6 +76,8 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
                     width={64}
                     height={64}
                     className="w-16 h-16 object-contain p-2"
+                    sizes="64px"
+                    priority
                   />
                 ) : (
                   <div className="w-16 h-16 bg-turquoise-100 rounded-lg flex items-center justify-center">
@@ -542,6 +544,8 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
                   alt={caseStudy.testimonial.author}
                   width={64}
                   height={64}
+                  sizes="64px"
+                  loading="lazy"
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -675,6 +679,8 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
                                 width={32}
                                 height={32}
                                 className="w-full h-full object-cover"
+                                sizes="32px"
+                                loading="lazy"
                               />
                             </div>
                             <div className="text-xs">

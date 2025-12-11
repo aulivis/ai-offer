@@ -71,7 +71,8 @@ export function LogoPreview({ logoPath }: LogoPreviewProps) {
           height={96}
           className="h-full w-full object-contain p-2"
           onError={() => setLogoUrl(null)}
-          unoptimized // User uploaded images may not be optimized
+          sizes="96px"
+          loading="lazy"
           aria-hidden="false"
         />
         <div

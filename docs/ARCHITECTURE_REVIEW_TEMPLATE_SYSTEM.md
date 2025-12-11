@@ -17,7 +17,7 @@
 
 ### 1. Template Not Explicitly Passed During Creation
 
-**Location**: `web/src/app/(dashboard)/dashboard/offers/new/page.tsx:390-408`
+**Location**: `web/src/app/new/page.tsx` (template selection logic)
 
 The new offer page doesn't pass `templateId` to `/api/ai-generate`. It relies on profile template resolution, which works but isn't explicit.
 

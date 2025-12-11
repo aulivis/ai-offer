@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import { PageErrorBoundary } from '@/components/PageErrorBoundary';
 import Link from 'next/link';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import {
   Search,
   ArrowRight,
@@ -23,12 +24,33 @@ import { t } from '@/copy';
 import { useOptionalAuth } from '@/hooks/useOptionalAuth';
 import { getResources, getFeaturedResource } from '@/lib/resources';
 import { Resource, ResourceFilters } from '@/types/resource';
-import { ResourceCard } from '@/components/resource-card';
-import { ResourceFiltersComponent } from '@/components/resource-filters';
-import { NewsletterSubscription } from '@/components/landing/NewsletterSubscription';
 import { H1, H2, H3 } from '@/components/ui/Heading';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
+
+// Lazy load resource components for route-based code splitting
+const ResourceCard = dynamic(
+  () => import('@/components/resource-card').then((mod) => mod.ResourceCard),
+  {
+    loading: () => <div className="h-64 animate-pulse rounded-lg bg-bg-muted" />,
+  },
+);
+const ResourceFiltersComponent = dynamic(
+  () =>
+    import('@/components/resource-filters').then((mod) => mod.ResourceFiltersComponent),
+  {
+    loading: () => <div className="h-32 animate-pulse rounded-lg bg-bg-muted" />,
+  },
+);
+const NewsletterSubscription = dynamic(
+  () =>
+    import('@/components/landing/NewsletterSubscription').then(
+      (mod) => mod.NewsletterSubscription,
+    ),
+  {
+    loading: () => <div className="h-32 animate-pulse rounded-lg bg-bg-muted" />,
+  },
+);
 
 type SortOption = 'newest' | 'popular' | 'most-helpful';
 
@@ -331,6 +353,8 @@ function ResourcesPageContent() {
                         height={256}
                         className="rounded-xl shadow-2xl w-full h-auto"
                         alt={featuredResource.title}
+                        priority
+                        sizes="(max-width: 768px) 100vw, 384px"
                       />
                     ) : (
                       <div className="bg-white/20 backdrop-blur-sm rounded-xl shadow-2xl p-12 flex items-center justify-center">

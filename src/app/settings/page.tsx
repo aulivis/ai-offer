@@ -3,6 +3,7 @@
 import { t } from '@/copy';
 import { PageErrorBoundary } from '@/components/PageErrorBoundary';
 import { useEffect, useCallback, useState, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import AppFrame from '@/components/AppFrame';
 import { useSupabase } from '@/components/SupabaseProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
@@ -21,16 +22,83 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { Card } from '@/components/ui/Card';
 import type { TemplateId } from '@/lib/offers/templates/types';
 import { mapTemplateId } from '@/lib/offers/templates/index';
-import { SettingsSecurityTab } from '@/components/settings/SettingsSecurityTab';
-import { SettingsCompanySection } from '@/components/settings/SettingsCompanySection';
-import { SettingsBrandingSection } from '@/components/settings/SettingsBrandingSection';
-import { SettingsTemplatesSection } from '@/components/settings/SettingsTemplatesSection';
-import { SettingsActivitiesSection } from '@/components/settings/SettingsActivitiesSection';
-import { SettingsGuaranteesSection } from '@/components/settings/SettingsGuaranteesSection';
-import { SettingsEmailSubscriptionSection } from '@/components/settings/SettingsEmailSubscriptionSection';
-import { TestimonialsManager } from '@/components/settings/TestimonialsManager';
-import { SettingsTeamSection } from '@/components/settings/SettingsTeamSection';
 import { SectionErrorBoundary } from '@/components/settings/SectionErrorBoundary';
+
+// Lazy load settings tab sections for route-based code splitting
+const SettingsSecurityTab = dynamic(
+  () => import('@/components/settings/SettingsSecurityTab').then((mod) => mod.SettingsSecurityTab),
+  {
+    loading: () => <div className="h-64 animate-pulse rounded-lg bg-bg-muted" />,
+  },
+);
+const SettingsCompanySection = dynamic(
+  () =>
+    import('@/components/settings/SettingsCompanySection').then(
+      (mod) => mod.SettingsCompanySection,
+    ),
+  {
+    loading: () => <div className="h-64 animate-pulse rounded-lg bg-bg-muted" />,
+  },
+);
+const SettingsBrandingSection = dynamic(
+  () =>
+    import('@/components/settings/SettingsBrandingSection').then(
+      (mod) => mod.SettingsBrandingSection,
+    ),
+  {
+    loading: () => <div className="h-64 animate-pulse rounded-lg bg-bg-muted" />,
+  },
+);
+const SettingsTemplatesSection = dynamic(
+  () =>
+    import('@/components/settings/SettingsTemplatesSection').then(
+      (mod) => mod.SettingsTemplatesSection,
+    ),
+  {
+    loading: () => <div className="h-64 animate-pulse rounded-lg bg-bg-muted" />,
+  },
+);
+const SettingsActivitiesSection = dynamic(
+  () =>
+    import('@/components/settings/SettingsActivitiesSection').then(
+      (mod) => mod.SettingsActivitiesSection,
+    ),
+  {
+    loading: () => <div className="h-96 animate-pulse rounded-lg bg-bg-muted" />,
+  },
+);
+const SettingsGuaranteesSection = dynamic(
+  () =>
+    import('@/components/settings/SettingsGuaranteesSection').then(
+      (mod) => mod.SettingsGuaranteesSection,
+    ),
+  {
+    loading: () => <div className="h-96 animate-pulse rounded-lg bg-bg-muted" />,
+  },
+);
+const SettingsEmailSubscriptionSection = dynamic(
+  () =>
+    import('@/components/settings/SettingsEmailSubscriptionSection').then(
+      (mod) => mod.SettingsEmailSubscriptionSection,
+    ),
+  {
+    loading: () => <div className="h-32 animate-pulse rounded-lg bg-bg-muted" />,
+  },
+);
+const TestimonialsManager = dynamic(
+  () =>
+    import('@/components/settings/TestimonialsManager').then((mod) => mod.TestimonialsManager),
+  {
+    loading: () => <div className="h-96 animate-pulse rounded-lg bg-bg-muted" />,
+  },
+);
+const SettingsTeamSection = dynamic(
+  () =>
+    import('@/components/settings/SettingsTeamSection').then((mod) => mod.SettingsTeamSection),
+  {
+    loading: () => <div className="h-64 animate-pulse rounded-lg bg-bg-muted" />,
+  },
+);
 import type { Profile as _Profile } from '@/components/settings/types';
 import { ChatBubbleLeftRightIcon, LockClosedIcon } from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/Button';

@@ -587,7 +587,8 @@ export function WizardStep2Pricing({
                                 alt={activity.name}
                                 fill
                                 className="object-cover"
-                                unoptimized
+                                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                                loading="lazy"
                               />
                             </>
                           ) : (
@@ -650,7 +651,8 @@ export function WizardStep2Pricing({
                             alt="Reference"
                             fill
                             className="object-cover"
-                            unoptimized
+                            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                            loading="lazy"
                           />
                         </>
                       ) : (
@@ -942,7 +944,8 @@ export function WizardStep2Pricing({
                             alt="Reference"
                             fill
                             className="object-cover"
-                            unoptimized
+                            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                            loading="lazy"
                           />
                           <button
                             type="button"
@@ -1001,7 +1004,8 @@ export function WizardStep2Pricing({
               width={1200}
               height={1200}
               className="max-h-[80vh] w-auto object-contain"
-              unoptimized
+              sizes="(max-width: 768px) 100vw, 1200px"
+              loading="lazy"
             />
           </div>
         </Modal>

@@ -165,7 +165,8 @@ export default async function NotFound() {
                     width={40}
                     height={40}
                     className="h-full w-full object-contain"
-                    unoptimized
+                    sizes="40px"
+                    priority
                   />
                 </div>
                 <span className="text-h5 font-bold text-fg transition-colors group-hover:text-primary">

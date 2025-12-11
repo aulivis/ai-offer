@@ -153,7 +153,7 @@ Monitor the following metrics:
 
 ### Explicit Template Selection ✅
 
-**File**: `web/src/app/(dashboard)/dashboard/offers/new/page.tsx`
+**File**: `web/src/app/new/page.tsx`
 
 - Added explicit `templateId` parameter to offer creation API call
 - Template selection is now explicit and traceable

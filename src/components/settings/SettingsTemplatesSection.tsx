@@ -86,7 +86,8 @@ export function SettingsTemplatesSection({
                             width={80}
                             height={80}
                             className="h-full w-full object-cover"
-                            unoptimized
+                            sizes="80px"
+                            loading="lazy"
                           />
                         ) : (
                           <DocumentTextIcon
@@ -160,7 +161,8 @@ export function SettingsTemplatesSection({
                       width={800}
                       height={600}
                       className="w-full rounded-lg shadow-lg border border-border"
-                      unoptimized
+                      sizes="(max-width: 768px) 100vw, 800px"
+                      loading="lazy"
                     />
                   </div>
                 </div>

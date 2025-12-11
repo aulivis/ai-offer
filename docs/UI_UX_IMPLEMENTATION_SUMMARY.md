@@ -148,7 +148,7 @@ This document summarizes the implementation of UI/UX design principles across th
    - Dashboard (`web/src/app/dashboard/page.tsx`)
    - Login (`web/src/app/login/LoginClient.tsx`)
    - Billing (`web/src/app/billing/page.tsx`)
-   - Offer wizard (`web/src/app/(dashboard)/dashboard/offers/new/page.tsx`)
+   - Offer wizard (`web/src/app/new/page.tsx`)
 
 2. **Replace heading tags** with `Heading` component in all pages
 

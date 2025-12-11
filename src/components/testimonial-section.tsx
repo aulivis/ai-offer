@@ -198,6 +198,7 @@ export function TestimonialSection() {
                     width={96}
                     height={96}
                     className="w-full h-full object-cover"
+                    sizes="(max-width: 768px) 80px, 96px"
                     loading="lazy"
                   />
                 </div>

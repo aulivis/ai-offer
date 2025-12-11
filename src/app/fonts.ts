@@ -27,6 +27,6 @@ export const gota = localFont({
     },
   ],
   display: 'swap',
-  preload: false,
+  preload: true,
   variable: '--font-display',
 });

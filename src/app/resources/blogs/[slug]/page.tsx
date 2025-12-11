@@ -20,13 +20,44 @@ import {
   Link as LinkIcon,
 } from 'lucide-react';
 import { notFound } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { getResourceBySlug, getRelatedResources } from '@/lib/resources';
-import { ResourceCard } from '@/components/resource-card';
 import { ResourceStructuredData } from '@/components/resource-structured-data';
-import { ShareDropdown } from '@/components/guides/ShareDropdown';
-import { BlogTOC } from '@/components/blogs/BlogTOC';
-import { BackToTop } from '@/components/blogs/BackToTop';
-import { NewsletterSubscription } from '@/components/landing/NewsletterSubscription';
+
+// Lazy load below-the-fold components for route-based code splitting
+const ResourceCard = dynamic(
+  () => import('@/components/resource-card').then((mod) => mod.ResourceCard),
+  {
+    loading: () => <div className="h-64 animate-pulse rounded-lg bg-bg-muted" />,
+  },
+);
+const ShareDropdown = dynamic(
+  () => import('@/components/guides/ShareDropdown').then((mod) => mod.ShareDropdown),
+  {
+    loading: () => <div className="h-10 animate-pulse rounded-lg bg-bg-muted" />,
+  },
+);
+const BlogTOC = dynamic(
+  () => import('@/components/blogs/BlogTOC').then((mod) => mod.BlogTOC),
+  {
+    loading: () => <div className="h-64 animate-pulse rounded-lg bg-bg-muted" />,
+  },
+);
+const BackToTop = dynamic(
+  () => import('@/components/blogs/BackToTop').then((mod) => mod.BackToTop),
+  {
+    ssr: false,
+  },
+);
+const NewsletterSubscription = dynamic(
+  () =>
+    import('@/components/landing/NewsletterSubscription').then(
+      (mod) => mod.NewsletterSubscription,
+    ),
+  {
+    loading: () => <div className="h-32 animate-pulse rounded-lg bg-bg-muted" />,
+  },
+);
 
 export async function generateMetadata({
   params,
@@ -149,6 +180,8 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                 width={1200}
                 height={400}
                 className="w-full h-[400px] object-cover"
+                priority
+                sizes="(max-width: 768px) 100vw, 1200px"
               />
             </div>
           )}
