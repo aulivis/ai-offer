@@ -23,6 +23,7 @@ import { notFound } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { getResourceBySlug, getRelatedResources } from '@/lib/resources';
 import { ResourceStructuredData } from '@/components/resource-structured-data';
+import { BackToTopClient } from '@/components/blogs/BackToTopClient';
 
 // Lazy load below-the-fold components for route-based code splitting
 const ResourceCard = dynamic(
@@ -40,12 +41,6 @@ const ShareDropdown = dynamic(
 const BlogTOC = dynamic(() => import('@/components/blogs/BlogTOC').then((mod) => mod.BlogTOC), {
   loading: () => <div className="h-64 animate-pulse rounded-lg bg-bg-muted" />,
 });
-const BackToTop = dynamic(
-  () => import('@/components/blogs/BackToTop').then((mod) => mod.BackToTop),
-  {
-    ssr: false,
-  },
-);
 const NewsletterSubscription = dynamic(
   () =>
     import('@/components/landing/NewsletterSubscription').then((mod) => mod.NewsletterSubscription),
@@ -102,7 +97,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
       <ResourceStructuredData resource={resource} />
 
       {/* Back to Top Button */}
-      <BackToTop />
+      <BackToTopClient />
 
       {/* Enhanced Hero Section */}
       <article className="max-w-7xl mx-auto px-4 py-8">
