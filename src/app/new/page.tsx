@@ -1102,173 +1102,178 @@ export default function NewOfferPage() {
 
   return (
     <PageErrorBoundary>
-      <AppFrame title={t('offers.wizard.pageTitle')} description={t('offers.wizard.pageDescription')}>
-      <div
-        className="flex flex-col gap-8 md:grid md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] md:items-start md:gap-10 lg:gap-12"
-        style={columnWidthStyle}
+      <AppFrame
+        title={t('offers.wizard.pageTitle')}
+        description={t('offers.wizard.pageDescription')}
       >
-        <div className="flex flex-col gap-8">
-          <div className="grid w-full max-w-[var(--column-width)] grid-cols-1 gap-8">
-            <Card className="w-full space-y-4">
-              <StepIndicator steps={wizardSteps} />
-            </Card>
+        <div
+          className="flex flex-col gap-8 md:grid md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] md:items-start md:gap-10 lg:gap-12"
+          style={columnWidthStyle}
+        >
+          <div className="flex flex-col gap-8">
+            <div className="grid w-full max-w-[var(--column-width)] grid-cols-1 gap-8">
+              <Card className="w-full space-y-4">
+                <StepIndicator steps={wizardSteps} />
+              </Card>
 
-            {step === 1 && (
-              <StepErrorBoundary stepNumber={1}>
-                <OfferProjectDetailsSection
-                  title={title}
-                  projectDetails={projectDetails}
-                  onTitleChange={(event) => setTitle(event.target.value)}
-                  onProjectDetailsChange={(field, value) =>
-                    setProjectDetails((prev) => ({ ...prev, [field]: value }))
-                  }
-                  showInlineValidation={true}
-                  {...(detailFieldErrors ? { errors: detailFieldErrors } : {})}
-                />
-              </StepErrorBoundary>
-            )}
-
-            {step === 2 && (
-              <StepErrorBoundary stepNumber={2}>
-                <WizardStep2Pricing
-                  rows={pricingRows}
-                  onRowsChange={setPricingRows}
-                  activities={activities}
-                  {...(pricingSectionError ? { validationError: pricingSectionError } : {})}
-                  client={client}
-                  onClientChange={(updates) => setClient((prev) => ({ ...prev, ...updates }))}
-                  clientList={clientList}
-                  onClientSelect={handleClientSelect}
-                  showClientDropdown={showClientDropdown}
-                  onClientDropdownToggle={setShowClientDropdown}
-                  filteredClients={filteredClients}
-                  onActivitySaved={handleActivitySaved}
-                  enableReferencePhotos={profileSettings.enable_reference_photos}
-                  enableTestimonials={profileSettings.enable_testimonials}
-                  selectedImages={selectedImages}
-                  onSelectedImagesChange={setSelectedImages}
-                  selectedTestimonials={selectedTestimonials}
-                  onSelectedTestimonialsChange={setSelectedTestimonials}
-                  guarantees={guarantees}
-                  selectedGuaranteeIds={selectedGuaranteeIds}
-                  onToggleGuarantee={handleToggleGuarantee}
-                  manualGuaranteeCount={0}
-                  guaranteeLimit={5}
-                  onActivityGuaranteesAttach={handleActivityGuaranteeAttach}
-                />
-              </StepErrorBoundary>
-            )}
-
-            {step === 3 && (
-              <StepErrorBoundary stepNumber={3}>
-                <div className="space-y-6">
-                  <OfferSummarySection
+              {step === 1 && (
+                <StepErrorBoundary stepNumber={1}>
+                  <OfferProjectDetailsSection
                     title={title}
                     projectDetails={projectDetails}
-                    totals={totals}
+                    onTitleChange={(event) => setTitle(event.target.value)}
+                    onProjectDetailsChange={(field, value) =>
+                      setProjectDetails((prev) => ({ ...prev, [field]: value }))
+                    }
+                    showInlineValidation={true}
+                    {...(detailFieldErrors ? { errors: detailFieldErrors } : {})}
                   />
-                  {previewStatus === 'loading' && (
-                    <Card>
-                      <CardHeader>
-                        <h2 className="text-sm font-semibold text-fg">
-                          {t('offers.wizard.aiText.heading')}
-                        </h2>
-                      </CardHeader>
-                      <div className="text-sm text-fg-muted">
-                        {t('offers.wizard.aiText.generating')}
-                      </div>
-                    </Card>
-                  )}
-                  {previewStatus === 'error' && previewError && (
-                    <Card>
-                      <CardHeader>
-                        <h2 className="text-sm font-semibold text-fg">
-                          {t('offers.wizard.aiText.heading')}
-                        </h2>
-                      </CardHeader>
-                      <div className="text-sm text-danger">{previewError}</div>
-                    </Card>
-                  )}
-                  {previewHtml &&
-                    previewHtml.trim() &&
-                    previewHtml !== `<p>${t('offers.wizard.preview.idle')}</p>` && (
+                </StepErrorBoundary>
+              )}
+
+              {step === 2 && (
+                <StepErrorBoundary stepNumber={2}>
+                  <WizardStep2Pricing
+                    rows={pricingRows}
+                    onRowsChange={setPricingRows}
+                    activities={activities}
+                    {...(pricingSectionError ? { validationError: pricingSectionError } : {})}
+                    client={client}
+                    onClientChange={(updates) => setClient((prev) => ({ ...prev, ...updates }))}
+                    clientList={clientList}
+                    onClientSelect={handleClientSelect}
+                    showClientDropdown={showClientDropdown}
+                    onClientDropdownToggle={setShowClientDropdown}
+                    filteredClients={filteredClients}
+                    onActivitySaved={handleActivitySaved}
+                    enableReferencePhotos={profileSettings.enable_reference_photos}
+                    enableTestimonials={profileSettings.enable_testimonials}
+                    selectedImages={selectedImages}
+                    onSelectedImagesChange={setSelectedImages}
+                    selectedTestimonials={selectedTestimonials}
+                    onSelectedTestimonialsChange={setSelectedTestimonials}
+                    guarantees={guarantees}
+                    selectedGuaranteeIds={selectedGuaranteeIds}
+                    onToggleGuarantee={handleToggleGuarantee}
+                    manualGuaranteeCount={0}
+                    guaranteeLimit={5}
+                    onActivityGuaranteesAttach={handleActivityGuaranteeAttach}
+                  />
+                </StepErrorBoundary>
+              )}
+
+              {step === 3 && (
+                <StepErrorBoundary stepNumber={3}>
+                  <div className="space-y-6">
+                    <OfferSummarySection
+                      title={title}
+                      projectDetails={projectDetails}
+                      totals={totals}
+                    />
+                    {previewStatus === 'loading' && (
                       <Card>
                         <CardHeader>
                           <h2 className="text-sm font-semibold text-fg">
                             {t('offers.wizard.aiText.heading')}
                           </h2>
                         </CardHeader>
-                        <div
-                          className="prose prose-sm max-w-none text-fg"
-                          dangerouslySetInnerHTML={{ __html: previewHtml }}
-                        />
+                        <div className="text-sm text-fg-muted">
+                          {t('offers.wizard.aiText.generating')}
+                        </div>
                       </Card>
                     )}
-                  <PreviewAsCustomerButton
-                    title={title}
-                    projectDetails={projectDetails}
-                    projectDetailsText={projectDetailsText}
-                    previewHtml={previewHtml}
-                    pricingRows={pricingRows}
-                    selectedTemplateId={selectedTemplateId}
-                    brandingPrimary={brandingPrimary}
-                    brandingSecondary={brandingSecondary}
-                    brandingLogoUrl={brandingLogoUrl}
-                    scheduleItems={[]}
-                    testimonials={selectedTestimonialsContent
-                      .map((t) => t.text.trim())
-                      .filter((text) => text.length > 0)}
-                    guarantees={selectedGuaranteeIds
-                      .map((id) => guarantees.find((g) => g.id === id)?.text.trim())
-                      .filter((text): text is string => Boolean(text && text.length > 0))}
-                    disabled={isSubmitting || isStreaming || !previewHtml.trim() || !hasPricingRows}
-                  />
-                </div>
-              </StepErrorBoundary>
-            )}
+                    {previewStatus === 'error' && previewError && (
+                      <Card>
+                        <CardHeader>
+                          <h2 className="text-sm font-semibold text-fg">
+                            {t('offers.wizard.aiText.heading')}
+                          </h2>
+                        </CardHeader>
+                        <div className="text-sm text-danger">{previewError}</div>
+                      </Card>
+                    )}
+                    {previewHtml &&
+                      previewHtml.trim() &&
+                      previewHtml !== `<p>${t('offers.wizard.preview.idle')}</p>` && (
+                        <Card>
+                          <CardHeader>
+                            <h2 className="text-sm font-semibold text-fg">
+                              {t('offers.wizard.aiText.heading')}
+                            </h2>
+                          </CardHeader>
+                          <div
+                            className="prose prose-sm max-w-none text-fg"
+                            dangerouslySetInnerHTML={{ __html: previewHtml }}
+                          />
+                        </Card>
+                      )}
+                    <PreviewAsCustomerButton
+                      title={title}
+                      projectDetails={projectDetails}
+                      projectDetailsText={projectDetailsText}
+                      previewHtml={previewHtml}
+                      pricingRows={pricingRows}
+                      selectedTemplateId={selectedTemplateId}
+                      brandingPrimary={brandingPrimary}
+                      brandingSecondary={brandingSecondary}
+                      brandingLogoUrl={brandingLogoUrl}
+                      scheduleItems={[]}
+                      testimonials={selectedTestimonialsContent
+                        .map((t) => t.text.trim())
+                        .filter((text) => text.length > 0)}
+                      guarantees={selectedGuaranteeIds
+                        .map((id) => guarantees.find((g) => g.id === id)?.text.trim())
+                        .filter((text): text is string => Boolean(text && text.length > 0))}
+                      disabled={
+                        isSubmitting || isStreaming || !previewHtml.trim() || !hasPricingRows
+                      }
+                    />
+                  </div>
+                </StepErrorBoundary>
+              )}
 
-            <WizardActionBar
-              step={step}
-              onPrev={goPrev}
-              onNext={goNext}
-              onSubmit={handleSubmit}
-              onCancel={handleCancel}
-              isNextDisabled={isNextDisabled}
-              isSubmitDisabled={isSubmitDisabled}
-              isSubmitting={isSubmitting}
-            />
+              <WizardActionBar
+                step={step}
+                onPrev={goPrev}
+                onNext={goNext}
+                onSubmit={handleSubmit}
+                onCancel={handleCancel}
+                isNextDisabled={isNextDisabled}
+                isSubmitDisabled={isSubmitDisabled}
+                isSubmitting={isSubmitting}
+              />
+            </div>
           </div>
-        </div>
 
-        <WizardPreviewPanel
-          previewEnabled={previewEnabled}
-          previewHtml={previewHtml}
-          previewDocumentHtml={previewDocumentHtml}
-          previewStatus={previewStatus}
-          previewError={previewError}
-          previewSummary={previewSummary}
-          previewIssues={previewIssues}
-          validationIssues={validationPreviewIssues}
-          attemptedSteps={attemptedSteps}
-          activeTab={activePreviewTab}
-          onTabChange={setActivePreviewTab}
-          onRefresh={refreshPreview}
-          onAbort={abortPreview}
-          // PDF preview modal removed - using Preview as Customer button instead
-          isStreaming={isStreaming}
-          templateOptions={templateOptions}
-          selectedTemplateId={selectedTemplateId}
-          defaultTemplateId={defaultTemplateId}
-          brandingPrimary={brandingPrimary}
-          brandingSecondary={brandingSecondary}
-          brandingLogoUrl={brandingLogoUrl}
-          onTemplateChange={setSelectedTemplateId}
-          onBrandingPrimaryChange={setBrandingPrimary}
-          onBrandingSecondaryChange={setBrandingSecondary}
-          onBrandingLogoChange={setBrandingLogoUrl}
-        />
-      </div>
-    </AppFrame>
+          <WizardPreviewPanel
+            previewEnabled={previewEnabled}
+            previewHtml={previewHtml}
+            previewDocumentHtml={previewDocumentHtml}
+            previewStatus={previewStatus}
+            previewError={previewError}
+            previewSummary={previewSummary}
+            previewIssues={previewIssues}
+            validationIssues={validationPreviewIssues}
+            attemptedSteps={attemptedSteps}
+            activeTab={activePreviewTab}
+            onTabChange={setActivePreviewTab}
+            onRefresh={refreshPreview}
+            onAbort={abortPreview}
+            // PDF preview modal removed - using Preview as Customer button instead
+            isStreaming={isStreaming}
+            templateOptions={templateOptions}
+            selectedTemplateId={selectedTemplateId}
+            defaultTemplateId={defaultTemplateId}
+            brandingPrimary={brandingPrimary}
+            brandingSecondary={brandingSecondary}
+            brandingLogoUrl={brandingLogoUrl}
+            onTemplateChange={setSelectedTemplateId}
+            onBrandingPrimaryChange={setBrandingPrimary}
+            onBrandingSecondaryChange={setBrandingSecondary}
+            onBrandingLogoChange={setBrandingLogoUrl}
+          />
+        </div>
+      </AppFrame>
     </PageErrorBoundary>
   );
 }

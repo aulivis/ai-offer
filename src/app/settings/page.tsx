@@ -612,34 +612,34 @@ export default function SettingsPage() {
                                   onTestimonialsChange={reloadTestimonials}
                                 />
                               ) : (
-                              <div className="rounded-xl border-2 border-border bg-bg-muted/50 p-8 text-center">
-                                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-warning/10">
-                                  <LockClosedIcon className="h-6 w-6 text-warning" />
+                                <div className="rounded-xl border-2 border-border bg-bg-muted/50 p-8 text-center">
+                                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-warning/10">
+                                    <LockClosedIcon className="h-6 w-6 text-warning" />
+                                  </div>
+                                  <h3 className="mt-4 text-body-small font-semibold text-fg">
+                                    {t('settings.proFeatures.testimonials.upgradeTitle')}
+                                  </h3>
+                                  <p className="mt-2 text-body-small text-fg-muted">
+                                    {t('settings.proFeatures.testimonials.upgradeDescription')}
+                                  </p>
+                                  <Button
+                                    onClick={() =>
+                                      openPlanUpgradeDialog({
+                                        description: t(
+                                          'settings.proFeatures.testimonials.upgradeDescription',
+                                        ),
+                                      })
+                                    }
+                                    variant="primary"
+                                    className="mt-4"
+                                  >
+                                    {t('settings.proFeatures.testimonials.upgradeButton')}
+                                  </Button>
                                 </div>
-                                <h3 className="mt-4 text-body-small font-semibold text-fg">
-                                  {t('settings.proFeatures.testimonials.upgradeTitle')}
-                                </h3>
-                                <p className="mt-2 text-body-small text-fg-muted">
-                                  {t('settings.proFeatures.testimonials.upgradeDescription')}
-                                </p>
-                                <Button
-                                  onClick={() =>
-                                    openPlanUpgradeDialog({
-                                      description: t(
-                                        'settings.proFeatures.testimonials.upgradeDescription',
-                                      ),
-                                    })
-                                  }
-                                  variant="primary"
-                                  className="mt-4"
-                                >
-                                  {t('settings.proFeatures.testimonials.upgradeButton')}
-                                </Button>
-                              </div>
-                            )}
-                          </div>
-                        </section>
-                      </SectionErrorBoundary>
+                              )}
+                            </div>
+                          </section>
+                        </SectionErrorBoundary>
                       )}
                     </TabsContent>
 
