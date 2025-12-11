@@ -217,5 +217,3 @@ This enables:
 ## Contact
 
 For security concerns or questions, please refer to the project maintainers.
-
-

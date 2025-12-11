@@ -176,5 +176,3 @@ Always use semantic tokens instead of hardcoded colors:
 - The CTA color (#c62828) is a darker red-orange that maintains visual appeal while meeting accessibility standards
 - Some contrast warnings in the audit are acceptable (e.g., borders, links with underlines)
 - All critical interactive elements now meet WCAG AA standards
-
-

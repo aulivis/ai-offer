@@ -991,10 +991,10 @@ export default function NewOfferPage() {
   const handleCancel = useCallback(() => {
     // Clear draft from localStorage
     clearDraft();
-    
+
     // Reset wizard state
     resetWizard();
-    
+
     // Reset all form state
     setClient({ company_name: '' });
     setSelectedTestimonials([]);
@@ -1007,26 +1007,20 @@ export default function NewOfferPage() {
     setBrandingSecondary('#e2e8f0');
     setBrandingLogoUrl('');
     setActivePreviewTab('document');
-    
+
     // Abort any ongoing preview generation
     abortPreview();
-    
+
     // Show confirmation toast
     showToast({
       title: 'Vázlat törölve',
       description: 'A vázlat törölve lett. Most új ajánlatot hozhatsz létre.',
       variant: 'success',
     });
-    
+
     // Stay on the page so user can immediately start creating a new offer
     // The draft is cleared, so it won't reload on next visit
-  }, [
-    clearDraft,
-    resetWizard,
-    defaultTemplateId,
-    abortPreview,
-    showToast,
-  ]);
+  }, [clearDraft, resetWizard, defaultTemplateId, abortPreview, showToast]);
 
   useWizardKeyboardShortcuts({
     step,

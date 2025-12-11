@@ -246,5 +246,3 @@ jobs:
 - [Next.js Code Splitting](https://nextjs.org/docs/pages/building-your-application/optimizing/lazy-loading)
 - [Web.dev Bundle Size Guide](https://web.dev/reduce-javascript-payloads-with-code-splitting/)
 - [Bundle Phobia](https://bundlephobia.com/) - Check package sizes before installing
-
-

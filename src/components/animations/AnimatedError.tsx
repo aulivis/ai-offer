@@ -34,5 +34,3 @@ export function AnimatedError({ error, className = '', id }: AnimatedErrorProps)
     </AnimatePresence>
   );
 }
-
-
