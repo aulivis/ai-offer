@@ -80,9 +80,7 @@ export function ResourceFiltersComponent({
                   }
                 }}
                 className={`px-4 py-2 rounded-lg font-semibold transition-all min-h-[44px] ${
-                  isActive
-                    ? 'bg-primary text-white'
-                    : 'bg-bg-muted text-fg hover:bg-bg'
+                  isActive ? 'bg-primary text-white' : 'bg-bg-muted text-fg hover:bg-bg'
                 }`}
               >
                 {type}

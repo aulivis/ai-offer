@@ -222,20 +222,20 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
                   >
                     <div className="flex items-start gap-6 mb-6">
                       {/* Large numbered badge */}
-                    <div className="flex-shrink-0 w-16 h-16 rounded-full bg-gradient-to-br from-primary to-primary-ink flex items-center justify-center text-white text-2xl font-bold shadow-lg">
-                      {String(step.number).padStart(2, '0')}
-                    </div>
+                      <div className="flex-shrink-0 w-16 h-16 rounded-full bg-gradient-to-br from-primary to-primary-ink flex items-center justify-center text-white text-2xl font-bold shadow-lg">
+                        {String(step.number).padStart(2, '0')}
+                      </div>
 
-                    <div className="flex-1">
-                      <h2
-                        id={`step-${step.number}-title`}
-                        className="text-3xl font-bold text-fg mb-3"
-                      >
-                        {step.title}
-                      </h2>
-                      <p className="text-fg-muted text-lg leading-relaxed mb-6">
-                        {step.description}
-                      </p>
+                      <div className="flex-1">
+                        <h2
+                          id={`step-${step.number}-title`}
+                          className="text-3xl font-bold text-fg mb-3"
+                        >
+                          {step.title}
+                        </h2>
+                        <p className="text-fg-muted text-lg leading-relaxed mb-6">
+                          {step.description}
+                        </p>
 
                         {/* Step Image */}
                         {step.image && (

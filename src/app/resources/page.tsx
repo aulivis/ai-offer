@@ -436,8 +436,8 @@ function ResourcesPageContent() {
             </div>
 
             {/* Search, Sort, and View Toggle */}
-              <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-                {/* Results Count with Screen Reader Announcement */}
+            <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+              {/* Results Count with Screen Reader Announcement */}
               <div className="text-fg">
                 <span className="font-bold text-navy-900">{filteredResources.length}</span>{' '}
                 erőforrás találva
