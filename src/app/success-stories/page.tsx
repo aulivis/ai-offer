@@ -175,7 +175,11 @@ export default function SuccessStoriesPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {sortedStudies.map((study, index) => {
                 // Alternate gradient colors
-                const gradientPalette = ['from-primary to-accent', 'from-accent to-primary', 'from-success to-primary'];
+                const gradientPalette = [
+                  'from-primary to-accent',
+                  'from-accent to-primary',
+                  'from-success to-primary',
+                ];
                 const gradientClass = gradientPalette[index % gradientPalette.length];
 
                 // Get primary metrics
