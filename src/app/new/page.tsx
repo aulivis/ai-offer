@@ -336,29 +336,30 @@ export default function NewOfferPage() {
     (async () => {
       try {
         // Load all data in parallel for better performance
-        const [profileResult, activitiesResult, clientsResult, guaranteesResult] = await Promise.all([
-          supabase
-            .from('profiles')
-            .select('enable_reference_photos, enable_testimonials')
-            .eq('id', user.id)
-            .single(),
-          supabase
-            .from('activities')
-            .select('id,name,unit,default_unit_price,default_vat,reference_images')
-            .eq('user_id', user.id)
-            .order('name'),
-          supabase
-            .from('clients')
-            .select('id,company_name,address,tax_id,representative,phone,email')
-            .eq('user_id', user.id)
-            .order('company_name')
-            .limit(100),
-          supabase
-            .from('guarantees')
-            .select('id, text, activity_guarantees(activity_id)')
-            .eq('user_id', user.id)
-            .order('created_at', { ascending: true }),
-        ]);
+        const [profileResult, activitiesResult, clientsResult, guaranteesResult] =
+          await Promise.all([
+            supabase
+              .from('profiles')
+              .select('enable_reference_photos, enable_testimonials')
+              .eq('id', user.id)
+              .single(),
+            supabase
+              .from('activities')
+              .select('id,name,unit,default_unit_price,default_vat,reference_images')
+              .eq('user_id', user.id)
+              .order('name'),
+            supabase
+              .from('clients')
+              .select('id,company_name,address,tax_id,representative,phone,email')
+              .eq('user_id', user.id)
+              .order('company_name')
+              .limit(100),
+            supabase
+              .from('guarantees')
+              .select('id, text, activity_guarantees(activity_id)')
+              .eq('user_id', user.id)
+              .order('created_at', { ascending: true }),
+          ]);
 
         if (!active) return;
 
