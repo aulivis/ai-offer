@@ -9,6 +9,7 @@ type WizardActionBarProps = {
   onPrev: () => void;
   onNext: () => void;
   onSubmit?: () => void;
+  onCancel?: () => void;
   isNextDisabled: boolean;
   isSubmitDisabled?: boolean;
   isSubmitting: boolean;
@@ -25,6 +26,7 @@ export const WizardActionBar = memo(function WizardActionBar({
   onPrev,
   onNext,
   onSubmit: _onSubmit,
+  onCancel,
   isNextDisabled,
   isSubmitDisabled: _isSubmitDisabled = false,
   isSubmitting: _isSubmitting,
@@ -57,16 +59,29 @@ export const WizardActionBar = memo(function WizardActionBar({
       style={{ pointerEvents: 'auto' }}
     >
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <Button
-          ref={prevButtonRef}
-          onClick={onPrev}
-          disabled={step === 1}
-          variant="secondary"
-          className="w-full rounded-full border-2 border-border/70 px-5 py-3 text-sm font-bold transition-all duration-200 hover:border-primary/50 hover:text-fg hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:border-border disabled:text-fg-muted disabled:scale-100 touch-manipulation min-h-[44px] sm:w-auto"
-          aria-label={`Go back to previous step${step > 1 ? ` (Step ${step - 1})` : ''}`}
-        >
-          ← Vissza
-        </Button>
+        <div className="flex gap-2 w-full sm:w-auto">
+          {onCancel && (
+            <Button
+              onClick={onCancel}
+              disabled={_isSubmitting}
+              variant="secondary"
+              className="flex-1 sm:flex-none rounded-full border-2 border-danger/30 px-4 py-3 text-sm font-bold text-danger transition-all duration-200 hover:border-danger/50 hover:bg-danger/10 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-danger disabled:cursor-not-allowed disabled:opacity-50 disabled:scale-100 touch-manipulation min-h-[44px]"
+              aria-label="Cancel and clear draft"
+            >
+              Mégse
+            </Button>
+          )}
+          <Button
+            ref={prevButtonRef}
+            onClick={onPrev}
+            disabled={step === 1}
+            variant="secondary"
+            className={`${onCancel ? 'flex-1 sm:flex-none' : 'w-full'} rounded-full border-2 border-border/70 px-5 py-3 text-sm font-bold transition-all duration-200 hover:border-primary/50 hover:text-fg hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:border-border disabled:text-fg-muted disabled:scale-100 touch-manipulation min-h-[44px] sm:w-auto`}
+            aria-label={`Go back to previous step${step > 1 ? ` (Step ${step - 1})` : ''}`}
+          >
+            ← Vissza
+          </Button>
+        </div>
 
         {step < 3 ? (
           <Button

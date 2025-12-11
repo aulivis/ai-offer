@@ -183,6 +183,18 @@ export function useOfferWizard(initialRows: PriceRow[] = [createPriceRow()]) {
     setPricingRows(rows);
   }, []);
 
+  const reset = useCallback(() => {
+    setStep(1);
+    setTitle('');
+    setProjectDetails(emptyProjectDetails);
+    setPricingRows([createPriceRow()]);
+    setAttemptedSteps({
+      1: false,
+      2: false,
+      3: false,
+    });
+  }, []);
+
   return {
     step,
     title,
@@ -196,6 +208,7 @@ export function useOfferWizard(initialRows: PriceRow[] = [createPriceRow()]) {
     goPrev,
     goToStep,
     restoreStep,
+    reset,
     isNextDisabled,
     attemptedSteps,
     validation,

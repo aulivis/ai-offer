@@ -106,3 +106,5 @@ const html = renderOfferHtml(
 - Add support for custom CSS themes
 - Optimize image compression for storage
 - Add caching for rendered HTML
+
+

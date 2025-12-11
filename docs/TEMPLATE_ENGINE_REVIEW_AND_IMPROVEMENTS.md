@@ -206,3 +206,5 @@ The template engine is now:
 - ✅ More robust (error handling)
 
 All changes are backward compatible and improve code quality without affecting functionality.
+
+
