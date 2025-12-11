@@ -20,3 +20,6 @@ export const OfferDisplay = dynamic(
     loading: () => <div className="h-96 animate-pulse rounded-lg bg-bg-muted" />,
   },
 );
+
+
+

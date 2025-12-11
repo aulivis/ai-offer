@@ -30,42 +30,72 @@ import type { WizardStep } from '@/types/wizard';
 // Lazy load wizard step components for route-based code splitting
 const OfferProjectDetailsSection = dynamic(
   () =>
-    import('@/components/offers/OfferProjectDetailsSection').then(
-      (mod) => mod.OfferProjectDetailsSection,
-    ),
+    import('@/components/offers/OfferProjectDetailsSection')
+      .then((mod) => mod.OfferProjectDetailsSection)
+      .catch((error) => {
+        console.error('Failed to load OfferProjectDetailsSection', error);
+        throw error;
+      }),
   {
     loading: () => <div className="h-96 animate-pulse rounded-lg bg-bg-muted" />,
   },
 );
 const WizardStep2Pricing = dynamic(
-  () => import('@/components/offers/WizardStep2Pricing').then((mod) => mod.WizardStep2Pricing),
+  () =>
+    import('@/components/offers/WizardStep2Pricing')
+      .then((mod) => mod.WizardStep2Pricing)
+      .catch((error) => {
+        console.error('Failed to load WizardStep2Pricing', error);
+        throw error;
+      }),
   {
     loading: () => <div className="h-96 animate-pulse rounded-lg bg-bg-muted" />,
   },
 );
 const OfferSummarySection = dynamic(
-  () => import('@/components/offers/OfferSummarySection').then((mod) => mod.OfferSummarySection),
+  () =>
+    import('@/components/offers/OfferSummarySection')
+      .then((mod) => mod.OfferSummarySection)
+      .catch((error) => {
+        console.error('Failed to load OfferSummarySection', error);
+        throw error;
+      }),
   {
     loading: () => <div className="h-64 animate-pulse rounded-lg bg-bg-muted" />,
   },
 );
 const WizardActionBar = dynamic(
-  () => import('@/components/offers/WizardActionBar').then((mod) => mod.WizardActionBar),
+  () =>
+    import('@/components/offers/WizardActionBar')
+      .then((mod) => mod.WizardActionBar)
+      .catch((error) => {
+        console.error('Failed to load WizardActionBar', error);
+        throw error;
+      }),
   {
     loading: () => <div className="h-16 animate-pulse rounded-lg bg-bg-muted" />,
   },
 );
 const WizardPreviewPanel = dynamic(
-  () => import('@/components/offers/WizardPreviewPanel').then((mod) => mod.WizardPreviewPanel),
+  () =>
+    import('@/components/offers/WizardPreviewPanel')
+      .then((mod) => mod.WizardPreviewPanel)
+      .catch((error) => {
+        console.error('Failed to load WizardPreviewPanel', error);
+        throw error;
+      }),
   {
     loading: () => <div className="h-96 animate-pulse rounded-lg bg-bg-muted" />,
   },
 );
 const PreviewAsCustomerButton = dynamic(
   () =>
-    import('@/components/offers/PreviewAsCustomerButton').then(
-      (mod) => mod.PreviewAsCustomerButton,
-    ),
+    import('@/components/offers/PreviewAsCustomerButton')
+      .then((mod) => mod.PreviewAsCustomerButton)
+      .catch((error) => {
+        console.error('Failed to load PreviewAsCustomerButton', error);
+        throw error;
+      }),
   {
     loading: () => <div className="h-12 animate-pulse rounded-lg bg-bg-muted" />,
   },
@@ -224,15 +254,36 @@ export default function NewOfferPage() {
 
   const [activePreviewTab, setActivePreviewTab] = useState<OfferPreviewTab>('document');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const templateOptions = useMemo(() => listTemplates(), []);
+  const templateOptions = useMemo(() => {
+    try {
+      return listTemplates();
+    } catch (error) {
+      logger.error('Failed to load templates', error);
+      // Return empty array as fallback - defaultTemplateId will handle it
+      return [];
+    }
+  }, [logger]);
   const defaultTemplateId = useMemo<TemplateId>(() => {
-    // Find template matching default ID, or use first available
-    const defaultMatch = templateOptions.find(
-      (template) => template.id === DEFAULT_OFFER_TEMPLATE_ID,
-    );
-    return (defaultMatch ?? templateOptions[0])?.id ?? DEFAULT_OFFER_TEMPLATE_ID;
-  }, [templateOptions]);
-  const [selectedTemplateId, setSelectedTemplateId] = useState<TemplateId>(defaultTemplateId);
+    try {
+      // Find template matching default ID, or use first available
+      const defaultMatch = templateOptions.find(
+        (template) => template.id === DEFAULT_OFFER_TEMPLATE_ID,
+      );
+      if (defaultMatch) {
+        return defaultMatch.id;
+      }
+      // If no match and templates exist, use first one
+      if (templateOptions.length > 0 && templateOptions[0]?.id) {
+        return templateOptions[0].id;
+      }
+      // Fallback to default ID (will be validated later)
+      return DEFAULT_OFFER_TEMPLATE_ID as TemplateId;
+    } catch (error) {
+      logger.error('Failed to compute default template ID', error);
+      return DEFAULT_OFFER_TEMPLATE_ID as TemplateId;
+    }
+  }, [templateOptions, logger]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<TemplateId>(() => defaultTemplateId);
   const [brandingPrimary, setBrandingPrimary] = useState('#1c274c');
   const [brandingSecondary, setBrandingSecondary] = useState('#e2e8f0');
   const [brandingLogoUrl, setBrandingLogoUrl] = useState('');

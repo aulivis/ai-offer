@@ -1,117 +1,69 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { PageErrorBoundary } from '@/components/PageErrorBoundary';
 import AppFrame from '@/components/AppFrame';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useToast } from '@/hooks/useToast';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { fetchWithSupabaseAuth } from '@/lib/api';
+import { useTeams, useCreateTeam, type Team } from '@/hooks/queries/useTeams';
 import { createClientLogger } from '@/lib/clientLogger';
 import Link from 'next/link';
 import { Users } from 'lucide-react';
 
-type Team = {
-  team_id: string;
-  members: Array<{
-    user_id: string;
-    email: string | null;
-    joined_at: string;
-  }>;
-};
-
 export default function TeamsPage() {
   const { status: authStatus, user } = useRequireAuth();
   const { showToast } = useToast();
-  const [teams, setTeams] = useState<Team[]>([]);
-  const [loading, setLoading] = useState(true);
   const logger = createClientLogger({
     ...(user?.id && { userId: user.id }),
     component: 'TeamsPage',
   });
 
+  // Use React Query hook for teams - automatically handles caching and request deduplication
+  const { teams, isLoading: loading, error } = useTeams();
+  const createTeamMutation = useCreateTeam();
+
+  // Show error toast if teams query failed
   useEffect(() => {
-    if (authStatus !== 'authenticated' || !user) {
-      return;
+    if (error && authStatus === 'authenticated') {
+      logger.error('Failed to load teams', error, {
+        userId: user?.id,
+      });
+      showToast({
+        title: 'Hiba',
+        description: error.message || 'Nem sikerült betölteni a csapatokat.',
+        variant: 'error',
+      });
     }
-
-    const loadTeams = async () => {
-      setLoading(true);
-      try {
-        const response = await fetchWithSupabaseAuth('/api/teams', {});
-        if (response.ok) {
-          const data = await response.json();
-          setTeams(data.teams || []);
-        } else {
-          const error = await response.json();
-          showToast({
-            title: 'Hiba',
-            description: error.error || 'Nem sikerült betölteni a csapatokat.',
-            variant: 'error',
-          });
-        }
-      } catch (error) {
-        logger.error('Failed to load teams', error, {
-          userId: user.id,
-        });
-        showToast({
-          title: 'Hiba',
-          description: 'Nem sikerült betölteni a csapatokat.',
-          variant: 'error',
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadTeams();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authStatus, user, showToast]);
+  }, [error, authStatus, user?.id, logger, showToast]);
 
   const handleCreateTeam = async () => {
-    try {
-      const response = await fetchWithSupabaseAuth('/api/teams', {
-        method: 'POST',
-      });
-      if (response.ok) {
-        await response.json();
-        const teamData = await response.json();
+    createTeamMutation.mutate(undefined, {
+      onSuccess: (teamData) => {
         showToast({
           title: 'Siker',
           description: 'Csapat létrehozva! Most már meghívhatsz tagokat.',
           variant: 'success',
         });
-        // Reload teams
-        const teamsResponse = await fetchWithSupabaseAuth('/api/teams', {});
-        if (teamsResponse.ok) {
-          const teamsData = await teamsResponse.json();
-          setTeams(teamsData.teams || []);
-          // Navigate to team detail page if team was created
-          if (teamData.team_id) {
-            setTimeout(() => {
-              window.location.href = `/teams/${teamData.team_id}`;
-            }, 1000);
-          }
+        // Navigate to team detail page if team was created
+        if (teamData.team_id) {
+          setTimeout(() => {
+            window.location.href = `/teams/${teamData.team_id}`;
+          }, 1000);
         }
-      } else {
-        const error = await response.json();
+      },
+      onError: (error) => {
+        logger.error('Failed to create team', error, {
+          userId: user?.id,
+        });
         showToast({
           title: 'Hiba',
-          description: error.error || 'Nem sikerült létrehozni a csapatot.',
+          description: error.message || 'Nem sikerült létrehozni a csapatot.',
           variant: 'error',
         });
-      }
-    } catch (error) {
-      logger.error('Failed to create team', error, {
-        userId: user?.id,
-      });
-      showToast({
-        title: 'Hiba',
-        description: 'Nem sikerült létrehozni a csapatot.',
-        variant: 'error',
-      });
-    }
+      },
+    });
   };
 
   return (

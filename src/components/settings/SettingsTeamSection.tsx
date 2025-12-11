@@ -18,17 +18,7 @@ import { useToast } from '@/hooks/useToast';
 import { useSupabase } from '@/components/SupabaseProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { usePlanUpgradeDialog } from '@/components/PlanUpgradeDialogProvider';
-
-type TeamMember = {
-  user_id: string;
-  email: string | null;
-  joined_at: string;
-};
-
-type Team = {
-  team_id: string;
-  members: TeamMember[];
-};
+import { useTeams, useCreateTeam, useDeleteTeam, type Team } from '@/hooks/queries/useTeams';
 
 type TeamInvitation = {
   id: string;
@@ -49,42 +39,17 @@ export function SettingsTeamSection({ plan }: SettingsTeamSectionProps) {
   const supabase = useSupabase();
   const { showToast } = useToast();
   const { openPlanUpgradeDialog } = usePlanUpgradeDialog();
-  const [teams, setTeams] = useState<Team[]>([]);
-  const [invitations, setInvitations] = useState<TeamInvitation[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [creatingTeam, setCreatingTeam] = useState(false);
-  const [invitingMember, setInvitingMember] = useState<string | null>(null);
-  const [inviteEmail, setInviteEmail] = useState('');
-  const [leavingTeamId, setLeavingTeamId] = useState<string | null>(null);
   const isPro = plan === 'pro';
 
-  const loadTeams = useCallback(async () => {
-    if (!user) return;
-    try {
-      setLoading(true);
-      const response = await fetchWithSupabaseAuth('/api/teams', {
-        method: 'GET',
-        defaultErrorMessage: 'Nem sikerült betölteni a csapatokat.',
-      });
+  // Use React Query hook for teams - automatically handles caching and request deduplication
+  // Only enable query for Pro users to avoid unnecessary API calls
+  const { teams, isLoading: loading, error: teamsError } = useTeams({ enabled: isPro });
+  const createTeamMutation = useCreateTeam();
+  const deleteTeamMutation = useDeleteTeam();
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Nem sikerült betölteni a csapatokat.');
-      }
-
-      const data = await response.json();
-      setTeams(data.teams || []);
-    } catch (error) {
-      showToast({
-        title: 'Hiba',
-        description:
-          error instanceof Error ? error.message : 'Nem sikerült betölteni a csapatokat.',
-        variant: 'error',
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [user, showToast]);
+  const [invitations, setInvitations] = useState<TeamInvitation[]>([]);
+  const [invitingMember, setInvitingMember] = useState<string | null>(null);
+  const [inviteEmail, setInviteEmail] = useState('');
 
   const loadInvitations = useCallback(async () => {
     if (!user || !isPro) return;
@@ -130,15 +95,16 @@ export function SettingsTeamSection({ plan }: SettingsTeamSectionProps) {
     setInvitations(allInvitations);
   }, [user, teams, isPro, supabase]);
 
+  // Show error toast if teams query failed
   useEffect(() => {
-    // Only load teams for Pro users
-    if (isPro) {
-      loadTeams();
-    } else {
-      // For non-Pro users, set loading to false immediately
-      setLoading(false);
+    if (teamsError && isPro) {
+      showToast({
+        title: 'Hiba',
+        description: teamsError.message || 'Nem sikerült betölteni a csapatokat.',
+        variant: 'error',
+      });
     }
-  }, [loadTeams, isPro]);
+  }, [teamsError, isPro, showToast]);
 
   useEffect(() => {
     if (teams.length > 0) {
@@ -154,34 +120,22 @@ export function SettingsTeamSection({ plan }: SettingsTeamSectionProps) {
       return;
     }
 
-    try {
-      setCreatingTeam(true);
-      const response = await fetchWithSupabaseAuth('/api/teams', {
-        method: 'POST',
-        defaultErrorMessage: 'Nem sikerült létrehozni a csapatot.',
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Nem sikerült létrehozni a csapatot.');
-      }
-
-      await response.json();
-      showToast({
-        title: 'Sikeres',
-        description: 'Csapat létrehozva.',
-        variant: 'success',
-      });
-      await loadTeams();
-    } catch (error) {
-      showToast({
-        title: 'Hiba',
-        description: error instanceof Error ? error.message : 'Nem sikerült létrehozni a csapatot.',
-        variant: 'error',
-      });
-    } finally {
-      setCreatingTeam(false);
-    }
+    createTeamMutation.mutate(undefined, {
+      onSuccess: () => {
+        showToast({
+          title: 'Sikeres',
+          description: 'Csapat létrehozva.',
+          variant: 'success',
+        });
+      },
+      onError: (error) => {
+        showToast({
+          title: 'Hiba',
+          description: error.message || 'Nem sikerült létrehozni a csapatot.',
+          variant: 'error',
+        });
+      },
+    });
   };
 
   const handleInviteMember = async (teamId: string) => {
@@ -236,33 +190,22 @@ export function SettingsTeamSection({ plan }: SettingsTeamSectionProps) {
       return;
     }
 
-    try {
-      setLeavingTeamId(teamId);
-      const response = await fetchWithSupabaseAuth(`/api/teams/${teamId}`, {
-        method: 'DELETE',
-        defaultErrorMessage: 'Nem sikerült elhagyni a csapatot.',
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Nem sikerült elhagyni a csapatot.');
-      }
-
-      showToast({
-        title: 'Sikeres',
-        description: 'Elhagytad a csapatot.',
-        variant: 'success',
-      });
-      await loadTeams();
-    } catch (error) {
-      showToast({
-        title: 'Hiba',
-        description: error instanceof Error ? error.message : 'Nem sikerült elhagyni a csapatot.',
-        variant: 'error',
-      });
-    } finally {
-      setLeavingTeamId(null);
-    }
+    deleteTeamMutation.mutate(teamId, {
+      onSuccess: () => {
+        showToast({
+          title: 'Sikeres',
+          description: 'Elhagytad a csapatot.',
+          variant: 'success',
+        });
+      },
+      onError: (error) => {
+        showToast({
+          title: 'Hiba',
+          description: error.message || 'Nem sikerült elhagyni a csapatot.',
+          variant: 'error',
+        });
+      },
+    });
   };
 
   const handleAcceptInvitation = async (invitation: TeamInvitation) => {
@@ -286,7 +229,6 @@ export function SettingsTeamSection({ plan }: SettingsTeamSectionProps) {
         description: 'Meghívó elfogadva.',
         variant: 'success',
       });
-      await loadTeams();
       await loadInvitations();
     } catch (error) {
       showToast({
@@ -394,8 +336,8 @@ export function SettingsTeamSection({ plan }: SettingsTeamSectionProps) {
           </div>
           <Button
             onClick={handleCreateTeam}
-            disabled={creatingTeam}
-            loading={creatingTeam}
+            disabled={createTeamMutation.isPending}
+            loading={createTeamMutation.isPending}
             variant="secondary"
           >
             <PlusIcon className="h-4 w-4" />
@@ -467,8 +409,8 @@ export function SettingsTeamSection({ plan }: SettingsTeamSectionProps) {
                   </h3>
                   <Button
                     onClick={() => handleLeaveTeam(team.team_id)}
-                    disabled={leavingTeamId === team.team_id}
-                    loading={leavingTeamId === team.team_id}
+                    disabled={deleteTeamMutation.isPending}
+                    loading={deleteTeamMutation.isPending}
                     variant="ghost"
                     size="sm"
                     className="text-danger hover:text-danger"

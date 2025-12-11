@@ -127,6 +127,10 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     window.location.reload();
   };
 
+  handleGoHome = () => {
+    window.location.href = '/dashboard';
+  };
+
   render() {
     if (this.state.hasError) {
       if (this.props.fallback) {
@@ -193,6 +197,9 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                   {isRetrying ? t('errorBoundary.retrying') : t('errorBoundary.tryAgain')}
                 </Button>
               )}
+              <Button onClick={this.handleGoHome} variant="secondary" className="min-w-[140px]">
+                Go to Dashboard
+              </Button>
               <Button onClick={this.handleReload} className="min-w-[140px]">
                 {t('errorBoundary.reloadPage')}
               </Button>
