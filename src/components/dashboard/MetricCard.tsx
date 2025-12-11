@@ -80,15 +80,15 @@ export function MetricCard({
 
   const iconColors = {
     primary: 'text-primary',
-    success: 'text-emerald-600',
+    success: 'text-success',
     warning: 'text-warning',
-    danger: 'text-rose-600',
+    danger: 'text-danger',
     info: 'text-primary',
   };
 
   const trendColors = {
-    up: 'text-emerald-600',
-    down: 'text-rose-600',
+    up: 'text-success',
+    down: 'text-danger',
     neutral: 'text-fg-muted',
   };
 
@@ -204,11 +204,7 @@ export function MetricCard({
                   <span className="text-fg-muted">{comparison.label}:</span>
                   <span
                     className={`font-semibold flex items-center gap-0.5 sm:gap-1 ${
-                      comparison.trend === 'up'
-                        ? 'text-emerald-600'
-                        : comparison.trend === 'down'
-                          ? 'text-rose-600'
-                          : 'text-fg-muted'
+                      comparison.trend ? trendColors[comparison.trend] : trendColors.neutral
                     }`}
                   >
                     {comparison.trend === 'up' ? '↑' : comparison.trend === 'down' ? '↓' : '→'}

@@ -64,7 +64,7 @@ const ISSUE_BADGE_STYLES: Record<PreviewIssue['severity'], string> = {
 const ISSUE_TEXT_STYLES: Record<PreviewIssue['severity'], string> = {
   info: 'text-fg-muted',
   warning: 'text-warning',
-  error: 'text-rose-700',
+  error: 'text-danger',
 };
 
 const TAB_DEFINITIONS: Array<{ id: OfferPreviewTab; label: string }> = [
@@ -284,7 +284,7 @@ export function OfferPreviewCard({
             <p className="text-xs opacity-80">{resolvedStatus.description}</p>
           ) : null}
           {previewError && (previewStatus === 'error' || previewStatus === 'aborted') ? (
-            <p className="text-xs text-rose-600">{previewError}</p>
+            <p className="text-xs text-danger">{previewError}</p>
           ) : null}
         </div>
       </div>

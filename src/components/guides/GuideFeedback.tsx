@@ -16,12 +16,12 @@ export function GuideFeedback() {
 
   if (submitted) {
     return (
-      <div className="bg-green-50 rounded-xl p-8 text-center my-12 border-2 border-green-200">
-        <div className="flex items-center justify-center gap-2 text-green-700 mb-2">
+      <div className="rounded-xl p-8 text-center my-12 border border-success/40 bg-success/10">
+        <div className="flex items-center justify-center gap-2 text-success mb-2">
           <CheckCircle className="w-5 h-5" />
           <span className="font-semibold">Köszönjük a visszajelzést!</span>
         </div>
-        <p className="text-gray-600">
+        <p className="text-fg-muted">
           {feedback === 'positive'
             ? 'Örülünk, hogy hasznos volt az útmutató!'
             : 'Köszönjük, hogy jelezted. Folyamatosan javítjuk a tartalmakat.'}
@@ -31,24 +31,24 @@ export function GuideFeedback() {
   }
 
   return (
-    <div className="bg-gray-50 rounded-xl p-8 text-center my-12">
-      <h3 className="text-xl font-bold text-gray-900 mb-3">Hasznos volt ez az útmutató?</h3>
+    <div className="bg-bg-muted rounded-xl p-8 text-center my-12">
+      <h3 className="text-xl font-bold text-fg mb-3">Hasznos volt ez az útmutató?</h3>
       <div className="flex justify-center gap-4">
         <button
           onClick={() => handleFeedback('positive')}
-          className="flex items-center gap-2 px-6 py-3 bg-white border-2 border-gray-200 rounded-xl hover:border-green-500 hover:bg-green-50 transition-colors min-h-[44px]"
+          className="flex items-center gap-2 px-6 py-3 bg-bg border border-border rounded-xl hover:border-success hover:bg-success/10 transition-colors min-h-[44px]"
           aria-label="Igen, hasznos volt"
         >
-          <ThumbsUp className="w-5 h-5" />
-          <span className="font-semibold">Igen</span>
+          <ThumbsUp className="w-5 h-5 text-fg" />
+          <span className="font-semibold text-fg">Igen</span>
         </button>
         <button
           onClick={() => handleFeedback('negative')}
-          className="flex items-center gap-2 px-6 py-3 bg-white border-2 border-gray-200 rounded-xl hover:border-red-500 hover:bg-red-50 transition-colors min-h-[44px]"
+          className="flex items-center gap-2 px-6 py-3 bg-bg border border-border rounded-xl hover:border-danger hover:bg-danger/10 transition-colors min-h-[44px]"
           aria-label="Nem, nem volt hasznos"
         >
-          <ThumbsDown className="w-5 h-5" />
-          <span className="font-semibold">Nem</span>
+          <ThumbsDown className="w-5 h-5 text-fg" />
+          <span className="font-semibold text-fg">Nem</span>
         </button>
       </div>
     </div>

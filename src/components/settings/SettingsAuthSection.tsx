@@ -40,7 +40,7 @@ export function SettingsAuthSection({
         </CardHeader>
       }
     >
-      <div className="flex flex-col gap-4 rounded-xl border border-border/60 bg-gradient-to-br from-slate-50 to-white p-6 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col gap-4 rounded-xl border border-border/60 bg-gradient-settings p-6 md:flex-row md:items-center md:justify-between">
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white shadow-sm">

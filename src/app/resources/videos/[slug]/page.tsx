@@ -122,20 +122,20 @@ export default async function VideoPage({ params }: { params: Promise<{ slug: st
       {/* Enhanced Hero Section */}
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Enhanced Breadcrumb */}
-        <nav className="text-sm mb-6 flex items-center gap-2 text-gray-600" aria-label="Breadcrumb">
-          <Link href="/" className="hover:text-teal-600 transition-colors">
+        <nav className="text-sm mb-6 flex items-center gap-2 text-fg-muted" aria-label="Breadcrumb">
+          <Link href="/" className="hover:text-primary transition-colors">
             Főoldal
           </Link>
           <ChevronRight className="w-4 h-4" />
-          <Link href="/resources" className="hover:text-teal-600 transition-colors">
+          <Link href="/resources" className="hover:text-primary transition-colors">
             Erőforrások
           </Link>
           <ChevronRight className="w-4 h-4" />
-          <Link href="/resources#videos" className="hover:text-teal-600 transition-colors">
+          <Link href="/resources#videos" className="hover:text-primary transition-colors">
             Videók
           </Link>
           <ChevronRight className="w-4 h-4" />
-          <span className="text-gray-900 font-medium">{resource.title}</span>
+          <span className="text-fg font-medium">{resource.title}</span>
         </nav>
 
         {/* Enhanced Video Player */}
@@ -151,41 +151,41 @@ export default async function VideoPage({ params }: { params: Promise<{ slug: st
         {/* Video metadata and actions */}
         <div className="mb-8">
           <div className="flex items-start gap-3 mb-4">
-            <span className="bg-teal-500 text-white text-sm px-4 py-1.5 rounded-full font-semibold">
+            <span className="bg-primary text-white text-sm px-4 py-1.5 rounded-full font-semibold">
               Videó
             </span>
             <span
               className={`text-sm px-3 py-1 rounded-full font-medium ${
                 resource.difficulty === 'Kezdő'
-                  ? 'bg-green-100 text-green-700'
+                  ? 'bg-success/10 text-success'
                   : resource.difficulty === 'Haladó'
-                    ? 'bg-yellow-100 text-yellow-700'
-                    : 'bg-red-100 text-red-700'
+                    ? 'bg-warning/10 text-warning'
+                    : 'bg-danger/10 text-danger'
               }`}
             >
               {resource.difficulty}
             </span>
           </div>
 
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight">
+          <h1 className="text-4xl md:text-5xl font-bold text-fg mb-4 leading-tight">
             {resource.title}
           </h1>
 
-          <p className="text-xl text-gray-700 leading-relaxed mb-6">
+          <p className="text-xl text-fg-muted leading-relaxed mb-6">
             {resource.excerpt || resource.description}
           </p>
 
           {/* Metadata and actions row */}
           <div className="flex flex-wrap items-center justify-between gap-4">
             {resource.videoDuration && (
-              <div className="flex items-center gap-1.5 text-sm text-gray-600">
+              <div className="flex items-center gap-1.5 text-sm text-fg-muted">
                 <Clock className="w-4 h-4" />
                 <span>{resource.videoDuration} perc</span>
               </div>
             )}
 
             <div className="flex items-center gap-3">
-              <button className="flex items-center gap-2 px-4 py-2 bg-white border-2 border-gray-200 rounded-lg hover:border-teal-500 transition-colors min-h-[44px]">
+              <button className="flex items-center gap-2 px-4 py-2 bg-white border-2 border-border rounded-lg hover:border-primary transition-colors min-h-[44px]">
                 <Bookmark className="w-5 h-5" />
                 <span className="font-medium">Mentés</span>
               </button>
@@ -232,17 +232,17 @@ export default async function VideoPage({ params }: { params: Promise<{ slug: st
 
       {/* Enhanced Related Videos */}
       {relatedResources.length > 0 && (
-        <section className="py-16 bg-gray-50">
+        <section className="py-16 bg-bg-muted">
           <div className="container mx-auto px-4">
             <div className="max-w-7xl mx-auto">
               <div className="flex items-center justify-between mb-8">
                 <div>
-                  <h2 className="text-3xl font-bold text-gray-900 mb-2">Kapcsolódó videók</h2>
-                  <p className="text-gray-600">Folytasd a tanulást ezekkel a videókkal</p>
+                  <h2 className="text-3xl font-bold text-fg mb-2">Kapcsolódó videók</h2>
+                  <p className="text-fg-muted">Folytasd a tanulást ezekkel a videókkal</p>
                 </div>
                 <Link
                   href="/resources#videos"
-                  className="text-teal-600 font-semibold hover:underline flex items-center gap-2"
+                  className="text-primary font-semibold hover:underline flex items-center gap-2"
                 >
                   <span>Összes videó</span>
                   <ArrowRight className="w-5 h-5" />
@@ -262,7 +262,7 @@ export default async function VideoPage({ params }: { params: Promise<{ slug: st
       {/* Lead Gen CTA */}
       <section className="relative py-24 overflow-hidden">
         {/* Enhanced gradient background with pattern overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-turquoise-500 via-turquoise-600 to-blue-600">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary-ink/90 to-accent">
           {/* Subtle pattern overlay */}
           <div
             className="absolute inset-0 opacity-10"

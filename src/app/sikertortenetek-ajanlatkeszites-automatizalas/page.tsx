@@ -67,10 +67,10 @@ export default function SuccessStoriesPage() {
 
       <div className="min-h-screen bg-white">
         {/* Enhanced Hero Section with Scrolling Logo Section */}
-        <section className="py-20 lg:py-32 bg-gradient-to-br from-navy-900 via-navy-800 to-blue-900 text-white relative overflow-hidden min-h-screen flex flex-col -mt-14 md:-mt-20">
+        <section className="py-20 lg:py-32 bg-gradient-to-br from-navy-900 via-navy-800 to-primary text-white relative overflow-hidden min-h-screen flex flex-col -mt-14 md:-mt-20">
           <div className="absolute inset-0 opacity-10">
             <div className="absolute top-20 left-20 w-96 h-96 bg-turquoise-500 rounded-full blur-3xl"></div>
-            <div className="absolute bottom-20 right-20 w-96 h-96 bg-blue-500 rounded-full blur-3xl"></div>
+            <div className="absolute bottom-20 right-20 w-96 h-96 bg-primary rounded-full blur-3xl"></div>
           </div>
 
           <div className="container mx-auto px-4 relative z-10">
@@ -86,7 +86,7 @@ export default function SuccessStoriesPage() {
                 magyar vállalkozásoktól
               </h1>
 
-              <p className="text-xl md:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed text-pretty">
+              <p className="text-xl md:text-2xl text-primary-ink/80 mb-12 max-w-3xl mx-auto leading-relaxed text-pretty">
                 Tekintsd meg, hogyan segített a Vyndi{' '}
                 <strong>200+ magyar vállalkozásnak 70%-kal gyorsabb ajánlatkészítést</strong> és{' '}
                 <strong>35%-kal magasabb konverziót</strong> elérni. Valós esettanulmányok,
@@ -158,10 +158,10 @@ export default function SuccessStoriesPage() {
                   // Alternate gradient colors
                   const gradientClass =
                     index % 3 === 0
-                      ? 'from-teal-400 to-blue-600'
+                      ? 'from-primary to-accent'
                       : index % 3 === 1
-                        ? 'from-blue-500 to-indigo-600'
-                        : 'from-teal-400 to-blue-600';
+                        ? 'from-accent to-primary'
+                        : 'from-success to-primary';
 
                   // Get primary metrics
                   const primaryMetric = study.metrics[0];
@@ -200,10 +200,10 @@ export default function SuccessStoriesPage() {
                       <div
                         className={`absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b ${
                           index % 3 === 0
-                            ? 'from-teal-400 to-blue-600'
+                            ? 'from-primary to-accent'
                             : index % 3 === 1
-                              ? 'from-blue-500 to-indigo-600'
-                              : 'from-teal-400 to-blue-600'
+                              ? 'from-accent to-primary'
+                              : 'from-success to-primary'
                         }`}
                       />
                       {/* Header with gradient - Mobile optimized */}
@@ -212,7 +212,7 @@ export default function SuccessStoriesPage() {
                       >
                         {/* Trust badge - moved to header, left side */}
                         <div className="absolute top-2 left-2 md:top-4 md:left-4 flex items-center gap-1 bg-white/20 backdrop-blur-sm px-2 md:px-3 py-1 rounded-full text-xs text-white font-semibold">
-                          <CheckCircle className="w-3 h-3 md:w-4 md:h-4 text-green-300 flex-shrink-0" />
+                          <CheckCircle className="w-3 h-3 md:w-4 md:h-4 text-success flex-shrink-0" />
                           <span>Ellenőrzött eredmény</span>
                         </div>
                         {/* Industry badge - right side */}
@@ -233,11 +233,11 @@ export default function SuccessStoriesPage() {
                       <div className="p-4 md:p-6">
                         {/* Key metrics - compact, mobile optimized */}
                         <div className="grid grid-cols-2 gap-2 md:gap-3 mb-4 md:mb-6">
-                          <div className="text-center p-2 md:p-3 bg-gray-50 rounded-lg">
-                            <div className="text-xl md:text-2xl font-bold text-teal-600">
+                          <div className="text-center p-2 md:p-3 bg-bg-muted rounded-lg">
+                            <div className="text-xl md:text-2xl font-bold text-primary">
                               {improvementValue}%
                             </div>
-                            <div className="text-xs text-gray-600">
+                            <div className="text-xs text-fg-muted">
                               {study.slug === 'marketing-ugynokseg-sablon-automatizacio'
                                 ? 'Időmegtakarítás sablonkészítésben'
                                 : study.slug === 'studio-ikon'
@@ -247,22 +247,22 @@ export default function SuccessStoriesPage() {
                                     : 'Időmegtakarítás'}
                             </div>
                           </div>
-                          <div className="text-center p-2 md:p-3 bg-gray-50 rounded-lg">
-                            <div className="text-xl md:text-2xl font-bold text-blue-600">
+                          <div className="text-center p-2 md:p-3 bg-bg-muted rounded-lg">
+                            <div className="text-xl md:text-2xl font-bold text-primary">
                               {secondMetricValue}
                             </div>
-                            <div className="text-xs text-gray-600">{metricLabel}</div>
+                            <div className="text-xs text-fg-muted">{metricLabel}</div>
                           </div>
                         </div>
 
                         {/* Testimonial - truncated, mobile optimized */}
-                        <blockquote className="text-xs md:text-sm text-gray-600 italic line-clamp-2 md:line-clamp-3 mb-4 md:mb-6 border-l-4 border-teal-200 pl-2 md:pl-3">
+                        <blockquote className="text-xs md:text-sm text-fg-muted italic line-clamp-2 md:line-clamp-3 mb-4 md:mb-6 border-l-4 border-primary/20 pl-2 md:pl-3">
                           &ldquo;{study.testimonial.quote}&rdquo;
                         </blockquote>
 
                         {/* Client info - Mobile optimized */}
                         <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
-                          <div className="w-8 h-8 md:w-10 md:h-10 rounded-full overflow-hidden ring-2 ring-teal-100 flex-shrink-0">
+                          <div className="w-8 h-8 md:w-10 md:h-10 rounded-full overflow-hidden ring-2 ring-primary/20 flex-shrink-0">
                             <Image
                               src={getAuthorImage(study.testimonial.author)}
                               alt={study.testimonial.author}
@@ -275,7 +275,7 @@ export default function SuccessStoriesPage() {
                             <div className="font-semibold text-xs md:text-sm truncate">
                               {study.testimonial.author}
                             </div>
-                            <div className="text-xs text-gray-500 truncate">
+                            <div className="text-xs text-fg-muted truncate">
                               {study.testimonial.role}
                             </div>
                           </div>
@@ -284,7 +284,7 @@ export default function SuccessStoriesPage() {
                         {/* CTA - Mobile optimized */}
                         <Link
                           href={`/sikertortenetek-ajanlatkeszites-automatizalas/${study.slug}`}
-                          className="group w-full border-2 border-teal-500 text-teal-600 font-semibold rounded-xl px-8 py-4 min-h-[56px] hover:border-teal-600 hover:text-teal-700 bg-transparent transition-colors flex items-center justify-center text-center"
+                          className="group w-full border-2 border-primary text-primary font-semibold rounded-xl px-8 py-4 min-h-[56px] hover:border-primary/80 hover:text-primary/80 bg-transparent transition-colors flex items-center justify-center text-center"
                         >
                           <span className="text-center">{getCTALinkText(study)}</span>
                         </Link>
@@ -298,7 +298,7 @@ export default function SuccessStoriesPage() {
         </section>
 
         {/* CTA After Stories - Moved here */}
-        <section className="py-12 bg-gradient-to-r from-teal-50 to-blue-50 border-b border-gray-200">
+        <section className="py-12 bg-gradient-to-r from-bg-muted to-bg border-b border-border">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center">
               <h2 className="text-2xl md:text-3xl font-bold text-navy-900 mb-4">
@@ -306,13 +306,13 @@ export default function SuccessStoriesPage() {
               </h2>
               <Link
                 href="/login?redirect=/new"
-                className="group bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl px-8 py-4 min-h-[56px] inline-flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all duration-300 active:scale-95 relative overflow-hidden"
+                className="group bg-cta hover:bg-cta-hover text-cta-ink font-semibold rounded-xl px-8 py-4 min-h-[56px] inline-flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all duration-300 active:scale-95 relative overflow-hidden"
               >
                 <span className="relative z-10 text-base md:text-lg text-white">
                   Próbáld ki most ingyen
                 </span>
                 <ArrowRight className="w-5 h-5 flex-shrink-0 relative z-10 text-white transition-transform duration-300 group-hover:translate-x-1" />
-                <span className="absolute inset-0 bg-gradient-to-r from-orange-600 to-orange-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+                <span className="absolute inset-0 bg-gradient-to-r from-primary to-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
               </Link>
             </div>
           </div>
@@ -324,7 +324,7 @@ export default function SuccessStoriesPage() {
         </section>
 
         {/* Enhanced Bottom CTA Section */}
-        <section className="py-20 bg-gradient-to-br from-turquoise-500 to-blue-500 text-white relative overflow-hidden">
+        <section className="py-20 bg-gradient-to-br from-primary to-accent text-white relative overflow-hidden">
           <div className="absolute inset-0 opacity-10">
             <div className="absolute top-10 left-10 w-72 h-72 bg-white rounded-full blur-3xl"></div>
             <div className="absolute bottom-10 right-10 w-96 h-96 bg-white rounded-full blur-3xl"></div>
@@ -345,7 +345,7 @@ export default function SuccessStoriesPage() {
               <div className="grid md:grid-cols-3 gap-6 mb-12 max-w-[52.8rem] mx-auto">
                 <div className="bg-white/10 backdrop-blur rounded-xl p-6">
                   <div className="flex items-center justify-center mb-2">
-                    <Zap className="w-5 h-5 text-yellow-300" />
+                    <Zap className="w-5 h-5 text-warning" />
                   </div>
                   <div className="flex items-center justify-center gap-2 mb-2">
                     <div className="text-4xl font-bold">70%</div>
@@ -357,7 +357,7 @@ export default function SuccessStoriesPage() {
                 </div>
                 <div className="bg-white/10 backdrop-blur rounded-xl p-6">
                   <div className="flex items-center justify-center mb-2">
-                    <TrendingUp className="w-5 h-5 text-green-300" />
+                    <TrendingUp className="w-5 h-5 text-success" />
                   </div>
                   <div className="flex items-center justify-center gap-2 mb-2">
                     <div className="text-4xl font-bold">+35%</div>
@@ -367,7 +367,7 @@ export default function SuccessStoriesPage() {
                 </div>
                 <div className="bg-white/10 backdrop-blur rounded-xl p-6">
                   <div className="flex items-center justify-center mb-2">
-                    <Star className="w-5 h-5 text-yellow-300" />
+                    <Star className="w-5 h-5 text-warning" />
                   </div>
                   <div className="flex items-center justify-center gap-2 mb-2">
                     <div className="text-4xl font-bold">98%</div>
@@ -381,28 +381,28 @@ export default function SuccessStoriesPage() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
                 <Link
                   href="/login?redirect=/new"
-                  className="group bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl px-8 py-4 min-h-[56px] w-full sm:w-auto flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all duration-300 active:scale-95 relative overflow-hidden"
+                  className="group bg-cta hover:bg-cta-hover text-cta-ink font-semibold rounded-xl px-8 py-4 min-h-[56px] w-full sm:w-auto flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all duration-300 active:scale-95 relative overflow-hidden"
                 >
                   <span className="relative z-10 text-base md:text-lg text-white">
                     Csatlakozz Te is → 5 perc alatt kész
                   </span>
                   <ArrowRight className="w-5 h-5 flex-shrink-0 relative z-10 text-white transition-transform duration-300 group-hover:translate-x-1" />
-                  <span className="absolute inset-0 bg-gradient-to-r from-orange-600 to-orange-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+                  <span className="absolute inset-0 bg-gradient-to-r from-primary to-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
                 </Link>
               </div>
 
               {/* Trust Indicators - 3 features from landing hero */}
               <div className="flex flex-wrap justify-center gap-6 text-white/90">
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-300" />
+                  <CheckCircle className="w-5 h-5 text-success" />
                   <span>Kezdd el teljesen ingyen</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-300" />
+                  <CheckCircle className="w-5 h-5 text-success" />
                   <span>Nem kérünk bankkártyát</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-300" />
+                  <CheckCircle className="w-5 h-5 text-success" />
                   <span>Kész ajánlat 5 perc alatt</span>
                 </div>
               </div>

@@ -161,10 +161,10 @@ export default function AIGuidePage() {
               </p>
             </Card>
 
-            <Card className="border-l-4 border-l-purple-500">
-              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-purple-100">
+            <Card className="border-l-4 border-l-accent">
+              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-accent/10">
                 <svg
-                  className="h-6 w-6 text-purple-600"
+                  className="h-6 w-6 text-accent"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -184,10 +184,10 @@ export default function AIGuidePage() {
               </p>
             </Card>
 
-            <Card className="border-l-4 border-l-amber-500">
-              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-amber-100">
+            <Card className="border-l-4 border-l-warning">
+              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-warning/10">
                 <svg
-                  className="h-6 w-6 text-amber-600"
+                  className="h-6 w-6 text-warning"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -336,7 +336,7 @@ export default function AIGuidePage() {
               </div>
             </Card>
 
-            <Card className="border-l-4 border-l-purple-500 bg-purple-50/30">
+            <Card className="border-l-4 border-l-accent bg-accent/10">
               <h3 className="mb-3 text-xl font-semibold text-fg">
                 💡 Tipp 3: Kombináld az AI-t a saját kreativitásoddal
               </h3>
@@ -347,7 +347,7 @@ export default function AIGuidePage() {
               </p>
             </Card>
 
-            <Card className="border-l-4 border-l-amber-500 bg-amber-50/30">
+            <Card className="border-l-4 border-l-warning bg-warning/10">
               <h3 className="mb-3 text-xl font-semibold text-fg">
                 💡 Tipp 4: Szerkeszd és finomhangold
               </h3>
@@ -368,17 +368,15 @@ export default function AIGuidePage() {
               <h3 className="mb-3 text-xl font-semibold text-fg">
                 Példa 1: Probléma megoldás szekció
               </h3>
-              <div className="rounded-lg bg-gray-50 p-6">
-                <p className="mb-3 text-sm font-semibold text-gray-700">AI prompt:</p>
-                <p className="mb-4 rounded bg-gray-100 p-3 text-sm italic text-gray-800">
+              <div className="rounded-lg bg-bg-muted p-6">
+                <p className="mb-3 text-sm font-semibold text-fg">AI prompt:</p>
+                <p className="mb-4 rounded bg-bg-muted p-3 text-sm italic text-fg">
                   &quot;Írj egy szöveget, amely bemutatja, hogyan oldjuk meg az ügyfél problémáját a
                   lassú weboldal betöltési idővel. A megoldás egy gyors, optimalizált, modern
                   weboldal fejlesztése.&quot;
                 </p>
-                <p className="mb-3 text-sm font-semibold text-gray-700">
-                  Generált szöveg (részlet):
-                </p>
-                <p className="rounded bg-white p-4 text-sm text-gray-800 shadow-sm">
+                <p className="mb-3 text-sm font-semibold text-fg">Generált szöveg (részlet):</p>
+                <p className="rounded bg-white p-4 text-sm text-fg shadow-sm">
                   &quot;Értjük, hogy a lassú weboldal betöltési idő negatívan befolyásolja az üzleti
                   teljesítményét. Megoldásunk egy gyors, optimalizált, modern weboldal fejlesztése,
                   amely jelentősen csökkenti a betöltési időt és javítja a felhasználói
@@ -391,16 +389,14 @@ export default function AIGuidePage() {
               <h3 className="mb-3 text-xl font-semibold text-fg">
                 Példa 2: Szolgáltatások bemutatása
               </h3>
-              <div className="rounded-lg bg-gray-50 p-6">
-                <p className="mb-3 text-sm font-semibold text-gray-700">AI prompt:</p>
-                <p className="mb-4 rounded bg-gray-100 p-3 text-sm italic text-gray-800">
+              <div className="rounded-lg bg-bg-muted p-6">
+                <p className="mb-3 text-sm font-semibold text-fg">AI prompt:</p>
+                <p className="mb-4 rounded bg-bg-muted p-3 text-sm italic text-fg">
                   &quot;Írj egy rövid, üzleti hangvételű leírást a következő szolgáltatásokról: SEO
                   optimalizálás, tartalomszabályozás, social media marketing&quot;
                 </p>
-                <p className="mb-3 text-sm font-semibold text-gray-700">
-                  Generált szöveg (részlet):
-                </p>
-                <p className="rounded bg-white p-4 text-sm text-gray-800 shadow-sm">
+                <p className="mb-3 text-sm font-semibold text-fg">Generált szöveg (részlet):</p>
+                <p className="rounded bg-white p-4 text-sm text-fg shadow-sm">
                   &quot;Kínáljuk a digitális marketing teljes spektrumát: SEO optimalizálást a
                   keresőmotorokban való jobb láthatóságért, professzionális tartalomszabályozást a
                   brand identitás erősítéséhez, valamint stratégiai social media marketinget a
@@ -411,9 +407,9 @@ export default function AIGuidePage() {
           </div>
 
           {/* Placeholder for more examples */}
-          <div className="my-8 rounded-lg border-2 border-dashed border-border bg-gray-50 p-8 text-center">
+          <div className="my-8 rounded-lg border-2 border-dashed border-border bg-bg-muted p-8 text-center">
             <svg
-              className="mx-auto h-12 w-12 text-gray-400"
+              className="mx-auto h-12 w-12 text-fg-muted"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"

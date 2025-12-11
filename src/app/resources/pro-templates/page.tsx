@@ -83,10 +83,10 @@ export default function ProTemplatesPage() {
 
       {/* Hero Section */}
       <header className="mb-12 text-center">
-        <span className="inline-flex items-center gap-2 rounded-full border border-amber-500/50 bg-amber-50 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-amber-700">
+        <span className="inline-flex items-center gap-2 rounded-full border border-warning/50 bg-warning/10 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-warning">
           Pro Sablonok
         </span>
-        <h1 className="mt-6 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 bg-clip-text text-4xl font-bold tracking-tight text-transparent md:text-5xl">
+        <h1 className="mt-6 bg-gradient-to-r from-primary-ink via-primary-ink/90 to-primary-ink bg-clip-text text-4xl font-bold tracking-tight text-transparent md:text-5xl">
           Pro sablonok kĂ¶nyvtĂˇr
         </h1>
         <p className="mx-auto mt-4 max-w-2xl text-xl leading-relaxed text-fg-muted">
@@ -96,7 +96,7 @@ export default function ProTemplatesPage() {
       </header>
 
       {/* Pro Benefits Banner */}
-      <Card className="mb-12 border-2 border-amber-500/40 bg-gradient-to-br from-amber-50 to-orange-50">
+      <Card className="mb-12 border-2 border-warning/40 bg-gradient-to-br from-warning/10 to-warning/5">
         <div className="flex flex-col items-center gap-4 md:flex-row md:justify-between">
           <div>
             <h2 className="mb-2 text-2xl font-bold text-fg">Pro elĹ‘fizetĂ©s szĂĽksĂ©ges</h2>
@@ -107,7 +107,7 @@ export default function ProTemplatesPage() {
           </div>
           <Link
             href="/billing"
-            className="rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-8 py-4 text-base font-bold text-white shadow-lg transition-all hover:scale-105 hover:shadow-xl"
+            className="rounded-full bg-gradient-cta px-8 py-4 text-base font-bold text-cta-ink shadow-lg transition-all hover:scale-105 hover:shadow-xl"
           >
             Pro csomag megtekintĂ©se
           </Link>
@@ -119,19 +119,19 @@ export default function ProTemplatesPage() {
         {proTemplates.map((template) => (
           <Card
             key={template.id}
-            className="group relative overflow-hidden border-2 border-amber-500/30 bg-white transition-all hover:border-amber-500/60 hover:shadow-xl"
+            className="group relative overflow-hidden border-2 border-warning/30 bg-white transition-all hover:border-warning/60 hover:shadow-xl"
           >
             {/* Pro Badge */}
-            <div className="absolute right-4 top-4 z-10 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-3 py-1 text-xs font-bold text-white shadow-lg">
+            <div className="absolute right-4 top-4 z-10 rounded-full bg-gradient-cta px-3 py-1 text-xs font-bold text-cta-ink shadow-lg">
               PRO
             </div>
 
             {/* Preview Image Placeholder */}
-            <div className="relative aspect-[3/4] w-full overflow-hidden bg-gradient-to-br from-amber-100 to-orange-200">
+            <div className="relative aspect-[3/4] w-full overflow-hidden bg-gradient-to-br from-warning/10 to-warning/5">
               <div className="flex h-full items-center justify-center">
                 <div className="text-center">
                   <svg
-                    className="mx-auto h-16 w-16 text-amber-400"
+                    className="mx-auto h-16 w-16 text-warning"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -143,35 +143,35 @@ export default function ProTemplatesPage() {
                       d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                     />
                   </svg>
-                  <p className="mt-4 text-xs font-medium text-amber-700">
+                  <p className="mt-4 text-xs font-medium text-warning">
                     [HelyĹ‘rzĹ‘: {template.name} Pro sablon elĹ‘nĂ©zet kĂ©pe]
                   </p>
-                  <p className="mt-1 text-xs text-amber-600">
+                  <p className="mt-1 text-xs text-warning">
                     AjĂˇnlott: 800x1000px PDF elĹ‘nĂ©zet vagy screenshot
                   </p>
                 </div>
               </div>
               {/* Category Badge */}
-              <div className="absolute top-4 left-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-gray-700 backdrop-blur-sm">
+              <div className="absolute top-4 left-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-fg backdrop-blur-sm">
                 {template.category}
               </div>
             </div>
 
             {/* Template Info */}
             <div className="p-6">
-              <h3 className="mb-2 text-xl font-bold text-fg group-hover:text-amber-600 transition-colors">
+              <h3 className="mb-2 text-xl font-bold text-fg group-hover:text-primary transition-colors">
                 {template.name}
               </h3>
               <p className="mb-4 text-sm leading-relaxed text-fg-muted">{template.description}</p>
 
               {/* Features */}
               <div className="mb-4 space-y-2">
-                <p className="text-xs font-semibold uppercase text-gray-500">FĹ‘bb funkciĂłk:</p>
+                <p className="text-xs font-semibold uppercase text-fg-muted">FĹ‘bb funkciĂłk:</p>
                 <ul className="space-y-1">
                   {template.features.map((feature, index) => (
                     <li key={index} className="flex items-center gap-2 text-sm text-fg-muted">
                       <svg
-                        className="h-4 w-4 flex-shrink-0 text-amber-500"
+                        className="h-4 w-4 flex-shrink-0 text-warning"
                         fill="currentColor"
                         viewBox="0 0 20 20"
                       >
@@ -190,7 +190,7 @@ export default function ProTemplatesPage() {
               {/* CTA Button */}
               <Link
                 href="/billing"
-                className="block w-full rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-3 text-center text-sm font-semibold text-white transition-all hover:scale-105 hover:shadow-lg"
+                className="block w-full rounded-lg bg-gradient-cta px-4 py-3 text-center text-sm font-semibold text-cta-ink transition-all hover:scale-105 hover:shadow-lg"
               >
                 Pro elĹ‘fizetĂ©s indĂ­tĂˇsa
               </Link>
@@ -205,9 +205,9 @@ export default function ProTemplatesPage() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <Card className="text-center">
             <div className="mb-4 flex justify-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-amber-100 to-orange-100">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-primary/10 to-accent/10">
                 <svg
-                  className="h-8 w-8 text-amber-600"
+                  className="h-8 w-8 text-primary"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -230,9 +230,9 @@ export default function ProTemplatesPage() {
 
           <Card className="text-center">
             <div className="mb-4 flex justify-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-blue-100 to-cyan-100">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-primary/10 to-accent/10">
                 <svg
-                  className="h-8 w-8 text-blue-600"
+                  className="h-8 w-8 text-primary"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -255,9 +255,9 @@ export default function ProTemplatesPage() {
 
           <Card className="text-center">
             <div className="mb-4 flex justify-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-purple-100 to-pink-100">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-accent/10 to-primary/10">
                 <svg
-                  className="h-8 w-8 text-purple-600"
+                  className="h-8 w-8 text-accent"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -280,9 +280,9 @@ export default function ProTemplatesPage() {
 
           <Card className="text-center">
             <div className="mb-4 flex justify-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-green-100 to-emerald-100">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-success/10 to-success/5">
                 <svg
-                  className="h-8 w-8 text-green-600"
+                  className="h-8 w-8 text-success"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -316,39 +316,39 @@ export default function ProTemplatesPage() {
               <tr className="border-b-2 border-border">
                 <th className="px-4 py-3 text-left font-semibold text-fg">FunkciĂł</th>
                 <th className="px-4 py-3 text-center font-semibold text-fg">Ingyenes</th>
-                <th className="px-4 py-3 text-center font-semibold text-amber-600">Pro</th>
+                <th className="px-4 py-3 text-center font-semibold text-primary">Pro</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               <tr>
                 <td className="px-4 py-3 text-fg-muted">Sablonok szĂˇma</td>
                 <td className="px-4 py-3 text-center text-fg-muted">1-2</td>
-                <td className="px-4 py-3 text-center font-semibold text-amber-600">10+</td>
+                <td className="px-4 py-3 text-center font-semibold text-primary">10+</td>
               </tr>
               <tr>
                 <td className="px-4 py-3 text-fg-muted">Fejlett animĂˇciĂłk</td>
                 <td className="px-4 py-3 text-center text-fg-muted">âťŚ</td>
-                <td className="px-4 py-3 text-center font-semibold text-amber-600">âś…</td>
+                <td className="px-4 py-3 text-center font-semibold text-primary">âś…</td>
               </tr>
               <tr>
                 <td className="px-4 py-3 text-fg-muted">InteraktĂ­v elemek</td>
                 <td className="px-4 py-3 text-center text-fg-muted">KorlĂˇtozott</td>
-                <td className="px-4 py-3 text-center font-semibold text-amber-600">Teljes</td>
+                <td className="px-4 py-3 text-center font-semibold text-primary">Teljes</td>
               </tr>
               <tr>
                 <td className="px-4 py-3 text-fg-muted">Egyedi illusztrĂˇciĂłk</td>
                 <td className="px-4 py-3 text-center text-fg-muted">âťŚ</td>
-                <td className="px-4 py-3 text-center font-semibold text-amber-600">âś…</td>
+                <td className="px-4 py-3 text-center font-semibold text-primary">âś…</td>
               </tr>
               <tr>
                 <td className="px-4 py-3 text-fg-muted">PrĂ©mium tipogrĂˇfia</td>
                 <td className="px-4 py-3 text-center text-fg-muted">AlapvetĹ‘</td>
-                <td className="px-4 py-3 text-center font-semibold text-amber-600">PrĂ©mium</td>
+                <td className="px-4 py-3 text-center font-semibold text-primary">PrĂ©mium</td>
               </tr>
               <tr>
                 <td className="px-4 py-3 text-fg-muted">FĂ©nykĂ©p galĂ©ria</td>
                 <td className="px-4 py-3 text-center text-fg-muted">âťŚ</td>
-                <td className="px-4 py-3 text-center font-semibold text-amber-600">âś…</td>
+                <td className="px-4 py-3 text-center font-semibold text-primary">âś…</td>
               </tr>
             </tbody>
           </table>
@@ -356,7 +356,7 @@ export default function ProTemplatesPage() {
       </Card>
 
       {/* CTA Section */}
-      <Card className="mt-12 border-2 border-amber-500/40 bg-gradient-to-br from-amber-50 to-orange-50">
+      <Card className="mt-12 border-2 border-warning/40 bg-gradient-to-br from-warning/10 to-warning/5">
         <div className="text-center">
           <h2 className="mb-4 text-3xl font-bold text-fg">LĂ©pj szintet Pro elĹ‘fizetĂ©ssel!</h2>
           <p className="mb-8 text-lg text-fg-muted">
@@ -366,7 +366,7 @@ export default function ProTemplatesPage() {
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Link
               href="/billing"
-              className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-8 py-4 text-base font-bold text-white shadow-lg transition-all hover:scale-105 hover:shadow-xl"
+              className="inline-flex items-center gap-2 rounded-full bg-gradient-cta px-8 py-4 text-base font-bold text-cta-ink shadow-lg transition-all hover:scale-105 hover:shadow-xl"
             >
               Pro csomag megtekintĂ©se
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -124,7 +124,7 @@ export function OfferProjectDetailsSection({
         <div className="rounded-2xl border border-border/70 bg-[rgb(var(--color-bg-muted-rgb)/0.65)] p-5">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex items-start gap-3">
-              <span className="mt-0.5 inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-600">
+              <span className="mt-0.5 inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-warning/10 text-warning">
                 <svg
                   viewBox="0 0 24 24"
                   fill="none"

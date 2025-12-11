@@ -19,7 +19,7 @@ export default async function NotFound() {
       className="mx-auto flex min-h-[80vh] w-full max-w-7xl items-center justify-center px-6 py-20"
     >
       <div className="w-full max-w-4xl">
-        <Card className="relative overflow-hidden border-2 border-primary/20 bg-gradient-to-br from-white via-slate-50/50 to-primary/5 p-8 md:p-12 shadow-2xl">
+        <Card className="relative overflow-hidden border-2 border-primary/20 bg-gradient-to-br from-white via-bg-muted/50 to-primary/5 p-8 md:p-12 shadow-2xl">
           {/* Decorative background elements */}
           <div className="absolute -right-32 -top-32 h-96 w-96 rounded-full bg-primary/10 blur-3xl" />
           <div className="absolute -bottom-32 -left-32 h-96 w-96 rounded-full bg-accent/10 blur-3xl" />
@@ -63,17 +63,17 @@ export default async function NotFound() {
                 </div>
 
                 <div className="space-y-4">
-                  <h2 className="text-h2 font-bold text-slate-900 md:text-h1 lg:text-display">
+                  <h2 className="text-h2 font-bold text-fg md:text-h1 lg:text-display">
                     {t('app.notFound.heading')}
                   </h2>
-                  <p className="text-h6 leading-typography-relaxed text-slate-600 md:text-h5">
+                  <p className="text-h6 leading-typography-relaxed text-fg-muted md:text-h5">
                     {t('app.notFound.description')}
                   </p>
                 </div>
 
                 {/* Suggestions */}
-                <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-6">
-                  <h3 className="mb-4 text-body-small font-semibold uppercase tracking-wider text-slate-700">
+                <div className="rounded-xl border border-border bg-bg-muted/50 p-6">
+                  <h3 className="mb-4 text-body-small font-semibold uppercase tracking-wider text-fg">
                     {t('app.notFound.suggestions.title')}
                   </h3>
                   <ul className="space-y-3 text-left">
@@ -96,7 +96,7 @@ export default async function NotFound() {
                             d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                           />
                         </svg>
-                        <span className="text-body-small text-slate-700 leading-typography-normal">
+                        <span className="text-body-small text-fg leading-typography-normal">
                           {suggestion}
                         </span>
                       </li>
@@ -153,7 +153,7 @@ export default async function NotFound() {
             </div>
 
             {/* Bottom decorative logo/brand */}
-            <div className="mt-12 flex items-center justify-center border-t border-slate-200/50 pt-8">
+            <div className="mt-12 flex items-center justify-center border-t border-border/50 pt-8">
               <Link
                 href="/"
                 className="group flex items-center gap-3 transition-opacity hover:opacity-80"
@@ -168,7 +168,7 @@ export default async function NotFound() {
                     unoptimized
                   />
                 </div>
-                <span className="text-h5 font-bold text-slate-900 transition-colors group-hover:text-primary">
+                <span className="text-h5 font-bold text-fg transition-colors group-hover:text-primary">
                   Vyndi
                 </span>
               </Link>

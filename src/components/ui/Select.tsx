@@ -77,17 +77,18 @@ export function Select({
 
   const describedBy = describedByIds.length > 0 ? describedByIds.join(' ') : undefined;
   const wrapperClasses = wrapperClassName ?? 'flex flex-col gap-2';
-  const isDisabled = disabled || loading;
+  const isDisabled = Boolean(disabled || loading);
 
   // Convert option elements to SelectItem for backward compatibility
-  const normalizedChildren = React.Children.map(children, (child) => {
+  const normalizedChildren = React.Children.map(children, (child, index) => {
     if (React.isValidElement(child) && child.type === 'option') {
       const optionProps = child.props as React.OptionHTMLAttributes<HTMLOptionElement>;
+      const keyValue = optionProps.value ?? index;
       return (
         <SelectItem
-          key={optionProps.value}
+          key={String(keyValue)}
           value={String(optionProps.value || '')}
-          disabled={optionProps.disabled}
+          disabled={!!optionProps.disabled}
         >
           {optionProps.children || optionProps.value}
         </SelectItem>
@@ -117,11 +118,11 @@ export function Select({
         </label>
       )}
       <SelectPrimitive.Root
-        value={value}
+        {...(value !== undefined ? { value } : {})}
         onValueChange={handleValueChange}
         disabled={isDisabled}
-        name={name}
-        {...(register ? register(name || '') : {})}
+        {...(name ? { name } : {})}
+        {...(register && name ? register(name) : {})}
       >
         <SelectPrimitive.Trigger
           id={selectId}

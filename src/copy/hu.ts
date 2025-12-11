@@ -2016,6 +2016,7 @@ export const hu = {
         title: 'Tevékenység mentve',
         description: 'A tevékenység sikeresen mentve a beállításokba.',
       },
+      deleteSuccess: 'Tevékenység törölve',
     },
     offers: {
       loadFailed: {

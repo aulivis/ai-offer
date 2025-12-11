@@ -386,7 +386,7 @@ function ResourcesPageContent() {
 
             {/* Enhanced Filter Visualization */}
             <div className="flex flex-wrap items-center gap-3 mb-6">
-              <span className="text-body-small font-semibold text-gray-700">Szűrés:</span>
+              <span className="text-body-small font-semibold text-fg">Szűrés:</span>
 
               {/* Primary category filters - pill style */}
               {['Összes', 'Útmutatók', 'Blog cikkek', 'Videók'].map((type) => {
@@ -438,7 +438,7 @@ function ResourcesPageContent() {
             {/* Search, Sort, and View Toggle */}
             <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
               {/* Results Count with Screen Reader Announcement */}
-              <div className="text-gray-700">
+              <div className="text-fg">
                 <span className="font-bold text-navy-900">{filteredResources.length}</span>{' '}
                 erőforrás találva
               </div>
@@ -462,7 +462,7 @@ function ResourcesPageContent() {
               </div>
 
               {/* View Toggle */}
-              <div className="flex items-center gap-2 border border-gray-300 rounded-lg p-1">
+              <div className="flex items-center gap-2 border border-border rounded-lg p-1">
                 <button
                   onClick={() => setViewMode('grid')}
                   className={`p-2 rounded-full transition-colors min-h-[44px] min-w-[44px] ${
@@ -479,8 +479,8 @@ function ResourcesPageContent() {
                   onClick={() => setViewMode('list')}
                   className={`p-2 rounded transition-colors min-h-[44px] min-w-[44px] ${
                     viewMode === 'list'
-                      ? 'bg-turquoise-600 text-white'
-                      : 'text-fg-muted hover:bg-gray-100'
+                      ? 'bg-primary text-primary-ink'
+                      : 'text-fg-muted hover:bg-bg-muted'
                   }`}
                   aria-label="Lista nézet"
                   aria-pressed={viewMode === 'list'}
@@ -501,7 +501,7 @@ function ResourcesPageContent() {
               <div className="flex items-center justify-between mb-8">
                 <div>
                   <div className="flex items-center gap-3 mb-2">
-                    <Flame className="w-6 h-6 text-orange-500" />
+                    <Flame className="w-6 h-6 text-warning" />
                     <H2>Népszerű tartalmak</H2>
                   </div>
                   <p className="text-fg-muted">
@@ -527,7 +527,7 @@ function ResourcesPageContent() {
 
       {/* All Resources Grid */}
       {regularResources.length > 0 && (
-        <section className="py-16 bg-gray-50">
+        <section className="py-16 bg-bg-muted">
           <div className="container mx-auto px-4">
             <div className="max-w-6xl mx-auto">
               <div className="flex items-center justify-between mb-8">
@@ -557,7 +557,7 @@ function ResourcesPageContent() {
           <div className="container mx-auto px-4 text-center">
             <div className="max-w-md mx-auto">
               <div className="w-24 h-24 bg-bg-muted rounded-full flex items-center justify-center mx-auto mb-6">
-                <Search className="w-12 h-12 text-gray-400" />
+                <Search className="w-12 h-12 text-fg-muted" />
               </div>
               <H3 className="mb-2">Nincs találat</H3>
               <p className="text-fg-muted mb-6">

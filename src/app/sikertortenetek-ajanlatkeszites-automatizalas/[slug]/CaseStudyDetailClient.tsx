@@ -1,4 +1,3 @@
-/* eslint-disable no-hardcoded-ui-strings/no-hardcoded-ui-strings */
 'use client';
 
 import { useState } from 'react';
@@ -38,10 +37,10 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
   return (
     <div className="min-h-screen bg-white">
       {/* Breadcrumb Navigation */}
-      <div className="container mx-auto px-4 py-6 border-b border-gray-200 bg-white">
+      <div className="container mx-auto px-4 py-6 border-b border-border bg-white">
         <Link
           href="/sikertortenetek-ajanlatkeszites-automatizalas"
-          className="inline-flex items-center gap-2 text-gray-600 hover:text-teal-600 transition-colors group"
+          className="inline-flex items-center gap-2 text-fg-muted hover:text-primary transition-colors group"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           <span className="text-sm font-medium">Vissza a sikertörténetekhez</span>
@@ -49,10 +48,10 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
       </div>
 
       {/* Enhanced Hero Section */}
-      <section className="py-12 md:py-16 bg-gradient-to-br from-navy-900 via-navy-800 to-blue-900 text-white relative overflow-hidden">
+      <section className="py-12 md:py-16 bg-gradient-to-br from-navy-900 via-navy-800 to-primary-ink text-white relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-20 left-20 w-96 h-96 bg-turquoise-500 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-20 right-20 w-96 h-96 bg-blue-500 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-20 w-96 h-96 bg-primary rounded-full blur-3xl"></div>
         </div>
 
         <div className="container mx-auto px-4 relative z-10">
@@ -93,11 +92,11 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
                   <span className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-white">
                     {caseStudy.industryLabel}
                   </span>
-                  <span className="text-gray-300 flex items-center gap-1">
+                  <span className="text-fg-muted flex items-center gap-1">
                     <Building2 className="w-4 h-4" />
                     {caseStudy.companySize}
                   </span>
-                  <span className="text-gray-300 flex items-center gap-1">
+                  <span className="text-fg-muted flex items-center gap-1">
                     <Clock className="w-4 h-4" />
                     {caseStudy.timeline}
                   </span>
@@ -110,7 +109,7 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 leading-tight">
                 {caseStudy.mainResult}
               </h1>
-              <p className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto">
+              <p className="text-lg md:text-xl text-fg-muted max-w-3xl mx-auto">
                 {caseStudy.shortDescription}
               </p>
             </div>
@@ -164,9 +163,9 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
 
                 // Use static Tailwind classes
                 const colorClasses = [
-                  { bg: 'bg-teal-50', text: 'text-teal-600', icon: 'text-teal-600' },
-                  { bg: 'bg-blue-50', text: 'text-blue-600', icon: 'text-blue-600' },
-                  { bg: 'bg-purple-50', text: 'text-purple-600', icon: 'text-purple-600' },
+                  { bg: 'bg-primary/10', text: 'text-primary', icon: 'text-primary' },
+                  { bg: 'bg-accent/10', text: 'text-accent', icon: 'text-accent' },
+                  { bg: 'bg-success/10', text: 'text-success', icon: 'text-success' },
                 ];
                 const colors = colorClasses[index] || colorClasses[0];
 
@@ -199,11 +198,11 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
                       <div
                         className={`font-semibold mb-1 ${
                           isPrimary ? 'text-lg' : 'text-base'
-                        } text-gray-700`}
+                        } text-fg-muted`}
                       >
                         {metric.label}
                       </div>
-                      <div className={`text-gray-500 ${isPrimary ? 'text-sm' : 'text-xs'}`}>
+                      <div className={`text-fg-muted ${isPrimary ? 'text-sm' : 'text-xs'}`}>
                         {metric.description}
                       </div>
                     </div>
@@ -226,7 +225,7 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
                 </h2>
 
                 <div className="story-content">
-                  <p className="text-lg text-gray-700 leading-relaxed mb-6">
+                  <p className="text-lg text-fg-muted leading-relaxed mb-6">
                     2024. januárjában Szabó Anna, a Creative Agency projektmenedzsere azzal a
                     problémával küzdött, hogy egy nagy kampányhoz 5 komplex ajánlatot kellett volna
                     készíteniük 3 nap alatt. A csapat már teljes kapacitáson dolgozott.
@@ -237,9 +236,9 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
                     <ul className="space-y-3">
                       {caseStudy.challengePoints.map((point, idx) => (
                         <li key={idx} className="flex items-start gap-3">
-                          <XCircle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
+                          <XCircle className="w-5 h-5 text-danger mt-0.5 flex-shrink-0" />
                           <span
-                            className="text-gray-700"
+                            className="text-fg-muted"
                             dangerouslySetInnerHTML={{ __html: point }}
                           />
                         </li>
@@ -247,25 +246,25 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
                     </ul>
                   </div>
 
-                  <blockquote className="border-l-4 border-red-400 pl-6 py-4 bg-red-50 rounded-r-lg my-6">
-                    <p className="text-gray-700 italic mb-2">
+                  <blockquote className="border-l-4 border-danger pl-6 py-4 bg-danger/10 rounded-r-lg my-6">
+                    <p className="text-fg-muted italic mb-2">
                       &quot;Az egyik ügyfél visszaküldte az ajánlatot, mert &apos;nem nézett ki
                       professzionálisan&apos;. Pedig a tartalom tökéletes volt. A dizájn rombolt meg
                       mindent.&quot;
                     </p>
-                    <footer className="text-gray-600 font-semibold">- Szabó Anna</footer>
+                    <footer className="text-fg-muted font-semibold">- Szabó Anna</footer>
                   </blockquote>
                 </div>
               </div>
             ) : (
               <div className="bg-white rounded-xl p-8 shadow-lg">
                 <div className="flex items-start gap-4 mb-6">
-                  <div className="w-16 h-16 rounded-xl bg-red-100 flex items-center justify-center flex-shrink-0">
-                    <AlertCircle className="w-8 h-8 text-red-600" />
+                  <div className="w-16 h-16 rounded-xl bg-danger/10 flex items-center justify-center flex-shrink-0">
+                    <AlertCircle className="w-8 h-8 text-danger" />
                   </div>
                   <div>
                     <h2 className="text-2xl md:text-3xl font-bold text-navy-900 mb-2">A kihívás</h2>
-                    <p className="text-lg text-gray-700 leading-relaxed">{caseStudy.challenge}</p>
+                    <p className="text-lg text-fg-muted leading-relaxed">{caseStudy.challenge}</p>
                   </div>
                 </div>
 
@@ -274,11 +273,11 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
                   {caseStudy.challengePoints.map((point, idx) => (
                     <div
                       key={idx}
-                      className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                      className="flex items-start gap-3 p-4 bg-bg-muted rounded-lg hover:bg-bg transition-colors"
                     >
-                      <XCircle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
+                      <XCircle className="w-5 h-5 text-danger mt-0.5 flex-shrink-0" />
                       <div>
-                        <div className="font-semibold text-gray-800">{point}</div>
+                        <div className="font-semibold text-fg">{point}</div>
                       </div>
                     </div>
                   ))}
@@ -290,7 +289,7 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
       </section>
 
       {/* Enhanced Solution Section */}
-      <section className="py-16 bg-gradient-to-br from-teal-50 to-blue-50">
+      <section className="py-16 bg-gradient-to-br from-primary/10 to-accent/10">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             {caseStudy.slug === 'marketing-ugynokseg-sablon-automatizacio' ? (
@@ -300,7 +299,7 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
                 </h2>
 
                 <div className="solution-story">
-                  <p className="text-lg text-gray-700 leading-relaxed mb-6">
+                  <p className="text-lg text-fg-muted leading-relaxed mb-6">
                     Anna először szkeptikus volt. &quot;Már megpróbáltunk sablonrendszert, de sose
                     működött.&quot; Aztán látta a Vyndi <strong>moduláris megoldását</strong> és a{' '}
                     <strong>AI szövegvarázslót</strong>.
@@ -317,14 +316,14 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
                       return (
                         <div
                           key={idx}
-                          className="step bg-teal-50 rounded-lg p-6 border border-teal-200"
+                          className="step bg-primary/10 rounded-lg p-6 border border-primary/30"
                         >
-                          <div className="week bg-teal-600 text-white px-3 py-1 rounded-full text-sm font-semibold inline-block mb-3">
+                          <div className="week bg-primary-ink text-white px-3 py-1 rounded-full text-sm font-semibold inline-block mb-3">
                             {weekLabels[idx] || step.title}
                           </div>
                           <h3 className="font-bold text-xl text-navy-900 mb-2">{step.title}</h3>
-                          <p className="text-gray-700 mb-3">{step.description}</p>
-                          <div className="outcome bg-green-500 text-white px-4 py-2 rounded-lg inline-block text-sm font-semibold">
+                          <p className="text-fg-muted mb-3">{step.description}</p>
+                          <div className="outcome bg-success text-white px-4 py-2 rounded-lg inline-block text-sm font-semibold">
                             {outcomeLabels[idx] || ''}
                           </div>
                         </div>
@@ -332,27 +331,27 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
                     })}
                   </div>
 
-                  <blockquote className="border-l-4 border-teal-400 pl-6 py-4 bg-teal-50 rounded-r-lg my-6">
-                    <p className="text-gray-700 italic mb-2">
+                  <blockquote className="border-l-4 border-primary/40 pl-6 py-4 bg-primary/10 rounded-r-lg my-6">
+                    <p className="text-fg-muted italic mb-2">
                       &quot;Az a pillanat, amikor az egyik designer azt mondta: &apos;Most végre a
                       kreatív munkára tudok koncentrálni, a sablonozást hagyom a robotra.&apos;
                       Akkor tudtam, hogy ez működik.&quot;
                     </p>
-                    <footer className="text-gray-600 font-semibold">- Szabó Anna</footer>
+                    <footer className="text-fg-muted font-semibold">- Szabó Anna</footer>
                   </blockquote>
                 </div>
               </div>
             ) : (
               <div className="bg-white rounded-xl p-8 shadow-lg">
                 <div className="flex items-start gap-4 mb-6">
-                  <div className="w-16 h-16 rounded-xl bg-teal-500 flex items-center justify-center flex-shrink-0">
+                  <div className="w-16 h-16 rounded-xl bg-primary/100 flex items-center justify-center flex-shrink-0">
                     <Lightbulb className="w-8 h-8 text-white" />
                   </div>
                   <div>
                     <h2 className="text-2xl md:text-3xl font-bold text-navy-900 mb-2">
                       A megoldás
                     </h2>
-                    <p className="text-lg text-gray-700 leading-relaxed">{caseStudy.solution}</p>
+                    <p className="text-lg text-fg-muted leading-relaxed">{caseStudy.solution}</p>
                   </div>
                 </div>
 
@@ -362,10 +361,10 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
                   {caseStudy.featuresUsed.map((feature, idx) => (
                     <div
                       key={idx}
-                      className="flex items-center gap-3 bg-white p-4 rounded-lg shadow-sm border border-teal-100"
+                      className="flex items-center gap-3 bg-white p-4 rounded-lg shadow-sm border border-primary/20"
                     >
-                      <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0" />
-                      <span className="text-gray-700">{feature}</span>
+                      <CheckCircle className="w-6 h-6 text-success flex-shrink-0" />
+                      <span className="text-fg-muted">{feature}</span>
                     </div>
                   ))}
                 </div>
@@ -377,7 +376,7 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
 
       {/* Enhanced Visual Timeline */}
       <section
-        className="py-16 bg-gradient-to-b from-gray-50 to-white"
+        className="py-16 bg-gradient-to-b from-bg-muted to-white"
         aria-label="Eredmények idővonalon"
       >
         <div className="container mx-auto px-4">
@@ -391,7 +390,7 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
             {/* Vertical Timeline */}
             <ol className="relative pl-8 md:pl-0 list-none">
               {/* Vertical line - more prominent with gradient */}
-              <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-1.5 bg-gradient-to-b from-teal-400 via-teal-500 to-teal-600 transform md:-translate-x-1/2 rounded-full shadow-sm"></div>
+              <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-1.5 bg-gradient-to-b from-primary via-primary-ink to-primary-ink/90 transform md:-translate-x-1/2 rounded-full shadow-sm"></div>
 
               {/* Timeline items */}
               <div className="space-y-12">
@@ -430,7 +429,7 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
                       {/* Timeline dot and connector */}
                       <div className="relative flex-shrink-0 z-10">
                         {/* Timeline dot with checkmark for completed stages */}
-                        <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center shadow-xl ring-4 ring-white relative z-10 transform -translate-x-3 md:-translate-x-1/2 -translate-y-1/2 top-0 group-hover:scale-110 transition-transform duration-300">
+                        <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-gradient-to-br from-primary/100 to-primary-ink/90 flex items-center justify-center shadow-xl ring-4 ring-white relative z-10 transform -translate-x-3 md:-translate-x-1/2 -translate-y-1/2 top-0 group-hover:scale-110 transition-transform duration-300">
                           <CheckCircle
                             className="w-6 h-6 md:w-7 md:h-7 text-white"
                             strokeWidth={2.5}
@@ -438,7 +437,7 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
                         </div>
                         {/* Week badge - mobile only, positioned above */}
                         <div className="absolute -top-8 left-1/2 -translate-x-1/2 md:hidden">
-                          <span className="text-xs font-semibold text-teal-700 bg-white px-2 py-1 rounded-full shadow-sm border border-teal-300">
+                          <span className="text-xs font-semibold text-primary bg-white px-2 py-1 rounded-full shadow-sm border border-primary/40">
                             {milestone.week}
                           </span>
                         </div>
@@ -446,10 +445,10 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
 
                       {/* Content card */}
                       <div className="flex-1 pt-1">
-                        <article className="bg-white rounded-xl p-6 md:p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-teal-300 group max-w-2xl mx-auto hover:-translate-y-1">
+                        <article className="bg-white rounded-xl p-6 md:p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-border hover:border-primary/40 group max-w-2xl mx-auto hover:-translate-y-1">
                           {/* Week and period header - unified formatting for all pages */}
                           <div className="flex items-center justify-center gap-3 mb-4">
-                            <span className="text-xs font-semibold text-teal-700 bg-teal-50 px-3 py-1.5 rounded-full border border-teal-200/60">
+                            <span className="text-xs font-semibold text-primary bg-primary/10 px-3 py-1.5 rounded-full border border-primary/30/60">
                               {caseStudy.slug === 'marketing-ugynokseg-sablon-automatizacio'
                                 ? milestone.week === '1'
                                   ? 'Január 1. hét'
@@ -466,14 +465,14 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
 
                           {/* Title with icon */}
                           <div className="flex items-center justify-center gap-2 mb-3">
-                            <MilestoneIcon className="w-5 h-5 text-teal-600 flex-shrink-0" />
-                            <h3 className="font-bold text-xl md:text-2xl text-navy-900 group-hover:text-teal-600 transition-colors text-center">
+                            <MilestoneIcon className="w-5 h-5 text-primary flex-shrink-0" />
+                            <h3 className="font-bold text-xl md:text-2xl text-navy-900 group-hover:text-primary transition-colors text-center">
                               {milestone.title}
                             </h3>
                           </div>
 
                           {/* Description */}
-                          <p className="text-sm md:text-base text-gray-600 leading-relaxed mb-6 text-center">
+                          <p className="text-sm md:text-base text-fg-muted leading-relaxed mb-6 text-center">
                             {milestone.description.includes(
                               'Minden új ajánlatot a Vyndi-vel készítettek',
                             )
@@ -487,7 +486,7 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
                           {/* Enhanced Outcome Metrics */}
                           {milestone.metrics && (
                             <div className="flex justify-center">
-                              <div className="inline-flex flex-col items-center gap-2 px-6 py-4 bg-gradient-to-br from-green-500 to-teal-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border-2 border-green-400/30 min-w-[200px]">
+                              <div className="inline-flex flex-col items-center gap-2 px-6 py-4 bg-gradient-to-br from-success to-primary text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border-2 border-success/30 min-w-[200px]">
                                 <div className="flex items-center gap-2">
                                   {/* Use TrendingUp for last milestone, TrendingDown for others */}
                                   {idx === caseStudy.resultTimeline.length - 1 ? (
@@ -517,7 +516,7 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
       </section>
 
       {/* Enhanced Testimonial Section */}
-      <section className="py-16 bg-gradient-to-br from-teal-500 to-blue-600 text-white relative overflow-hidden">
+      <section className="py-16 bg-gradient-to-br from-primary/100 to-accent text-white relative overflow-hidden">
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto">
             {/* Decorative quote mark - closer to text */}
@@ -554,7 +553,7 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
 
               {/* Verified badge */}
               <div className="flex items-center gap-2 px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-sm font-semibold">
-                <CheckCircle className="w-4 h-4 text-green-300" />
+                <CheckCircle className="w-4 h-4 text-success/70" />
                 Ellenőrzött
               </div>
             </div>
@@ -563,7 +562,7 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
       </section>
 
       {/* Enhanced FAQ Section - Accordion Style */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-bg">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl font-bold text-navy-900 mb-8">
@@ -575,23 +574,23 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
                 <div key={idx} className="bg-white rounded-xl shadow-sm overflow-hidden">
                   <button
                     onClick={() => setOpenFaq(openFaq === idx + 1 ? null : idx + 1)}
-                    className="w-full p-6 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
+                    className="w-full p-6 flex items-center justify-between text-left hover:bg-bg-muted transition-colors"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="w-8 h-8 rounded-full bg-teal-100 text-teal-600 font-bold flex items-center justify-center flex-shrink-0">
+                      <div className="w-8 h-8 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center flex-shrink-0">
                         {idx + 1}
                       </div>
-                      <span className="font-semibold text-gray-800 text-lg">{step.title}</span>
+                      <span className="font-semibold text-fg text-lg">{step.title}</span>
                     </div>
                     <ChevronDown
-                      className={`w-5 h-5 text-gray-400 transition-transform flex-shrink-0 ${
+                      className={`w-5 h-5 text-fg-muted transition-transform flex-shrink-0 ${
                         openFaq === idx + 1 ? 'rotate-180' : ''
                       }`}
                     />
                   </button>
 
                   {openFaq === idx + 1 && (
-                    <div className="px-6 pb-6 text-gray-600 leading-relaxed ml-12">
+                    <div className="px-6 pb-6 text-fg-muted leading-relaxed ml-12">
                       {step.description}
                     </div>
                   )}
@@ -617,11 +616,11 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
                 {relatedCaseStudies.map((related, index) => {
                   // Use static Tailwind classes
                   const gradients = [
-                    'from-purple-400 to-pink-600',
-                    'from-blue-400 to-indigo-600',
-                    'from-teal-400 to-cyan-600',
+                    'from-primary to-accent',
+                    'from-accent to-primary',
+                    'from-success to-primary',
                   ];
-                  const gradient = gradients[index % 3] || 'from-teal-400 to-blue-600';
+                  const gradient = gradients[index % 3] || 'from-primary to-accent';
                   const primaryMetric = related.metrics[0];
                   const improvementValue = primaryMetric?.improvement?.match(/\d+/)?.[0] || '0';
 
@@ -642,34 +641,34 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
 
                       {/* Content */}
                       <div className="p-6">
-                        <h4 className="font-bold text-xl mb-2 group-hover:text-teal-600 transition-colors">
+                        <h4 className="font-bold text-xl mb-2 group-hover:text-primary transition-colors">
                           {related.companyName}
                         </h4>
-                        <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                        <p className="text-sm text-fg-muted mb-4 line-clamp-2">
                           {related.shortDescription}
                         </p>
 
                         {/* Key metric highlight */}
                         {primaryMetric && (
                           <div className="flex gap-4 mb-4">
-                            <div className="flex-1 bg-gray-50 rounded-lg p-3 text-center">
-                              <div className="text-2xl font-bold text-teal-600">
+                            <div className="flex-1 bg-bg-muted rounded-lg p-3 text-center">
+                              <div className="text-2xl font-bold text-primary">
                                 {improvementValue}%
                               </div>
-                              <div className="text-xs text-gray-600">Javulás</div>
+                              <div className="text-xs text-fg-muted">Javulás</div>
                             </div>
-                            <div className="flex-1 bg-gray-50 rounded-lg p-3 text-center">
-                              <div className="text-2xl font-bold text-blue-600">
+                            <div className="flex-1 bg-bg-muted rounded-lg p-3 text-center">
+                              <div className="text-2xl font-bold text-accent">
                                 {primaryMetric.value}
                               </div>
-                              <div className="text-xs text-gray-600">{primaryMetric.label}</div>
+                              <div className="text-xs text-fg-muted">{primaryMetric.label}</div>
                             </div>
                           </div>
                         )}
 
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-full overflow-hidden ring-2 ring-teal-100">
+                            <div className="w-8 h-8 rounded-full overflow-hidden ring-2 ring-primary/20">
                               <Image
                                 src={getAuthorImage(related.testimonial.author)}
                                 alt={related.testimonial.author}
@@ -680,10 +679,10 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
                             </div>
                             <div className="text-xs">
                               <div className="font-semibold">{related.testimonial.author}</div>
-                              <div className="text-gray-500">{related.testimonial.role}</div>
+                              <div className="text-fg-muted">{related.testimonial.role}</div>
                             </div>
                           </div>
-                          <ArrowRight className="w-5 h-5 text-teal-600 group-hover:translate-x-1 transition-transform" />
+                          <ArrowRight className="w-5 h-5 text-primary group-hover:translate-x-1 transition-transform" />
                         </div>
                       </div>
                     </Link>
@@ -698,7 +697,7 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
       {/* Back to Stories Link - Removed for all pages */}
 
       {/* Bottom CTA */}
-      <section className="py-20 bg-gradient-to-br from-turquoise-500 to-blue-500 text-white relative overflow-hidden">
+      <section className="py-20 bg-gradient-to-br from-turquoise-500 to-accent/100 text-white relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-10 left-10 w-72 h-72 bg-white rounded-full blur-3xl"></div>
           <div className="absolute bottom-10 right-10 w-96 h-96 bg-white rounded-full blur-3xl"></div>
@@ -719,27 +718,27 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 href="/login?redirect=/new"
-                className="group bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl px-8 py-4 min-h-[56px] w-full sm:w-auto flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all duration-300 active:scale-95 relative overflow-hidden"
+                className="group bg-accent hover:bg-accent-strong text-white font-semibold rounded-xl px-8 py-4 min-h-[56px] w-full sm:w-auto flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all duration-300 active:scale-95 relative overflow-hidden"
               >
                 <span className="relative z-10 text-base md:text-lg text-white">
                   Próbáld ki most ingyen
                 </span>
                 <ArrowRight className="w-5 h-5 flex-shrink-0 relative z-10 text-white transition-transform duration-300 group-hover:translate-x-1" />
-                <span className="absolute inset-0 bg-gradient-to-r from-orange-600 to-orange-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+                <span className="absolute inset-0 bg-gradient-to-r from-accent-strong to-warning-ink opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
               </Link>
             </div>
             {/* Trust Indicators - 3 features from landing hero */}
             <div className="flex flex-wrap justify-center gap-6 mt-8 text-white/90">
               <div className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-green-300" />
+                <CheckCircle className="w-5 h-5 text-success/70" />
                 <span>Kezdd el teljesen ingyen</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-green-300" />
+                <CheckCircle className="w-5 h-5 text-success/70" />
                 <span>Nem kérünk bankkártyát</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-green-300" />
+                <CheckCircle className="w-5 h-5 text-success/70" />
                 <span>Kész ajánlat 5 perc alatt</span>
               </div>
             </div>

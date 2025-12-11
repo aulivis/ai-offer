@@ -58,7 +58,7 @@ export function ResourceFiltersComponent({
       {/* Type Tabs */}
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-3">
-          <Filter className="w-5 h-5 text-gray-600" />
+          <Filter className="w-5 h-5 text-fg-muted" />
           <label className="block text-sm font-bold text-navy-900">Tanulmány típusa</label>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -80,9 +80,7 @@ export function ResourceFiltersComponent({
                   }
                 }}
                 className={`px-4 py-2 rounded-lg font-semibold transition-all min-h-[44px] ${
-                  isActive
-                    ? 'bg-turquoise-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  isActive ? 'bg-primary text-white' : 'bg-bg-muted text-fg hover:bg-bg'
                 }`}
               >
                 {type}
@@ -120,7 +118,7 @@ export function ResourceFiltersComponent({
                   });
                 }
               }}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-turquoise-500 focus:outline-none min-h-[44px]"
+              className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:outline-none min-h-[44px]"
             >
               {topics.map((topic) => (
                 <option key={topic} value={topic}>
@@ -144,7 +142,7 @@ export function ResourceFiltersComponent({
                   });
                 }
               }}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-turquoise-500 focus:outline-none min-h-[44px]"
+              className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:outline-none min-h-[44px]"
             >
               {difficulties.map((difficulty) => (
                 <option key={difficulty} value={difficulty}>
@@ -168,7 +166,7 @@ export function ResourceFiltersComponent({
                   });
                 }
               }}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-turquoise-500 focus:outline-none min-h-[44px]"
+              className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:outline-none min-h-[44px]"
             >
               {formats.map((format) => (
                 <option key={format} value={format}>
@@ -182,12 +180,12 @@ export function ResourceFiltersComponent({
 
       {/* Active Filters Display */}
       {activeFiltersCount > 0 && (
-        <div className="mt-6 pt-6 border-t border-gray-200">
+        <div className="mt-6 pt-6 border-t border-border">
           <div className="flex items-center justify-between mb-3">
             <span className="text-sm font-semibold text-navy-900">Aktív szűrők:</span>
             <button
               onClick={clearFilters}
-              className="text-sm text-turquoise-600 hover:underline font-semibold"
+              className="text-sm text-primary hover:underline font-semibold"
             >
               Összes törlése
             </button>
@@ -201,7 +199,7 @@ export function ResourceFiltersComponent({
             ].map((filter) => (
               <span
                 key={filter}
-                className="inline-flex items-center gap-2 px-3 py-1 bg-turquoise-100 text-turquoise-700 rounded-full text-sm font-medium"
+                className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium"
               >
                 {filter}
                 <button
@@ -218,7 +216,7 @@ export function ResourceFiltersComponent({
                     }
                     onFilterChange(newFilters);
                   }}
-                  className="hover:bg-turquoise-200 rounded-full p-0.5"
+                  className="hover:bg-primary/20 rounded-full p-0.5"
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -229,7 +227,7 @@ export function ResourceFiltersComponent({
       )}
 
       {/* Result Count */}
-      <div className="mt-4 text-sm text-gray-600">
+      <div className="mt-4 text-sm text-fg-muted">
         <span className="font-bold text-navy-900">{resultCount}</span> erőforrás találva
       </div>
     </div>
