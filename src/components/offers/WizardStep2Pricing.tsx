@@ -497,7 +497,7 @@ export function WizardStep2Pricing({
 
       {/* Quick Insert Activities */}
       {filteredActivities.length > 0 && (
-        <Card className="space-y-4 border-none bg-white/95 p-5 shadow-lg ring-1 ring-slate-900/5 sm:p-6">
+        <Card className="space-y-4 border-none bg-white/95 p-5 shadow-lg ring-1 ring-fg/5 sm:p-6">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h3 className="text-base font-semibold text-fg">
@@ -525,7 +525,7 @@ export function WizardStep2Pricing({
 
       {/* Reference Photos Overview */}
       {enableReferencePhotos && activitiesWithReferenceImages.length > 0 && (
-        <Card className="space-y-5 border-none bg-white/95 p-5 shadow-lg ring-1 ring-slate-900/5 sm:p-6">
+        <Card className="space-y-5 border-none bg-white/95 p-5 shadow-lg ring-1 ring-fg/5 sm:p-6">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h3 className="text-base font-semibold text-fg">
@@ -678,7 +678,7 @@ export function WizardStep2Pricing({
       )}
 
       {guarantees.length > 0 && (
-        <Card className="space-y-4 border-none bg-white/95 p-5 shadow-lg ring-1 ring-slate-900/5 sm:p-6">
+        <Card className="space-y-4 border-none bg-white/95 p-5 shadow-lg ring-1 ring-fg/5 sm:p-6">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h3 className="text-base font-semibold text-fg">
@@ -735,7 +735,7 @@ export function WizardStep2Pricing({
       )}
 
       {enableTestimonials && availableTestimonials.length > 0 && (
-        <Card className="space-y-4 border-none bg-white/95 p-5 shadow-lg ring-1 ring-slate-900/5 sm:p-6">
+        <Card className="space-y-4 border-none bg-white/95 p-5 shadow-lg ring-1 ring-fg/5 sm:p-6">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h3 className="text-base font-semibold text-fg">
@@ -818,13 +818,13 @@ export function WizardStep2Pricing({
       </Card>
 
       {/* Client Information */}
-      <Card className="space-y-4 border-none bg-white/95 p-5 shadow-lg ring-1 ring-slate-900/5 sm:p-6">
+      <Card className="space-y-4 border-none bg-white/95 p-5 shadow-lg ring-1 ring-fg/5 sm:p-6">
         <div className="flex flex-col gap-2">
           <div>
-            <h3 className="text-base font-semibold text-slate-900">
+            <h3 className="text-base font-semibold text-fg">
               {t('offers.wizard.forms.details.sections.client')}
             </h3>
-            <p className="text-xs text-slate-600 mt-1">
+            <p className="text-xs text-fg-muted mt-1">
               {t('offers.wizard.forms.details.sections.clientHelper')}
             </p>
           </div>
@@ -842,18 +842,18 @@ export function WizardStep2Pricing({
           />
           {showClientDropdown && filteredClients.length > 0 && (
             <div className="absolute z-10 mt-1.5 max-h-48 w-full overflow-auto rounded-xl border border-border/70 bg-white shadow-xl">
-              {filteredClients.map((c) => (
-                <Button
-                  key={c.id}
-                  type="button"
+                  {filteredClients.map((c) => (
+                    <Button
+                      key={c.id}
+                      type="button"
                   className="flex w-full flex-col items-start gap-0.5 rounded-none border-none px-3 py-1.5 text-left text-xs text-fg-muted transition hover:bg-bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                  onMouseDown={() => pickClient(c)}
-                >
-                  <span className="font-medium text-fg">{c.company_name}</span>
-                  {c.email ? <span className="text-[11px] text-slate-500">{c.email}</span> : null}
-                </Button>
-              ))}
-            </div>
+                      onMouseDown={() => pickClient(c)}
+                    >
+                      <span className="font-medium text-fg">{c.company_name}</span>
+                      {c.email ? <span className="text-[11px] text-fg-muted">{c.email}</span> : null}
+                    </Button>
+                  ))}
+                </div>
           )}
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -906,10 +906,10 @@ export function WizardStep2Pricing({
           }}
         >
           <div className="space-y-4">
-            <h3 className="text-lg font-bold text-slate-900">
+            <h3 className="text-lg font-bold text-fg">
               {t('offers.wizard.images.modalTitle', { activity: pendingActivity.name })}
             </h3>
-            <p className="text-sm text-slate-600">{t('offers.wizard.images.modalDescription')}</p>
+            <p className="text-sm text-fg-muted">{t('offers.wizard.images.modalDescription')}</p>
             {loadingImageUrls ? (
               <div className="flex items-center justify-center py-8">
                 <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
@@ -1011,14 +1011,14 @@ export function WizardStep2Pricing({
       {showTestimonialsModal && (
         <Modal open={showTestimonialsModal} onClose={() => setShowTestimonialsModal(false)}>
           <div className="space-y-4">
-            <h3 className="text-lg font-bold text-slate-900">
+            <h3 className="text-lg font-bold text-fg">
               {t('offers.wizard.testimonials.modalTitle')}
             </h3>
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-fg-muted">
               {t('offers.wizard.testimonials.modalDescription')}
             </p>
             {availableTestimonials.length === 0 ? (
-              <p className="py-4 text-sm text-slate-500">
+              <p className="py-4 text-sm text-fg-muted">
                 {t('offers.wizard.testimonials.noTestimonials')}
               </p>
             ) : (
@@ -1052,12 +1052,12 @@ export function WizardStep2Pricing({
                       <div className="flex items-start gap-3">
                         <div
                           className={`mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border-2 ${
-                            isSelected ? 'border-primary bg-primary' : 'border-slate-300 bg-white'
+                            isSelected ? 'border-primary bg-primary' : 'border-border bg-white'
                           }`}
                         >
                           {isSelected && <CheckIcon className="h-3 w-3 text-white" />}
                         </div>
-                        <p className="flex-1 text-sm text-slate-700">{testimonial.text}</p>
+                        <p className="flex-1 text-sm text-fg">{testimonial.text}</p>
                       </div>
                     </div>
                   );
@@ -1065,7 +1065,7 @@ export function WizardStep2Pricing({
               </div>
             )}
             <div className="flex items-center justify-between">
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-fg-muted">
                 {t('offers.wizard.testimonials.selectedCount', {
                   current: selectedTestimonials.length,
                   max: 3,

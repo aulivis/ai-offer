@@ -200,10 +200,10 @@ export default function TenTipsPage() {
 
       {/* Hero Section */}
       <header className="mb-12">
-        <span className="inline-flex items-center gap-2 rounded-full border border-amber-500/50 bg-amber-50 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-amber-700">
+        <span className="inline-flex items-center gap-2 rounded-full border border-warning/50 bg-warning/10 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-warning">
           Blog cikk
         </span>
-        <h1 className="mt-6 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 bg-clip-text text-4xl font-bold tracking-tight text-transparent md:text-5xl">
+        <h1 className="mt-6 bg-gradient-to-r from-primary-ink via-primary-ink/90 to-primary-ink bg-clip-text text-4xl font-bold tracking-tight text-transparent md:text-5xl">
           10 tipp a tĂ¶kĂ©letes ajĂˇnlathoz
         </h1>
         <p className="mt-4 text-xl leading-relaxed text-fg-muted">
@@ -237,9 +237,9 @@ export default function TenTipsPage() {
       </header>
 
       {/* Featured Image Placeholder */}
-      <div className="mb-12 rounded-lg border-2 border-dashed border-border bg-gray-50 p-16 text-center">
+      <div className="mb-12 rounded-lg border-2 border-dashed border-border bg-bg-muted p-16 text-center">
         <svg
-          className="mx-auto h-20 w-20 text-gray-400"
+          className="mx-auto h-20 w-20 text-fg-muted"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -251,11 +251,11 @@ export default function TenTipsPage() {
             d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
           />
         </svg>
-        <p className="mt-4 text-sm font-medium text-gray-600">
+        <p className="mt-4 text-sm font-medium text-fg-muted">
           [HelyĹ‘rzĹ‘: Hero kĂ©p - ProfesszionĂˇlis ajĂˇnlat pĂ©ldĂˇk, tippek infografika vagy
           inspirĂˇlĂł kĂ©p]
         </p>
-        <p className="mt-2 text-xs text-gray-500">
+        <p className="mt-2 text-xs text-fg-muted/80">
           AjĂˇnlott mĂ©ret: 1200x600px, formĂˇtum: WebP vagy PNG
         </p>
       </div>
@@ -273,16 +273,16 @@ export default function TenTipsPage() {
       {/* Tips List */}
       <div className="space-y-8">
         {tips.map((tip) => (
-          <Card key={tip.number} className="border-l-4 border-l-amber-500">
+          <Card key={tip.number} className="border-l-4 border-l-warning">
             <div className="flex gap-6">
               <div className="flex-shrink-0">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-amber-100 text-2xl font-bold text-amber-600">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-warning/15 text-2xl font-bold text-warning">
                   {tip.number}
                 </div>
               </div>
               <div className="flex-1">
                 <div className="mb-3 flex items-center gap-3">
-                  <div className="text-amber-600">{tip.icon}</div>
+                  <div className="text-warning">{tip.icon}</div>
                   <h2 className="text-2xl font-bold text-fg">{tip.title}</h2>
                 </div>
                 <p className="text-lg leading-relaxed text-fg-muted">{tip.content}</p>
@@ -293,7 +293,7 @@ export default function TenTipsPage() {
       </div>
 
       {/* Practical Example Section */}
-      <Card className="mt-12 bg-gradient-to-br from-amber-50 to-orange-50">
+      <Card className="mt-12 bg-gradient-to-br from-warning/10 to-warning/5">
         <h2 className="mb-4 text-2xl font-bold text-fg">Gyakorlati pĂ©lda</h2>
         <p className="mb-4 text-fg-muted">
           ĂŤme egy pĂ©lda, hogyan nĂ©z ki egy jĂłl strukturĂˇlt ajĂˇnlat:
@@ -314,7 +314,7 @@ export default function TenTipsPage() {
       </Card>
 
       {/* Summary */}
-      <Card className="mt-12 border-l-4 border-l-green-500 bg-green-50/30">
+      <Card className="mt-12 border-l-4 border-l-success bg-success/10">
         <h2 className="mb-4 text-2xl font-bold text-fg">Ă–sszegzĂ©s</h2>
         <p className="mb-4 text-lg leading-relaxed text-fg-muted">
           A tĂ¶kĂ©letes ajĂˇnlat egyensĂşlyt teremt az informĂˇciĂł Ă©s a meggyĹ‘zĂ©s kĂ¶zĂ¶tt. A

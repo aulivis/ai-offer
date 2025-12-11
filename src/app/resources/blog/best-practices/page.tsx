@@ -33,10 +33,10 @@ export default function BestPracticesPage() {
 
       {/* Hero Section */}
       <header className="mb-12">
-        <span className="inline-flex items-center gap-2 rounded-full border border-amber-500/50 bg-amber-50 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-amber-700">
+        <span className="inline-flex items-center gap-2 rounded-full border border-warning/50 bg-warning/10 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-warning">
           Blog cikk
         </span>
-        <h1 className="mt-6 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 bg-clip-text text-4xl font-bold tracking-tight text-transparent md:text-5xl">
+        <h1 className="mt-6 bg-gradient-to-r from-primary-ink via-primary-ink/90 to-primary-ink bg-clip-text text-4xl font-bold tracking-tight text-transparent md:text-5xl">
           AjĂˇnlatkĂ©szĂ­tĂ©s best practices
         </h1>
         <p className="mt-4 text-xl leading-relaxed text-fg-muted">
@@ -71,9 +71,9 @@ export default function BestPracticesPage() {
       </header>
 
       {/* Featured Image Placeholder */}
-      <div className="mb-12 rounded-lg border-2 border-dashed border-border bg-gray-50 p-16 text-center">
+      <div className="mb-12 rounded-lg border-2 border-dashed border-border bg-bg-muted p-16 text-center">
         <svg
-          className="mx-auto h-20 w-20 text-gray-400"
+          className="mx-auto h-20 w-20 text-fg-muted"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -85,11 +85,11 @@ export default function BestPracticesPage() {
             d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
           />
         </svg>
-        <p className="mt-4 text-sm font-medium text-gray-600">
+        <p className="mt-4 text-sm font-medium text-fg-muted">
           [HelyĹ‘rzĹ‘: Hero kĂ©p - Best practices infografika, iparĂˇgi trendek vagy szakĂ©rtĹ‘i
           tanĂˇcsok vizuĂˇlis ĂˇbrĂˇzolĂˇsa]
         </p>
-        <p className="mt-2 text-xs text-gray-500">
+        <p className="mt-2 text-xs text-fg-muted/80">
           AjĂˇnlott mĂ©ret: 1200x600px, formĂˇtum: WebP vagy PNG
         </p>
       </div>
@@ -108,7 +108,7 @@ export default function BestPracticesPage() {
       <article className="prose prose-lg max-w-none space-y-12">
         {/* Section 1: Personalization */}
         <section>
-          <Card className="border-l-4 border-l-blue-500">
+          <Card className="border-l-4 border-l-accent">
             <h2 className="mb-4 text-3xl font-bold text-fg">
               1. SzemĂ©lyre szabĂˇs: Az Ăşj arany standard
             </h2>
@@ -117,7 +117,7 @@ export default function BestPracticesPage() {
               szerint minden ajĂˇnlatnak szemĂ©lyre kell szabottnak lennie az ĂĽgyfĂ©l specifikus
               igĂ©nyeihez.
             </p>
-            <div className="rounded-lg bg-blue-50 p-6">
+            <div className="rounded-lg bg-accent/10 p-6">
               <h3 className="mb-3 font-semibold text-fg">Gyakorlati tanĂˇcsok:</h3>
               <ul className="ml-6 list-disc space-y-2 text-fg-muted">
                 <li>HasznĂˇlj az ĂĽgyfĂ©l nevĂ©t Ă©s cĂ©gnevĂ©t az ajĂˇnlatban</li>
@@ -131,7 +131,7 @@ export default function BestPracticesPage() {
 
         {/* Section 2: Data-Driven Approach */}
         <section>
-          <Card className="border-l-4 border-l-green-500">
+          <Card className="border-l-4 border-l-success">
             <h2 className="mb-4 text-3xl font-bold text-fg">2. AdatvezĂ©relt megkĂ¶zelĂ­tĂ©s</h2>
             <p className="mb-4 text-lg leading-relaxed text-fg-muted">
               A sikeres ajĂˇnlatkĂ©szĂ­tĂ©s nem vĂ©letlen, hanem adatokon alapul. A legjobb
@@ -139,9 +139,9 @@ export default function BestPracticesPage() {
             </p>
 
             {/* Placeholder for data visualization */}
-            <div className="my-6 rounded-lg border-2 border-dashed border-border bg-gray-50 p-8 text-center">
+            <div className="my-6 rounded-lg border-2 border-dashed border-border bg-bg-muted p-8 text-center">
               <svg
-                className="mx-auto h-12 w-12 text-gray-400"
+                className="mx-auto h-12 w-12 text-fg-muted"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -153,21 +153,21 @@ export default function BestPracticesPage() {
                   d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
                 />
               </svg>
-              <p className="mt-4 text-sm font-medium text-gray-600">
+              <p className="mt-4 text-sm font-medium text-fg-muted">
                 [HelyĹ‘rzĹ‘: Infografika - AjĂˇnlat konverziĂł rĂˇtĂˇk, A/B tesztelĂ©si
                 eredmĂ©nyek, mĂ©rhetĹ‘ metrikĂˇk]
               </p>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
-              <div className="rounded-lg bg-green-50 p-4">
+              <div className="rounded-lg bg-success/10 p-4">
                 <h4 className="mb-2 font-semibold text-fg">MĂ©rj le mindent</h4>
                 <p className="text-sm text-fg-muted">
                   KĂ¶vess nyomon a konverziĂł rĂˇtĂˇkat, vĂˇlaszidĹ‘ket, Ă©s az ĂĽgyfelek
                   visszajelzĂ©seit.
                 </p>
               </div>
-              <div className="rounded-lg bg-green-50 p-4">
+              <div className="rounded-lg bg-success/10 p-4">
                 <h4 className="mb-2 font-semibold text-fg">Tesztelj Ă©s optimalizĂˇlj</h4>
                 <p className="text-sm text-fg-muted">
                   A/B teszteld kĂĽlĂ¶nbĂ¶zĹ‘ megkĂ¶zelĂ­tĂ©seket, Ă©s folyamatosan javĂ­ts a
@@ -180,7 +180,7 @@ export default function BestPracticesPage() {
 
         {/* Section 3: Industry Trends */}
         <section>
-          <Card className="border-l-4 border-l-purple-500">
+          <Card className="border-l-4 border-l-accent">
             <h2 className="mb-4 text-3xl font-bold text-fg">
               3. AktuĂˇlis trendek az ajĂˇnlatkĂ©szĂ­tĂ©sben
             </h2>
@@ -247,13 +247,13 @@ export default function BestPracticesPage() {
 
         {/* Section 4: Industry-Specific Practices */}
         <section>
-          <Card className="border-l-4 border-l-amber-500">
+          <Card className="border-l-4 border-l-warning">
             <h2 className="mb-4 text-3xl font-bold text-fg">
               4. IparĂˇgi specifikus best practice-ek
             </h2>
 
             <div className="space-y-6">
-              <div className="rounded-lg bg-amber-50 p-6">
+              <div className="rounded-lg bg-warning/10 p-6">
                 <h3 className="mb-3 font-semibold text-fg">Tech Ă©s Start-up szektor</h3>
                 <ul className="ml-6 list-disc space-y-2 text-fg-muted">
                   <li>HangsĂşlyozd az innovĂˇciĂłt Ă©s a technolĂłgiai elĹ‘nyĂ¶ket</li>
@@ -265,7 +265,7 @@ export default function BestPracticesPage() {
                 </ul>
               </div>
 
-              <div className="rounded-lg bg-blue-50 p-6">
+              <div className="rounded-lg bg-accent/10 p-6">
                 <h3 className="mb-3 font-semibold text-fg">KreatĂ­v iparĂˇg</h3>
                 <ul className="ml-6 list-disc space-y-2 text-fg-muted">
                   <li>Mutasd be a kreatĂ­v portfĂłliĂłt Ă©s a korĂˇbbi munkĂˇkat</li>
@@ -275,7 +275,7 @@ export default function BestPracticesPage() {
                 </ul>
               </div>
 
-              <div className="rounded-lg bg-purple-50 p-6">
+              <div className="rounded-lg bg-accent/10 p-6">
                 <h3 className="mb-3 font-semibold text-fg">KonsultĂˇciĂłs szolgĂˇltatĂˇsok</h3>
                 <ul className="ml-6 list-disc space-y-2 text-fg-muted">
                   <li>HangsĂşlyozd a szakĂ©rtelemet Ă©s a tapasztalatot</li>
@@ -290,7 +290,7 @@ export default function BestPracticesPage() {
 
         {/* Section 5: Common Mistakes */}
         <section>
-          <Card className="border-l-4 border-l-red-500 bg-red-50/30">
+          <Card className="border-l-4 border-l-danger bg-danger/10/30">
             <h2 className="mb-4 text-3xl font-bold text-fg">
               5. Gyakori hibĂˇk, amelyeket kerĂĽlni kell
             </h2>
@@ -336,7 +336,7 @@ export default function BestPracticesPage() {
 
         {/* Section 6: Future of Proposals */}
         <section>
-          <Card className="border-l-4 border-l-indigo-500">
+          <Card className="border-l-4 border-l-accent">
             <h2 className="mb-4 text-3xl font-bold text-fg">
               6. Az ajĂˇnlatkĂ©szĂ­tĂ©s jĂ¶vĹ‘je
             </h2>
@@ -367,7 +367,7 @@ export default function BestPracticesPage() {
       </article>
 
       {/* Summary */}
-      <Card className="mt-12 border-l-4 border-l-green-500 bg-green-50/30">
+      <Card className="mt-12 border-l-4 border-l-success bg-success/10/30">
         <h2 className="mb-4 text-2xl font-bold text-fg">Ă–sszegzĂ©s</h2>
         <p className="mb-4 text-lg leading-relaxed text-fg-muted">
           Az ajĂˇnlatkĂ©szĂ­tĂ©s best practice-ei folyamatosan fejlĹ‘dnek, de nĂ©hĂˇny alapelv

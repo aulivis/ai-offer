@@ -32,10 +32,10 @@ export default function DocsPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-bg-muted">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Error Loading Documentation</h1>
-          <p className="text-gray-600">{error}</p>
+          <h1 className="text-2xl font-bold text-fg mb-2">Error Loading Documentation</h1>
+          <p className="text-fg-muted">{error}</p>
         </div>
       </div>
     );
@@ -43,10 +43,10 @@ export default function DocsPage() {
 
   if (!spec) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-bg-muted">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading API documentation...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-border mx-auto mb-4"></div>
+          <p className="text-fg-muted">Loading API documentation...</p>
         </div>
       </div>
     );

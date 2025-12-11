@@ -67,16 +67,16 @@ export function WizardProgressIndicator({
   }, [step]);
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white/70 p-3 shadow-sm">
+    <div className="rounded-xl border border-border bg-bg-muted/70 p-3 shadow-sm">
       <div className="flex items-center justify-between gap-3">
         <div className="flex-1">
           <div className="mb-1 flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-700">
+            <span className="text-xs font-semibold text-fg">
               {t('wizard.progress.label')}
             </span>
-            <span className="text-sm font-bold text-slate-900">{progress}%</span>
+            <span className="text-sm font-bold text-fg">{progress}%</span>
           </div>
-          <div className="h-2 overflow-hidden rounded-full bg-slate-200">
+          <div className="h-2 overflow-hidden rounded-full bg-border/60">
             <div
               className="h-full bg-gradient-to-r from-primary to-primary/80 transition-all duration-500"
               style={{ width: `${progress}%` }}
@@ -84,19 +84,19 @@ export function WizardProgressIndicator({
           </div>
         </div>
         <div className="text-right">
-          <span className="block text-xs text-slate-500">{t('wizard.progress.estimatedTime')}</span>
-          <span className="text-sm font-semibold text-slate-700">
+          <span className="block text-xs text-fg-muted">{t('wizard.progress.estimatedTime')}</span>
+          <span className="text-sm font-semibold text-fg">
             {estimatedTime} {t('wizard.progress.timeUnit')}
           </span>
         </div>
       </div>
-      <div className="mt-2 flex items-center gap-2 text-xs text-slate-500">
+      <div className="mt-2 flex items-center gap-2 text-xs text-fg-muted">
         <span className="inline-flex items-center gap-1">
           <span className="h-1.5 w-1.5 rounded-full bg-primary" />
           {t('wizard.progress.stepLabel', { current: step })}
         </span>
         {progress === 100 && step === 3 && (
-          <span className="ml-auto font-medium text-emerald-600">
+          <span className="ml-auto font-medium text-success">
             {t('wizard.progress.readyForGeneration')}
           </span>
         )}

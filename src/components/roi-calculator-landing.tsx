@@ -46,7 +46,7 @@ export function ROICalculatorLanding() {
   const animatedYearlySavings = useCountUp(yearlySavings, 1000);
 
   return (
-    <section className="py-20 bg-gradient-to-br from-navy-900 via-navy-800 to-blue-900 relative overflow-hidden text-white">
+    <section className="py-20 bg-gradient-hero relative overflow-hidden text-white">
       {/* Background decoration */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-20 left-10 w-64 h-64 bg-turquoise-500 rounded-full blur-3xl"></div>
@@ -66,7 +66,7 @@ export function ROICalculatorLanding() {
             Mennyit spórolsz a Vyndivel?
           </h2>
 
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto text-pretty">
+          <p className="text-xl text-fg-muted max-w-3xl mx-auto text-pretty">
             <strong>3 egyszerű lépés</strong> - és látni fogod, mennyi pénzt és időt nyerhetsz
             havonta. Nem kell email, az eredmény azonnal látható.
           </p>
@@ -89,13 +89,13 @@ export function ROICalculatorLanding() {
               <label className="block text-white font-semibold mb-3 text-lg">
                 Hány ajánlatot készítesz havonta?
               </label>
-              <p className="text-sm text-gray-400 mb-2">
+              <p className="text-sm text-fg-muted mb-2">
                 Átlagosan mennyi ajánlatot küldesz ki ügyfeleknek?
               </p>
               {/* Prominent value display */}
               <div className="flex items-baseline gap-2 mb-4">
                 <span className="text-5xl font-bold text-turquoise-400">{proposals}</span>
-                <span className="text-xl text-gray-400">ajánlat</span>
+                <span className="text-xl text-fg-muted">ajánlat</span>
               </div>
               {/* Styled slider with turquoise accent */}
               <input
@@ -114,7 +114,7 @@ export function ROICalculatorLanding() {
                   [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:shadow-lg"
                 aria-label="Ajánlatok száma havonta"
               />
-              <div className="flex justify-between text-sm text-gray-400 mt-2">
+              <div className="flex justify-between text-sm text-fg-muted mt-2">
                 <span>1</span>
                 <span>100</span>
               </div>
@@ -125,12 +125,12 @@ export function ROICalculatorLanding() {
               <label className="block text-white font-semibold mb-3 text-lg">
                 Mennyi idő egy ajánlat elkészítése most?
               </label>
-              <p className="text-sm text-gray-400 mb-2">
+              <p className="text-sm text-fg-muted mb-2">
                 Beleértve a sablonkeresést, szerkesztést, árazást
               </p>
               <div className="flex items-baseline gap-2 mb-4">
                 <span className="text-5xl font-bold text-turquoise-400">{timePerProposal}</span>
-                <span className="text-xl text-gray-400">óra</span>
+                <span className="text-xl text-fg-muted">óra</span>
               </div>
               <input
                 type="range"
@@ -149,7 +149,7 @@ export function ROICalculatorLanding() {
                   [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:shadow-lg"
                 aria-label="Órák száma ajánlatonként"
               />
-              <div className="flex justify-between text-sm text-gray-400 mt-2">
+              <div className="flex justify-between text-sm text-fg-muted mt-2">
                 <span>0.5 óra</span>
                 <span>8 óra</span>
               </div>
@@ -160,14 +160,14 @@ export function ROICalculatorLanding() {
               <label className="block text-white font-semibold mb-3 text-lg">
                 Mekkora az óradíjad / óraköltséged?
               </label>
-              <p className="text-sm text-gray-400 mb-2">
+              <p className="text-sm text-fg-muted mb-2">
                 Ha alkalmazott vagy, a cég költsége (bér + járulékok)
               </p>
               <div className="flex items-baseline gap-2 mb-4">
                 <span className="text-5xl font-bold text-turquoise-400">
                   {hourlyRate.toLocaleString('hu-HU')}
                 </span>
-                <span className="text-xl text-gray-400">Ft/óra</span>
+                <span className="text-xl text-fg-muted">Ft/óra</span>
               </div>
               <input
                 type="range"
@@ -186,7 +186,7 @@ export function ROICalculatorLanding() {
                   [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:shadow-lg"
                 aria-label="Óradíj forintban"
               />
-              <div className="flex justify-between text-sm text-gray-400 mt-2">
+              <div className="flex justify-between text-sm text-fg-muted mt-2">
                 <span>1,000 Ft</span>
                 <span>50,000 Ft</span>
               </div>
@@ -231,12 +231,12 @@ export function ROICalculatorLanding() {
             <div className="grid grid-cols-2 gap-4">
               {/* Current Time */}
               <div className="bg-white/5 backdrop-blur-lg rounded-2xl p-6 border border-white/10">
-                <div className="flex items-center gap-2 mb-3">
-                  <Clock className="w-5 h-5 text-red-400" />
-                  <span className="text-gray-300 font-semibold">Jelenlegi ráfordítás</span>
+              <div className="flex items-center gap-2 mb-3">
+                <Clock className="w-5 h-5 text-danger" />
+                <span className="text-fg-muted font-semibold">Jelenlegi ráfordítás</span>
                 </div>
                 <div className="text-4xl font-bold text-white mb-1">{currentMonthlyHours} óra</div>
-                <div className="text-sm text-gray-400">havonta</div>
+                <div className="text-sm text-fg-muted">havonta</div>
               </div>
 
               {/* Vyndi Time */}
@@ -253,7 +253,7 @@ export function ROICalculatorLanding() {
             </div>
 
             {/* Annual Projection - Moved below monthly calculation */}
-            <div className="bg-gradient-to-br from-yellow-500 to-orange-500 rounded-2xl p-6 shadow-xl border-2 border-yellow-400">
+              <div className="rounded-2xl bg-warning/15 p-6 shadow-xl border-2 border-warning">
               <div className="flex items-center gap-2 mb-3">
                 <DollarSign className="w-6 h-6 text-white" />
                 <h4 className="text-white font-bold text-lg">Éves szinten</h4>
@@ -278,7 +278,7 @@ export function ROICalculatorLanding() {
 
         {/* Disclaimer */}
         <div className="text-center mt-12">
-          <p className="text-gray-400 text-sm max-w-3xl mx-auto text-pretty">
+          <p className="text-fg-muted text-sm max-w-3xl mx-auto text-pretty">
             * A kalkulátor átlagos értékeket használ. Az eredmények a saját folyamataidtól és
             beállításaidtól függően változhatnak.
           </p>

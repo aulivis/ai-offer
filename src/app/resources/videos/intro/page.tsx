@@ -33,10 +33,10 @@ export default function IntroVideoPage() {
 
       {/* Hero Section */}
       <header className="mb-12">
-        <span className="inline-flex items-center gap-2 rounded-full border border-red-500/50 bg-red-50 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-red-700">
+        <span className="inline-flex items-center gap-2 rounded-full border border-danger/50 bg-danger/10 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-danger">
           VideĂł
         </span>
-        <h1 className="mt-6 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 bg-clip-text text-4xl font-bold tracking-tight text-transparent md:text-5xl">
+        <h1 className="mt-6 bg-gradient-to-r from-primary-ink via-primary-ink/90 to-primary-ink bg-clip-text text-4xl font-bold tracking-tight text-transparent md:text-5xl">
           BevezetĹ‘ videĂł
         </h1>
         <p className="mt-4 text-xl leading-relaxed text-fg-muted">
@@ -78,7 +78,7 @@ export default function IntroVideoPage() {
 
       {/* Video Player Placeholder */}
       <Card className="mb-12 overflow-hidden">
-        <div className="relative aspect-video w-full bg-gradient-to-br from-gray-900 to-gray-800">
+        <div className="relative aspect-video w-full bg-gradient-to-br from-primary-ink to-primary-ink/80">
           <div className="flex h-full items-center justify-center">
             <div className="text-center">
               <svg
@@ -150,9 +150,9 @@ export default function IntroVideoPage() {
         <div className="grid gap-6 md:grid-cols-2">
           <Card>
             <div className="flex items-start gap-4">
-              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100">
+              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-danger/10">
                 <svg
-                  className="h-6 w-6 text-red-600"
+                  className="h-6 w-6 text-danger"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -177,9 +177,9 @@ export default function IntroVideoPage() {
 
           <Card>
             <div className="flex items-start gap-4">
-              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100">
+              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-accent/10">
                 <svg
-                  className="h-6 w-6 text-blue-600"
+                  className="h-6 w-6 text-accent"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -204,9 +204,9 @@ export default function IntroVideoPage() {
 
           <Card>
             <div className="flex items-start gap-4">
-              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-purple-100">
+              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-accent/10">
                 <svg
-                  className="h-6 w-6 text-purple-600"
+                  className="h-6 w-6 text-accent"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -230,9 +230,9 @@ export default function IntroVideoPage() {
 
           <Card>
             <div className="flex items-start gap-4">
-              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-green-100">
+              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-success/10">
                 <svg
-                  className="h-6 w-6 text-green-600"
+                  className="h-6 w-6 text-success"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -258,7 +258,7 @@ export default function IntroVideoPage() {
       </div>
 
       {/* Next Steps */}
-      <Card className="mb-12 border-l-4 border-l-blue-500 bg-blue-50/30">
+      <Card className="mb-12 border-l-4 border-l-accent bg-bg-muted/30">
         <h2 className="mb-4 text-2xl font-bold text-fg">KĂ¶vetkezĹ‘ lĂ©pĂ©sek</h2>
         <p className="mb-4 text-fg-muted">
           Most, hogy megismerkedtĂ©l a Vyndi-vel, itt az ideje, hogy elkezdd hasznĂˇlni:

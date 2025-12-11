@@ -80,12 +80,13 @@ export function Select({
   const isDisabled = disabled || loading;
 
   // Convert option elements to SelectItem for backward compatibility
-  const normalizedChildren = React.Children.map(children, (child) => {
+  const normalizedChildren = React.Children.map(children, (child, index) => {
     if (React.isValidElement(child) && child.type === 'option') {
       const optionProps = child.props as React.OptionHTMLAttributes<HTMLOptionElement>;
+      const keyValue = optionProps.value ?? index;
       return (
         <SelectItem
-          key={optionProps.value}
+          key={String(keyValue)}
           value={String(optionProps.value || '')}
           disabled={optionProps.disabled}
         >

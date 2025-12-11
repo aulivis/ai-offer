@@ -76,7 +76,7 @@ export function Footer() {
                     onChange={(e) => setEmail(e.target.value)}
                     disabled={newsletterStatus === 'loading'}
                     required
-                    className="flex-1 px-4 py-3 rounded-lg bg-navy-900 border border-navy-600 focus:outline-none focus:ring-2 focus:ring-turquoise-500 text-white placeholder-gray-500 min-h-[44px]"
+                    className="flex-1 px-4 py-3 rounded-lg bg-navy-900 border border-navy-600 focus:outline-none focus:ring-2 focus:ring-turquoise-500 text-white placeholder:text-fg-muted min-h-[44px]"
                   />
                   <button
                     type="submit"
