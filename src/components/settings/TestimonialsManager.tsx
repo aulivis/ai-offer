@@ -118,6 +118,10 @@ export function TestimonialsManager({
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
 
+  // Ensure arrays are always defined
+  const safeTestimonials = testimonials || [];
+  const safeActivities = activities || [];
+
   if (!enabled) {
     return null;
   }
@@ -131,7 +135,7 @@ export function TestimonialsManager({
       return;
     }
 
-    if (testimonials.length >= MAX_TESTIMONIALS) {
+    if (safeTestimonials.length >= MAX_TESTIMONIALS) {
       showToast({
         title: t('settings.testimonials.maxReached'),
         description: t('settings.testimonials.maxReachedDescription', { max: MAX_TESTIMONIALS }),
@@ -213,14 +217,14 @@ export function TestimonialsManager({
 
   const getActivityName = (activityId: string | null | undefined) => {
     if (!activityId) return t('settings.testimonials.noActivity');
-    const activity = activities.find((a) => a.id === activityId);
+    const activity = safeActivities.find((a) => a.id === activityId);
     return activity?.name || t('settings.testimonials.unknownActivity');
   };
 
   return (
     <div className="space-y-6">
       {/* Add New Testimonial */}
-      {testimonials.length < MAX_TESTIMONIALS && (
+      {safeTestimonials.length < MAX_TESTIMONIALS && (
         <div>
           <h3 className="mb-4 text-sm font-semibold text-fg">
             {t('settings.testimonials.addNew')}
@@ -241,7 +245,7 @@ export function TestimonialsManager({
               }
             >
               <option value="">{t('settings.testimonials.noActivity')}</option>
-              {activities.map((activity) => (
+              {safeActivities.map((activity) => (
                 <option key={activity.id} value={activity.id}>
                   {activity.name}
                 </option>
@@ -331,18 +335,18 @@ export function TestimonialsManager({
       )}
 
       {/* Testimonials List */}
-      {testimonials.length > 0 ? (
+      {safeTestimonials.length > 0 ? (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold text-fg">
               {t('settings.testimonials.listTitle', {
-                count: testimonials.length,
+                count: safeTestimonials.length,
                 max: MAX_TESTIMONIALS,
               })}
             </h3>
           </div>
           <div className="grid gap-3">
-            {testimonials.map((testimonial) => (
+            {safeTestimonials.map((testimonial) => (
               <div
                 key={testimonial.id}
                 className="group relative rounded-lg border border-border bg-white p-4 shadow-sm"

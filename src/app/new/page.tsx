@@ -334,69 +334,93 @@ export default function NewOfferPage() {
     let active = true;
 
     (async () => {
-      // Load all data in parallel for better performance
-      const [profileResult, activitiesResult, clientsResult, guaranteesResult] = await Promise.all([
-        supabase
-          .from('profiles')
-          .select('enable_reference_photos, enable_testimonials')
-          .eq('id', user.id)
-          .single(),
-        supabase
-          .from('activities')
-          .select('id,name,unit,default_unit_price,default_vat,reference_images')
-          .eq('user_id', user.id)
-          .order('name'),
-        supabase
-          .from('clients')
-          .select('id,company_name,address,tax_id,representative,phone,email')
-          .eq('user_id', user.id)
-          .order('company_name')
-          .limit(100),
-        supabase
-          .from('guarantees')
-          .select('id, text, activity_guarantees(activity_id)')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: true }),
-      ]);
+      try {
+        // Load all data in parallel for better performance
+        const [profileResult, activitiesResult, clientsResult, guaranteesResult] = await Promise.all([
+          supabase
+            .from('profiles')
+            .select('enable_reference_photos, enable_testimonials')
+            .eq('id', user.id)
+            .single(),
+          supabase
+            .from('activities')
+            .select('id,name,unit,default_unit_price,default_vat,reference_images')
+            .eq('user_id', user.id)
+            .order('name'),
+          supabase
+            .from('clients')
+            .select('id,company_name,address,tax_id,representative,phone,email')
+            .eq('user_id', user.id)
+            .order('company_name')
+            .limit(100),
+          supabase
+            .from('guarantees')
+            .select('id, text, activity_guarantees(activity_id)')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: true }),
+        ]);
 
-      if (!active) return;
+        if (!active) return;
 
-      // Handle profile settings
-      if (profileResult.data && !profileResult.error) {
-        setProfileSettings({
-          enable_reference_photos: profileResult.data.enable_reference_photos ?? false,
-          enable_testimonials: profileResult.data.enable_testimonials ?? false,
-        });
-      }
+        // Handle profile settings
+        if (profileResult.data && !profileResult.error) {
+          setProfileSettings({
+            enable_reference_photos: profileResult.data.enable_reference_photos ?? false,
+            enable_testimonials: profileResult.data.enable_testimonials ?? false,
+          });
+        }
 
-      // Handle activities
-      if (activitiesResult.error) {
-        logger.error('Failed to load activities', activitiesResult.error);
-      } else {
-        setActivities(activitiesResult.data || []);
-      }
+        // Handle activities
+        if (activitiesResult.error) {
+          logger.error('Failed to load activities', activitiesResult.error);
+        } else {
+          setActivities(activitiesResult.data || []);
+        }
 
-      // Handle clients
-      if (clientsResult.error) {
-        logger.error('Failed to load clients', clientsResult.error);
-        // Show error but don't block - clients are optional
-      } else {
-        setClientList(clientsResult.data || []);
-      }
+        // Handle clients
+        if (clientsResult.error) {
+          logger.error('Failed to load clients', clientsResult.error);
+          // Show error but don't block - clients are optional
+        } else {
+          setClientList(clientsResult.data || []);
+        }
 
-      // Handle guarantees
-      if (guaranteesResult.error) {
-        logger.error('Failed to load guarantees', guaranteesResult.error);
-      } else {
-        const formattedGuarantees = (guaranteesResult.data || []).map((row) => ({
-          id: row.id,
-          text: row.text,
-          activity_ids:
-            row.activity_guarantees
-              ?.map((link: { activity_id: string }) => link.activity_id)
-              .filter((id): id is string => typeof id === 'string') ?? [],
-        }));
-        setGuarantees(formattedGuarantees);
+        // Handle guarantees
+        if (guaranteesResult.error) {
+          logger.error('Failed to load guarantees', guaranteesResult.error);
+          // Set empty array on error to prevent component crash
+          if (active) {
+            setGuarantees([]);
+          }
+        } else {
+          try {
+            const formattedGuarantees = (guaranteesResult.data || []).map((row) => ({
+              id: row.id,
+              text: row.text || '',
+              activity_ids:
+                row.activity_guarantees
+                  ?.map((link: { activity_id: string | null }) => link?.activity_id)
+                  .filter((id): id is string => typeof id === 'string' && id.length > 0) ?? [],
+            }));
+            if (active) {
+              setGuarantees(formattedGuarantees);
+            }
+          } catch (formatError) {
+            logger.error('Failed to format guarantees data', formatError);
+            if (active) {
+              setGuarantees([]);
+            }
+          }
+        }
+      } catch (error) {
+        // Catch any unexpected errors from Promise.all or data processing
+        logger.error('Failed to load wizard data', error);
+        // Set empty arrays as fallback to prevent component crash
+        if (active) {
+          setActivities([]);
+          setClientList([]);
+          setGuarantees([]);
+        }
       }
     })();
 
