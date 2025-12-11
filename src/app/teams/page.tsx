@@ -7,7 +7,7 @@ import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useToast } from '@/hooks/useToast';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { useTeams, useCreateTeam, type Team } from '@/hooks/queries/useTeams';
+import { useTeams, useCreateTeam } from '@/hooks/queries/useTeams';
 import { createClientLogger } from '@/lib/clientLogger';
 import Link from 'next/link';
 import { Users } from 'lucide-react';

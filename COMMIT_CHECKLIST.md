@@ -77,6 +77,3 @@ Migrations:
 
 See docs/IMPLEMENTATION_SUMMARY.md for complete details
 ```
-
-
-

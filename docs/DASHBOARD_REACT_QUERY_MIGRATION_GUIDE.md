@@ -141,6 +141,3 @@ If issues occur:
 - React Query Setup: `docs/REACT_QUERY_SETUP.md`
 - Dashboard Migration: `docs/DASHBOARD_MIGRATION_GUIDE.md`
 - Example Component: `src/app/dashboard/DashboardWithReactQuery.tsx`
-
-
-

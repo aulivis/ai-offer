@@ -52,6 +52,3 @@ export function useSettingsValidation(profile: Profile) {
     hasErrors,
   };
 }
-
-
-

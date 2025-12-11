@@ -37,6 +37,3 @@ export function FadeTransition({
     </AnimatePresence>
   );
 }
-
-
-

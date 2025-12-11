@@ -18,7 +18,7 @@ import { useToast } from '@/hooks/useToast';
 import { useSupabase } from '@/components/SupabaseProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { usePlanUpgradeDialog } from '@/components/PlanUpgradeDialogProvider';
-import { useTeams, useCreateTeam, useDeleteTeam, type Team } from '@/hooks/queries/useTeams';
+import { useTeams, useCreateTeam, useDeleteTeam } from '@/hooks/queries/useTeams';
 
 type TeamInvitation = {
   id: string;

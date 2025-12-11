@@ -175,6 +175,3 @@ Ez a blokk struktúra a következő 2025-es best practices-eket követi:
 2. **Blokk láthatóság**: Egyes blokkok elrejthetők/megjeleníthetők
 3. **Többszörös testimonials**: Több testimonials blokk különböző helyeken
 4. **Videó blokkok**: Videó referenciák hozzáadása
-
-
-

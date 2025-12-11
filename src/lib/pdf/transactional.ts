@@ -171,6 +171,3 @@ export async function failPdfJobWithRollback(
     };
   }
 }
-
-
-

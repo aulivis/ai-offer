@@ -144,4 +144,3 @@ export function useDeleteTeam() {
 export function useTeamsQueryKey() {
   return TEAMS_QUERY_KEY;
 }
-

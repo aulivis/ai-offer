@@ -243,6 +243,3 @@ The pattern of 401 → redirect → 200 is expected for unauthenticated users, b
 ## Conclusion
 
 The main issue is the lack of request deduplication for authentication checks. By migrating all auth hooks to use React Query's `useSession`, we can dramatically reduce API calls and improve performance. The implementation is straightforward and low-risk, with significant benefits.
-
-
-

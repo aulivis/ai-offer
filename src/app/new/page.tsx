@@ -28,74 +28,45 @@ import type { TemplateId } from '@/lib/offers/templates/types';
 import type { WizardStep } from '@/types/wizard';
 
 // Lazy load wizard step components for route-based code splitting
+// Note: Error logging is handled by the component's logger after mount
 const OfferProjectDetailsSection = dynamic(
   () =>
-    import('@/components/offers/OfferProjectDetailsSection')
-      .then((mod) => mod.OfferProjectDetailsSection)
-      .catch((error) => {
-        console.error('Failed to load OfferProjectDetailsSection', error);
-        throw error;
-      }),
+    import('@/components/offers/OfferProjectDetailsSection').then(
+      (mod) => mod.OfferProjectDetailsSection,
+    ),
   {
     loading: () => <div className="h-96 animate-pulse rounded-lg bg-bg-muted" />,
   },
 );
 const WizardStep2Pricing = dynamic(
-  () =>
-    import('@/components/offers/WizardStep2Pricing')
-      .then((mod) => mod.WizardStep2Pricing)
-      .catch((error) => {
-        console.error('Failed to load WizardStep2Pricing', error);
-        throw error;
-      }),
+  () => import('@/components/offers/WizardStep2Pricing').then((mod) => mod.WizardStep2Pricing),
   {
     loading: () => <div className="h-96 animate-pulse rounded-lg bg-bg-muted" />,
   },
 );
 const OfferSummarySection = dynamic(
-  () =>
-    import('@/components/offers/OfferSummarySection')
-      .then((mod) => mod.OfferSummarySection)
-      .catch((error) => {
-        console.error('Failed to load OfferSummarySection', error);
-        throw error;
-      }),
+  () => import('@/components/offers/OfferSummarySection').then((mod) => mod.OfferSummarySection),
   {
     loading: () => <div className="h-64 animate-pulse rounded-lg bg-bg-muted" />,
   },
 );
 const WizardActionBar = dynamic(
-  () =>
-    import('@/components/offers/WizardActionBar')
-      .then((mod) => mod.WizardActionBar)
-      .catch((error) => {
-        console.error('Failed to load WizardActionBar', error);
-        throw error;
-      }),
+  () => import('@/components/offers/WizardActionBar').then((mod) => mod.WizardActionBar),
   {
     loading: () => <div className="h-16 animate-pulse rounded-lg bg-bg-muted" />,
   },
 );
 const WizardPreviewPanel = dynamic(
-  () =>
-    import('@/components/offers/WizardPreviewPanel')
-      .then((mod) => mod.WizardPreviewPanel)
-      .catch((error) => {
-        console.error('Failed to load WizardPreviewPanel', error);
-        throw error;
-      }),
+  () => import('@/components/offers/WizardPreviewPanel').then((mod) => mod.WizardPreviewPanel),
   {
     loading: () => <div className="h-96 animate-pulse rounded-lg bg-bg-muted" />,
   },
 );
 const PreviewAsCustomerButton = dynamic(
   () =>
-    import('@/components/offers/PreviewAsCustomerButton')
-      .then((mod) => mod.PreviewAsCustomerButton)
-      .catch((error) => {
-        console.error('Failed to load PreviewAsCustomerButton', error);
-        throw error;
-      }),
+    import('@/components/offers/PreviewAsCustomerButton').then(
+      (mod) => mod.PreviewAsCustomerButton,
+    ),
   {
     loading: () => <div className="h-12 animate-pulse rounded-lg bg-bg-muted" />,
   },

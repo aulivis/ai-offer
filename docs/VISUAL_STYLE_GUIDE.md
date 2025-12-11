@@ -353,6 +353,3 @@ When updating existing code:
 - [Design System Documentation](./DESIGN_SYSTEM.md)
 - [Brand Color Guidelines](./BRAND_COLOR_GUIDELINES.md)
 - [Component Usage Guidelines](./COMPONENT_USAGE_GUIDELINES.md)
-
-
-
