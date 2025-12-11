@@ -83,6 +83,8 @@ export function useActivities() {
       return;
     }
 
+    const currentNewActivity = newActivity;
+
     const activityToAdd = {
       name: newActivity.name.trim(),
       unit: newActivity.unit || 'db',
@@ -138,7 +140,7 @@ export function useActivities() {
     } catch (error) {
       // Revert optimistic update on error
       setActivities(previousActivities);
-      setNewActivity(activityToAdd);
+      setNewActivity(currentNewActivity);
       logger.error('Failed to add activity', error, { activityName: activityToAdd.name });
       showToast({
         title: t('errors.settings.saveFailed', { message: activityToAdd.name }),

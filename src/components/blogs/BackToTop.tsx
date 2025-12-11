@@ -31,7 +31,7 @@ export function BackToTop() {
   return (
     <button
       onClick={scrollToTop}
-      className="fixed bottom-6 right-6 w-12 h-12 bg-teal-500 text-white rounded-full shadow-2xl hover:bg-teal-600 transition-all flex items-center justify-center z-40 min-h-[44px] min-w-[44px]"
+      className="fixed bottom-6 right-6 w-12 h-12 bg-primary text-primary-ink rounded-full shadow-2xl hover:bg-primary/90 transition-all flex items-center justify-center z-40 min-h-[44px] min-w-[44px]"
       aria-label="Vissza a tetejére"
     >
       <ArrowUp className="w-6 h-6" />

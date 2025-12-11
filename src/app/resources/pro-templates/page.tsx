@@ -230,9 +230,9 @@ export default function ProTemplatesPage() {
 
           <Card className="text-center">
             <div className="mb-4 flex justify-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-blue-100 to-cyan-100">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-primary/10 to-accent/10">
                 <svg
-                  className="h-8 w-8 text-blue-600"
+                  className="h-8 w-8 text-primary"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -255,9 +255,9 @@ export default function ProTemplatesPage() {
 
           <Card className="text-center">
             <div className="mb-4 flex justify-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-purple-100 to-pink-100">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-accent/10 to-primary/10">
                 <svg
-                  className="h-8 w-8 text-purple-600"
+                  className="h-8 w-8 text-accent"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -280,9 +280,9 @@ export default function ProTemplatesPage() {
 
           <Card className="text-center">
             <div className="mb-4 flex justify-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-green-100 to-emerald-100">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-success/10 to-success/5">
                 <svg
-                  className="h-8 w-8 text-green-600"
+                  className="h-8 w-8 text-success"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"

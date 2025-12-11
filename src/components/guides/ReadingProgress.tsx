@@ -21,9 +21,9 @@ export function ReadingProgress() {
   }, []);
 
   return (
-    <div className="fixed top-0 left-0 right-0 h-1 bg-gray-100 z-50">
+    <div className="fixed top-0 left-0 right-0 h-1 bg-border/40 z-50">
       <div
-        className="h-full bg-gradient-to-r from-teal-500 to-blue-500 transition-all duration-300"
+        className="h-full bg-primary transition-all duration-300"
         style={{ width: `${readingProgress}%` }}
         role="progressbar"
         aria-valuenow={Math.round(readingProgress)}

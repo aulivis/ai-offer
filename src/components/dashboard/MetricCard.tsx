@@ -204,11 +204,7 @@ export function MetricCard({
                   <span className="text-fg-muted">{comparison.label}:</span>
                   <span
                     className={`font-semibold flex items-center gap-0.5 sm:gap-1 ${
-                      comparison.trend === 'up'
-                        ? 'text-emerald-600'
-                        : comparison.trend === 'down'
-                          ? 'text-rose-600'
-                          : 'text-fg-muted'
+                      comparison.trend ? trendColors[comparison.trend] : trendColors.neutral
                     }`}
                   >
                     {comparison.trend === 'up' ? '↑' : comparison.trend === 'down' ? '↓' : '→'}

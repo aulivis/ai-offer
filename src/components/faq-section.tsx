@@ -26,8 +26,8 @@ export function FAQSection() {
       id: 1,
       category: 'általános',
       categoryIcon: HelpCircle,
-      iconColor: 'text-turquoise-600',
-      iconBg: 'bg-turquoise-50',
+      iconColor: 'text-primary',
+      iconBg: 'bg-primary/10',
       question: 'Mennyire nehéz megtanulni a Vyndi használatát?',
       answer:
         'A Vyndi használata rendkívül egyszerű. A legtöbb felhasználó 10–15 perc alatt elkészíti az első ajánlatát. Részletes útmutatók, videók és 24/7 ügyfélszolgálat segítik a gyors bevezetést.',
@@ -36,8 +36,8 @@ export function FAQSection() {
       id: 2,
       category: 'funkció',
       categoryIcon: Settings,
-      iconColor: 'text-blue-600',
-      iconBg: 'bg-blue-50',
+      iconColor: 'text-accent',
+      iconBg: 'bg-accent/10',
       question: 'Milyen típusú ajánlatokat készíthetek a Vyndivel?',
       answer:
         'Szinte bármilyen szolgáltatás- vagy projektalapú ajánlat létrehozható: marketing, IT-fejlesztés, tanácsadás, kivitelezés, kreatív projektek stb. A sablonok testreszabhatók, így a rendszer alkalmazkodik a brandedhez.',
@@ -46,8 +46,8 @@ export function FAQSection() {
       id: 3,
       category: 'integráció',
       categoryIcon: Puzzle,
-      iconColor: 'text-purple-600',
-      iconBg: 'bg-purple-50',
+      iconColor: 'text-accent',
+      iconBg: 'bg-accent/10',
       question: 'Integrálható a Vyndi a meglévő CRM rendszeremmel?',
       answer:
         'A Vyndi jelenleg önállóan működik, de az exportálható ajánlatok könnyen továbbíthatók más platformokra (például e-mailen vagy PDF-ben). A közvetlen CRM-integráció fejlesztés alatt áll.',
@@ -56,8 +56,8 @@ export function FAQSection() {
       id: 4,
       category: 'díjazás',
       categoryIcon: DollarSign,
-      iconColor: 'text-green-600',
-      iconBg: 'bg-green-50',
+      iconColor: 'text-success',
+      iconBg: 'bg-success/10',
       question: 'Van ingyenes próbaidőszak?',
       answer:
         'Igen. A Vyndi ingyenes fiókkal használható — nincs időkorlát és nem szükséges bankkártya. A prémium funkciók bármikor aktiválhatók.',
@@ -66,8 +66,8 @@ export function FAQSection() {
       id: 5,
       category: 'biztonság',
       categoryIcon: Shield,
-      iconColor: 'text-red-600',
-      iconBg: 'bg-red-50',
+      iconColor: 'text-danger',
+      iconBg: 'bg-danger/10',
       question: 'Mennyire biztonságos az adataim tárolása a Vyndiben?',
       answer:
         'Az adataid titkosított kapcsolat (SSL) és biztonságos szerverek között kerülnek feldolgozásra. A Vyndi megfelel az EU GDPR-előírásainak, és minden fájl biztonsági mentéssel védett.',
@@ -76,8 +76,8 @@ export function FAQSection() {
       id: 6,
       category: 'támogatás',
       categoryIcon: Headphones,
-      iconColor: 'text-orange-600',
-      iconBg: 'bg-orange-50',
+      iconColor: 'text-warning',
+      iconBg: 'bg-warning/10',
       question: 'Milyen támogatást kapok, ha elakadok?',
       answer:
         '24/7 elérhető ügyfélszolgálatunk e-mailben és telefonon is segít. Ezen felül részletes Súgóközpont és videó-útmutatók is rendelkezésedre állnak.',
@@ -86,8 +86,8 @@ export function FAQSection() {
       id: 7,
       category: 'csapat',
       categoryIcon: Users,
-      iconColor: 'text-indigo-600',
-      iconBg: 'bg-indigo-50',
+      iconColor: 'text-primary',
+      iconBg: 'bg-primary/10',
       question: 'Több munkatárs is használhatja egyszerre a Vyndit?',
       answer:
         'Igen. Egy Vyndi-fiókhoz több e-mail címet rendelhetsz, így a csapattagok ugyanabba a fiókba lépnek be, és közösen kezelik az ajánlatokat.',
@@ -96,8 +96,8 @@ export function FAQSection() {
       id: 8,
       category: 'export',
       categoryIcon: Download,
-      iconColor: 'text-teal-600',
-      iconBg: 'bg-teal-50',
+      iconColor: 'text-primary',
+      iconBg: 'bg-primary/10',
       question: 'Milyen formátumban exportálhatom az ajánlatokat?',
       answer:
         'Minden ajánlat PDF formátumban exportálható, amely letölthető, nyomtatható vagy e-mailben továbbítható.',
@@ -116,20 +116,20 @@ export function FAQSection() {
   };
 
   return (
-    <section id="faq" className="py-20 bg-gradient-to-b from-white to-gray-50 scroll-mt-20">
+    <section id="faq" className="py-20 bg-gradient-to-b from-bg-muted to-bg scroll-mt-20">
       <div className="container mx-auto px-4">
         {/* Enhanced Section Header */}
         <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 px-6 py-2 bg-turquoise-100 text-turquoise-700 font-bold text-sm rounded-full mb-6">
+          <div className="inline-flex items-center gap-2 px-6 py-2 bg-primary/15 text-primary font-bold text-sm rounded-full mb-6">
             <HelpCircle className="w-4 h-4" />
             GYAKORI KÉRDÉSEK
           </div>
 
-          <h2 className="text-4xl md:text-5xl font-bold text-navy-900 mb-4 text-balance">
+          <h2 className="text-4xl md:text-5xl font-bold text-fg mb-4 text-balance">
             Válaszok a leggyakoribb kérdésekre
           </h2>
 
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8 text-pretty">
+          <p className="text-xl text-fg-muted max-w-3xl mx-auto mb-8 text-pretty">
             Minden, amit a Vyndiről tudni érdemes — gyors, egyértelmű válaszok egy helyen.
           </p>
 
@@ -141,10 +141,10 @@ export function FAQSection() {
                 placeholder="Keress a kérdések között..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-6 py-4 pl-12 bg-white border-2 border-gray-200 rounded-2xl focus:border-turquoise-500 focus:outline-none text-gray-700 placeholder-gray-400 transition-colors min-h-[44px]"
+                className="w-full px-6 py-4 pl-12 bg-bg-muted border-2 border-border rounded-2xl focus:border-primary focus:outline-none text-fg placeholder:text-fg-muted transition-colors min-h-[44px]"
                 aria-label="Keresés a gyakori kérdések között"
               />
-              <Search className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
+              <Search className="w-5 h-5 text-fg-muted absolute left-4 top-1/2 -translate-y-1/2" />
             </div>
           </div>
         </div>
@@ -160,18 +160,18 @@ export function FAQSection() {
                 <div
                   key={faq.id}
                   className={`
-                    bg-white rounded-2xl overflow-hidden transition-all duration-300
+                    bg-bg-muted rounded-2xl overflow-hidden transition-all duration-300
                     ${
                       isOpen
-                        ? 'shadow-xl border-2 border-turquoise-400'
-                        : 'shadow-md border-2 border-gray-100 hover:border-gray-200 hover:shadow-lg'
+                        ? 'shadow-xl border-2 border-primary'
+                        : 'shadow-md border-2 border-border hover:border-border/80 hover:shadow-lg'
                     }
                   `}
                 >
                   {/* Question button with icon on left, perfectly aligned */}
                   <button
                     onClick={() => toggleFAQ(faq.id)}
-                    className="w-full px-6 md:px-8 py-5 md:py-6 flex items-center gap-4 text-left hover:bg-gray-50 transition-colors group min-h-[44px]"
+                    className="w-full px-6 md:px-8 py-5 md:py-6 flex items-center gap-4 text-left hover:bg-bg-muted transition-colors group min-h-[44px]"
                     aria-expanded={isOpen}
                     aria-label={`${isOpen ? 'Bezárás' : 'Megnyitás'}: ${faq.question}`}
                   >
@@ -179,7 +179,7 @@ export function FAQSection() {
                     <div
                       className={`
                         w-12 h-12 flex-shrink-0 rounded-xl flex items-center justify-center
-                        ${faq.iconBg} ${isOpen ? 'ring-2 ring-offset-2 ring-turquoise-400' : ''}
+                        ${faq.iconBg} ${isOpen ? 'ring-2 ring-offset-2 ring-primary' : ''}
                         group-hover:scale-110 transition-transform
                       `}
                     >
@@ -189,8 +189,8 @@ export function FAQSection() {
                     {/* Question text - always starts at same position */}
                     <span
                       className={`
-                        flex-1 text-lg md:text-xl font-bold text-navy-900 leading-tight pr-4 text-balance
-                        ${isOpen ? 'text-turquoise-900' : ''}
+                        flex-1 text-lg md:text-xl font-bold text-fg leading-tight pr-4 text-balance
+                        ${isOpen ? 'text-primary' : ''}
                       `}
                     >
                       {faq.question}
@@ -200,14 +200,14 @@ export function FAQSection() {
                     <div
                       className={`
                         w-10 h-10 flex-shrink-0 rounded-full flex items-center justify-center
-                        ${isOpen ? 'bg-turquoise-100' : 'bg-gray-100 group-hover:bg-gray-200'}
+                        ${isOpen ? 'bg-primary/15' : 'bg-bg-muted group-hover:bg-bg-muted/80'}
                         transition-colors
                       `}
                     >
                       <ChevronDown
                         className={`
                           w-5 h-5 transition-all duration-300
-                          ${isOpen ? 'rotate-180 text-turquoise-600' : 'text-gray-600'}
+                          ${isOpen ? 'rotate-180 text-primary' : 'text-fg-muted'}
                         `}
                       />
                     </div>
@@ -222,8 +222,8 @@ export function FAQSection() {
                   >
                     <div className="px-6 md:px-8 pb-6 md:pb-8">
                       {/* Left padding to align with question text (icon width + gap = 48px + 16px = 64px = pl-16) */}
-                      <div className="pl-16 border-l-4 border-turquoise-200">
-                        <p className="text-gray-700 text-base md:text-lg leading-relaxed text-pretty">
+                      <div className="pl-16 border-l-4 border-primary/30">
+                        <p className="text-fg text-base md:text-lg leading-relaxed text-pretty">
                           {faq.answer}
                         </p>
                       </div>
@@ -234,8 +234,8 @@ export function FAQSection() {
             })
           ) : (
             <div className="text-center py-12">
-              <HelpCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500 text-lg text-pretty">
+              <HelpCircle className="w-16 h-16 text-fg-muted/40 mx-auto mb-4" />
+              <p className="text-fg-muted text-lg text-pretty">
                 Nem találtunk eredményt a keresésedre. Próbálj más kulcsszavakat!
               </p>
             </div>
@@ -244,18 +244,18 @@ export function FAQSection() {
 
         {/* Bottom CTA Section */}
         <div className="mt-16 text-center">
-          <div className="inline-block bg-gradient-to-r from-turquoise-50 to-blue-50 rounded-2xl p-8 border border-turquoise-200 max-w-2xl">
+          <div className="inline-block bg-gradient-to-r from-primary/10 to-accent/10 rounded-2xl p-8 border border-primary/30 max-w-2xl">
             <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-              <MessageCircle className="w-8 h-8 text-turquoise-600" />
+              <MessageCircle className="w-8 h-8 text-primary" />
             </div>
-            <h3 className="text-2xl font-bold text-navy-900 mb-3">Nem találtad meg a választ?</h3>
-            <p className="text-gray-600 mb-6 max-w-xl mx-auto text-pretty">
+            <h3 className="text-2xl font-bold text-fg mb-3">Nem találtad meg a választ?</h3>
+            <p className="text-fg-muted mb-6 max-w-xl mx-auto text-pretty">
               Lépj kapcsolatba velünk — szakértő csapatunk minden kérdésedre válaszol.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
                 href="mailto:hello@vyndi.com?subject=Kérdés a Vyndiről"
-                className="inline-flex items-center gap-2 px-8 py-4 bg-white hover:bg-gray-50 text-navy-900 font-bold rounded-xl border-2 border-gray-300 hover:border-turquoise-500 transition-all min-h-[44px]"
+                className="inline-flex items-center gap-2 px-8 py-4 bg-bg-muted hover:bg-bg-muted/80 text-fg font-bold rounded-xl border-2 border-border hover:border-primary transition-all min-h-[44px]"
               >
                 <Mail className="w-5 h-5" />
                 Írj nekünk emailt
