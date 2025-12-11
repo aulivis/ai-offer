@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 
-const BackToTop = dynamic(() => import('./BackToTop'), {
+const BackToTop = dynamic(() => import('./BackToTop').then((mod) => mod.BackToTop), {
   ssr: false,
 });
 

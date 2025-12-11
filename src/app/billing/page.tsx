@@ -6,7 +6,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useEffect, useMemo, useState, type JSX } from 'react';
 import { useSearchParams } from 'next/navigation';
-import dynamic from 'next/dynamic';
 import {
   Check,
   X,
