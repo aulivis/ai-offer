@@ -259,7 +259,7 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
             ) : (
               <div className="bg-white rounded-xl p-8 shadow-lg">
                 <div className="flex items-start gap-4 mb-6">
-                  <div className="w-16 h-16 rounded-xl bg-red-100 flex items-center justify-center flex-shrink-0">
+                  <div className="w-16 h-16 rounded-xl bg-danger/10 flex items-center justify-center flex-shrink-0">
                     <AlertCircle className="w-8 h-8 text-danger" />
                   </div>
                   <div>
@@ -273,7 +273,7 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
                   {caseStudy.challengePoints.map((point, idx) => (
                     <div
                       key={idx}
-                      className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                      className="flex items-start gap-3 p-4 bg-bg-muted rounded-lg hover:bg-bg transition-colors"
                     >
                       <XCircle className="w-5 h-5 text-danger mt-0.5 flex-shrink-0" />
                       <div>
@@ -361,7 +361,7 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
                   {caseStudy.featuresUsed.map((feature, idx) => (
                     <div
                       key={idx}
-                      className="flex items-center gap-3 bg-white p-4 rounded-lg shadow-sm border border-teal-100"
+                      className="flex items-center gap-3 bg-white p-4 rounded-lg shadow-sm border border-primary/20"
                     >
                       <CheckCircle className="w-6 h-6 text-success flex-shrink-0" />
                       <span className="text-fg-muted">{feature}</span>
@@ -445,7 +445,7 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
 
                       {/* Content card */}
                       <div className="flex-1 pt-1">
-                        <article className="bg-white rounded-xl p-6 md:p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-primary/40 group max-w-2xl mx-auto hover:-translate-y-1">
+                        <article className="bg-white rounded-xl p-6 md:p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-border hover:border-primary/40 group max-w-2xl mx-auto hover:-translate-y-1">
                           {/* Week and period header - unified formatting for all pages */}
                           <div className="flex items-center justify-center gap-3 mb-4">
                             <span className="text-xs font-semibold text-primary bg-primary/10 px-3 py-1.5 rounded-full border border-primary/30/60">
@@ -486,7 +486,7 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
                           {/* Enhanced Outcome Metrics */}
                           {milestone.metrics && (
                             <div className="flex justify-center">
-                              <div className="inline-flex flex-col items-center gap-2 px-6 py-4 bg-gradient-to-br from-green-500 to-primary-ink/90 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border-2 border-green-400/30 min-w-[200px]">
+                              <div className="inline-flex flex-col items-center gap-2 px-6 py-4 bg-gradient-to-br from-success to-primary text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border-2 border-success/30 min-w-[200px]">
                                 <div className="flex items-center gap-2">
                                   {/* Use TrendingUp for last milestone, TrendingDown for others */}
                                   {idx === caseStudy.resultTimeline.length - 1 ? (
@@ -562,7 +562,7 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
       </section>
 
       {/* Enhanced FAQ Section - Accordion Style */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-bg">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl font-bold text-navy-900 mb-8">
@@ -574,7 +574,7 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
                 <div key={idx} className="bg-white rounded-xl shadow-sm overflow-hidden">
                   <button
                     onClick={() => setOpenFaq(openFaq === idx + 1 ? null : idx + 1)}
-                    className="w-full p-6 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
+                    className="w-full p-6 flex items-center justify-between text-left hover:bg-bg-muted transition-colors"
                   >
                     <div className="flex items-center gap-4">
                       <div className="w-8 h-8 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center flex-shrink-0">
@@ -583,7 +583,7 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
                       <span className="font-semibold text-fg text-lg">{step.title}</span>
                     </div>
                     <ChevronDown
-                      className={`w-5 h-5 text-gray-400 transition-transform flex-shrink-0 ${
+                      className={`w-5 h-5 text-fg-muted transition-transform flex-shrink-0 ${
                         openFaq === idx + 1 ? 'rotate-180' : ''
                       }`}
                     />
@@ -616,9 +616,9 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
                 {relatedCaseStudies.map((related, index) => {
                   // Use static Tailwind classes
                   const gradients = [
-                    'from-purple-400 to-pink-600',
-                    'from-blue-400 to-indigo-600',
-                    'from-primary to-cyan-600',
+                    'from-primary to-accent',
+                    'from-accent to-primary',
+                    'from-success to-primary',
                   ];
                   const gradient = gradients[index % 3] || 'from-primary to-accent';
                   const primaryMetric = related.metrics[0];
@@ -651,13 +651,13 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
                         {/* Key metric highlight */}
                         {primaryMetric && (
                           <div className="flex gap-4 mb-4">
-                            <div className="flex-1 bg-gray-50 rounded-lg p-3 text-center">
+                            <div className="flex-1 bg-bg-muted rounded-lg p-3 text-center">
                               <div className="text-2xl font-bold text-primary">
                                 {improvementValue}%
                               </div>
                               <div className="text-xs text-fg-muted">Javulás</div>
                             </div>
-                            <div className="flex-1 bg-gray-50 rounded-lg p-3 text-center">
+                            <div className="flex-1 bg-bg-muted rounded-lg p-3 text-center">
                               <div className="text-2xl font-bold text-accent">
                                 {primaryMetric.value}
                               </div>

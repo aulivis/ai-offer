@@ -65,7 +65,9 @@ export function HowItWorks() {
                 <div
                   key={step.number}
                   className={`relative bg-bg rounded-xl md:rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all border ${
-                    isMiddle ? 'border-2 border-primary md:scale-105 shadow-xl' : 'border border-border'
+                    isMiddle
+                      ? 'border-2 border-primary md:scale-105 shadow-xl'
+                      : 'border border-border'
                   } group h-full flex flex-col`}
                 >
                   {/* Number badge at top - larger for mobile */}
@@ -97,44 +99,42 @@ export function HowItWorks() {
 
                   {/* Centered content with improved spacing */}
                   <div className="text-center mb-4 md:mb-6 flex-1 flex flex-col">
-                    <h3 className="text-xl md:text-2xl font-bold text-fg mb-3">
-                      {step.title}
-                    </h3>
+                    <h3 className="text-xl md:text-2xl font-bold text-fg mb-3">{step.title}</h3>
                     <p className="text-sm md:text-base text-fg-muted leading-relaxed text-pretty mb-4">
                       {step.description}
                     </p>
                   </div>
 
                   {/* AI-powered badge at bottom of middle card */}
-                {isMiddle && (
-                  <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 z-20">
-                    <div className="bg-gradient-to-r from-primary to-accent text-cta-ink font-bold text-xs px-4 py-1.5 rounded-full shadow-lg whitespace-nowrap">
-                      AI-VEZÉRELT
+                  {isMiddle && (
+                    <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 z-20">
+                      <div className="bg-gradient-to-r from-primary to-accent text-cta-ink font-bold text-xs px-4 py-1.5 rounded-full shadow-lg whitespace-nowrap">
+                        AI-VEZÉRELT
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            );
-          })}
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </div>
 
-      {/* Time indicator below cards */}
-      <div className="flex justify-center mt-12">
-        <div className="inline-flex items-center gap-4 bg-bg rounded-2xl px-8 py-4 shadow-lg border border-border">
-          <div className="w-14 h-14 bg-gradient-to-br from-primary to-accent rounded-xl flex items-center justify-center">
-            <Zap className="w-7 h-7 text-cta-ink" />
-          </div>
-          <div>
-            <div className="text-sm text-fg-muted font-medium uppercase tracking-wide">
-              TELJES FOLYAMAT
+        {/* Time indicator below cards */}
+        <div className="flex justify-center mt-12">
+          <div className="inline-flex items-center gap-4 bg-bg rounded-2xl px-8 py-4 shadow-lg border border-border">
+            <div className="w-14 h-14 bg-gradient-to-br from-primary to-accent rounded-xl flex items-center justify-center">
+              <Zap className="w-7 h-7 text-cta-ink" />
             </div>
-            <div className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              ~5 perc
+            <div>
+              <div className="text-sm text-fg-muted font-medium uppercase tracking-wide">
+                TELJES FOLYAMAT
+              </div>
+              <div className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                ~5 perc
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
         {/* Enhanced CTA Section */}
         <div className="text-center mt-12">
