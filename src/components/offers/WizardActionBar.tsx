@@ -38,15 +38,16 @@ export const WizardActionBar = memo(function WizardActionBar({
   const nextButtonRef = useRef<HTMLButtonElement>(null);
 
   // Focus management: focus next button when step changes
+  // Only focus if not submitting to avoid interfering with form submission
   useEffect(() => {
-    if (step > 1 && nextButtonRef.current) {
+    if (step > 1 && nextButtonRef.current && !_isSubmitting) {
       // Small delay to ensure DOM is updated
       const timeout = setTimeout(() => {
         nextButtonRef.current?.focus();
       }, 100);
       return () => clearTimeout(timeout);
     }
-  }, [step]);
+  }, [step, _isSubmitting]);
 
   const isDisabled = isQuotaExhausted || isQuotaLoading;
 

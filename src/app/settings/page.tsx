@@ -24,6 +24,13 @@ import { Button } from '@/components/ui/Button';
 import type { TemplateId } from '@/lib/offers/templates/types';
 import { mapTemplateId } from '@/lib/offers/templates/index';
 import { SectionErrorBoundary } from '@/components/settings/SectionErrorBoundary';
+import { createClientLogger } from '@/lib/clientLogger';
+import type { Profile as _Profile } from '@/components/settings/types';
+import { ChatBubbleLeftRightIcon, LockClosedIcon } from '@heroicons/react/24/outline';
+import { H2 } from '@/components/ui/Heading';
+import { Breadcrumb } from '@/components/ui/Breadcrumb';
+import { useToast } from '@/hooks/useToast';
+import Link from 'next/link';
 
 // Lazy load settings tab sections for route-based code splitting
 const SettingsSecurityTab = dynamic(
@@ -124,13 +131,6 @@ const SettingsTeamSection = dynamic(
     loading: () => <div className="h-64 animate-pulse rounded-lg bg-bg-muted" />,
   },
 );
-import type { Profile as _Profile } from '@/components/settings/types';
-import { ChatBubbleLeftRightIcon, LockClosedIcon } from '@heroicons/react/24/outline';
-import { H2 } from '@/components/ui/Heading';
-import { Breadcrumb } from '@/components/ui/Breadcrumb';
-import { useToast } from '@/hooks/useToast';
-import Link from 'next/link';
-import { createClientLogger } from '@/lib/clientLogger';
 
 export default function SettingsPage() {
   const supabase = useSupabase();

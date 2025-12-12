@@ -319,6 +319,8 @@ export default function NewOfferPage() {
 
   const [activePreviewTab, setActivePreviewTab] = useState<OfferPreviewTab>('document');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Use ref to track submitting state to avoid dependency issues that could cause infinite loops
+  const isSubmittingRef = useRef(false);
   const templateOptions = useMemo(() => {
     try {
       const templates = listTemplates();
@@ -946,9 +948,10 @@ export default function NewOfferPage() {
   }, [attemptedSteps, goToStep, isStepValid, step, stepLabels, validation.steps]);
 
   const handleSubmit = useCallback(async () => {
-    if (isSubmitting) {
+    if (isSubmittingRef.current) {
       return;
     }
+    isSubmittingRef.current = true;
 
     const trimmedTitle = title.trim();
     const normalizedDetails = Object.fromEntries(
@@ -1151,21 +1154,43 @@ export default function NewOfferPage() {
       if (!response.ok) {
         let errorMessage = t('errors.offer.saveFailed');
         try {
-          const errorData = await response.json().catch(() => ({}));
-          if (typeof errorData.error === 'string' && errorData.error) {
-            errorMessage = errorData.error;
+          const contentType = response.headers.get('Content-Type') || '';
+          if (contentType.includes('application/json')) {
+            const errorData = await response.json().catch(() => ({}));
+            if (typeof errorData.error === 'string' && errorData.error) {
+              errorMessage = errorData.error;
+            } else if (typeof errorData.message === 'string' && errorData.message) {
+              errorMessage = errorData.message;
+            }
+          } else {
+            // Try to get text if not JSON
+            const text = await response.text().catch(() => '');
+            if (text) {
+              errorMessage = text;
+            }
           }
-        } catch {
+        } catch (parseError) {
+          logger.error('Failed to parse error response', parseError);
           // Use default error message if parsing fails
         }
-        throw new ApiError(errorMessage);
+        throw new ApiError(errorMessage, { status: response.status });
       }
 
       type GenerateResponse = { ok?: boolean; error?: string | null } | null;
-      const payload: GenerateResponse = await response
-        .json()
-        .then((value) => (value && typeof value === 'object' ? (value as GenerateResponse) : null))
-        .catch(() => null);
+      let payload: GenerateResponse = null;
+      try {
+        const contentType = response.headers.get('Content-Type') || '';
+        if (contentType.includes('application/json')) {
+          const value = await response.json();
+          payload = value && typeof value === 'object' ? (value as GenerateResponse) : null;
+        } else {
+          logger.warn('Response is not JSON', { contentType });
+          throw new ApiError(t('errors.offer.saveFailed'));
+        }
+      } catch (parseError) {
+        logger.error('Failed to parse success response', parseError);
+        throw new ApiError(t('errors.offer.saveFailed'));
+      }
 
       if (!payload?.ok) {
         const message =
@@ -1197,11 +1222,11 @@ export default function NewOfferPage() {
       });
       trackWizardEvent({ type: 'wizard_offer_submitted', success: false });
     } finally {
+      isSubmittingRef.current = false;
       setIsSubmitting(false);
     }
   }, [
     hasPricingRows,
-    isSubmitting,
     previewHtml,
     pricingRows,
     projectDetails,

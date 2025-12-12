@@ -1372,15 +1372,51 @@ Különös figyelmet fordít a következőkre (2025 conversion rate optimization
             : null;
 
         // Use centralized template resolution
-        const { resolveOfferTemplate } = await import('@/lib/offers/templateResolution');
-        const templateResolution = resolveOfferTemplate({
-          requestedTemplateId: normalizedRequestedTemplateId,
-          profileTemplateId:
-            typeof profile?.offer_template === 'string' ? profile.offer_template : null,
-          plan,
-          offerId,
-          userId: user.id,
-        });
+        let resolveOfferTemplate;
+        try {
+          const templateResolutionModule = await import('@/lib/offers/templateResolution');
+          resolveOfferTemplate = templateResolutionModule.resolveOfferTemplate;
+          if (!resolveOfferTemplate || typeof resolveOfferTemplate !== 'function') {
+            throw new Error('resolveOfferTemplate is not a function');
+          }
+        } catch (importError) {
+          log.error('Failed to import template resolution module', importError, {
+            offerId,
+            userId: user.id,
+          });
+          return NextResponse.json(
+            {
+              error: t('errors.offer.saveFailed'),
+              details: 'Template resolution module failed to load',
+            },
+            { status: 500 },
+          );
+        }
+
+        let templateResolution;
+        try {
+          templateResolution = resolveOfferTemplate({
+            requestedTemplateId: normalizedRequestedTemplateId,
+            profileTemplateId:
+              typeof profile?.offer_template === 'string' ? profile.offer_template : null,
+            plan,
+            offerId,
+            userId: user.id,
+          });
+        } catch (resolutionError) {
+          log.error('Template resolution failed', resolutionError, {
+            offerId,
+            userId: user.id,
+            requestedTemplateId: normalizedRequestedTemplateId,
+          });
+          return NextResponse.json(
+            {
+              error: t('errors.offer.saveFailed'),
+              details: 'Template resolution failed',
+            },
+            { status: 500 },
+          );
+        }
 
         // Validate requested template exists (if one was requested)
         if (normalizedRequestedTemplateId && templateResolution.wasFallback) {

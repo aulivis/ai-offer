@@ -79,15 +79,21 @@ export function Select({
   const wrapperClasses = wrapperClassName ?? 'flex flex-col gap-2';
   const isDisabled = Boolean(disabled || loading);
 
+  // Sentinel value for empty string (Radix UI doesn't allow empty string values)
+  const EMPTY_VALUE_SENTINEL = '__EMPTY__';
+
   // Convert option elements to SelectItem for backward compatibility
   const normalizedChildren = React.Children.map(children, (child, index) => {
     if (React.isValidElement(child) && child.type === 'option') {
       const optionProps = child.props as React.OptionHTMLAttributes<HTMLOptionElement>;
-      const keyValue = optionProps.value ?? index;
+      const optionValue = optionProps.value ?? '';
+      const keyValue = optionValue !== '' ? optionValue : index;
+      // Use sentinel value for empty strings to satisfy Radix UI requirements
+      const selectValue = optionValue === '' ? EMPTY_VALUE_SENTINEL : String(optionValue);
       return (
         <SelectItem
           key={String(keyValue)}
-          value={String(optionProps.value || '')}
+          value={selectValue}
           disabled={!!optionProps.disabled}
         >
           {optionProps.children || optionProps.value}
@@ -97,14 +103,28 @@ export function Select({
     return child;
   });
 
+  // Convert sentinel value back to empty string for external handlers
+  const normalizeValue = (val: string | undefined): string | undefined => {
+    if (val === undefined) return undefined;
+    return val === EMPTY_VALUE_SENTINEL ? '' : val;
+  };
+
+  // Convert empty string to sentinel value for Radix UI
+  const denormalizeValue = (val: string | undefined): string | undefined => {
+    if (val === undefined) return undefined;
+    return val === '' ? EMPTY_VALUE_SENTINEL : val;
+  };
+
   const handleValueChange = (newValue: string) => {
+    // Convert sentinel value back to empty string
+    const normalizedValue = normalizeValue(newValue) ?? '';
     if (onValueChange) {
-      onValueChange(newValue);
+      onValueChange(normalizedValue);
     }
     // Support legacy onChange handler
     if (onChange) {
       const syntheticEvent = {
-        target: { value: newValue },
+        target: { value: normalizedValue },
       } as React.ChangeEvent<HTMLSelectElement>;
       onChange(syntheticEvent);
     }
@@ -118,7 +138,7 @@ export function Select({
         </label>
       )}
       <SelectPrimitive.Root
-        {...(value !== undefined ? { value } : {})}
+        {...(value !== undefined ? { value: denormalizeValue(value) } : {})}
         onValueChange={handleValueChange}
         disabled={isDisabled}
         {...(name ? { name } : {})}
