@@ -26,6 +26,7 @@ import type { OfferPreviewTab } from '@/types/preview';
 import { listTemplates } from '@/lib/offers/templates/index';
 import type { TemplateId } from '@/lib/offers/templates/types';
 import type { WizardStep } from '@/types/wizard';
+import { normalizeBrandHex, getBrandLogoUrl } from '@/lib/branding';
 
 // Lazy load wizard step components for route-based code splitting
 // Note: Error logging is handled by the component's logger after mount
@@ -457,7 +458,9 @@ export default function NewOfferPage() {
           await Promise.all([
             supabase
               .from('profiles')
-              .select('enable_reference_photos, enable_testimonials')
+              .select(
+                'enable_reference_photos, enable_testimonials, brand_color_primary, brand_color_secondary, brand_logo_path, brand_logo_url',
+              )
               .eq('id', user.id)
               .single(),
             supabase
@@ -480,12 +483,39 @@ export default function NewOfferPage() {
 
         if (!active) return;
 
-        // Handle profile settings
+        // Handle profile settings and branding
         if (profileResult.data && !profileResult.error) {
           setProfileSettings({
             enable_reference_photos: profileResult.data.enable_reference_photos ?? false,
             enable_testimonials: profileResult.data.enable_testimonials ?? false,
           });
+
+          // Load branding colors
+          const primaryColor = normalizeBrandHex(profileResult.data.brand_color_primary ?? null);
+          const secondaryColor = normalizeBrandHex(
+            profileResult.data.brand_color_secondary ?? null,
+          );
+          if (primaryColor) {
+            setBrandingPrimary(primaryColor);
+          }
+          if (secondaryColor) {
+            setBrandingSecondary(secondaryColor);
+          }
+
+          // Load brand logo URL
+          try {
+            const logoUrl = await getBrandLogoUrl(
+              supabase,
+              profileResult.data.brand_logo_path ?? null,
+              profileResult.data.brand_logo_url ?? null,
+            );
+            if (active && logoUrl) {
+              setBrandingLogoUrl(logoUrl);
+            }
+          } catch (logoError) {
+            // Silently handle logo loading errors - it's optional
+            // Logo is optional, so we don't need to log errors in production
+          }
         }
 
         // Handle activities
@@ -722,12 +752,14 @@ export default function NewOfferPage() {
       const trimmedPrimary = brandingPrimary.trim();
       const trimmedSecondary = brandingSecondary.trim();
       const trimmedLogo = brandingLogoUrl.trim();
+      // Only include logoUrl if it's a valid URL (not empty and not just whitespace)
+      const isValidLogoUrl = trimmedLogo && trimmedLogo.length > 0;
       const brandingPayload =
-        trimmedPrimary || trimmedSecondary || trimmedLogo
+        trimmedPrimary || trimmedSecondary || isValidLogoUrl
           ? {
               primaryColor: trimmedPrimary || undefined,
               secondaryColor: trimmedSecondary || undefined,
-              logoUrl: trimmedLogo || undefined,
+              logoUrl: isValidLogoUrl ? trimmedLogo : undefined,
             }
           : undefined;
 
