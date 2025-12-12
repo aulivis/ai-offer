@@ -539,7 +539,10 @@ export default function NewOfferPage() {
                     activity_ids: activityIds,
                   };
                 } catch (rowError) {
-                  logger.warn('Failed to format guarantee row', rowError, { rowId: row.id });
+                  logger.warn('Failed to format guarantee row', {
+                    error: rowError,
+                    rowId: row.id,
+                  });
                   // Return a safe fallback for this row
                   return {
                     id: row.id,
