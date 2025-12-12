@@ -1,3 +1,5 @@
+'use client';
+
 import { useId, useState } from 'react';
 import type { ChangeEventHandler } from 'react';
 import { Input } from '@/components/ui/Input';
