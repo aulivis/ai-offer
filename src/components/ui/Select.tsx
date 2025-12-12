@@ -62,6 +62,11 @@ export function Select({
 }: Props) {
   const selectId = id || name || 'select-' + Math.random().toString(36).slice(2);
   const describedByIds: string[] = [];
+  const [selectedValue, setSelectedValue] = React.useState<string | undefined>(value);
+
+  React.useEffect(() => {
+    setSelectedValue(value);
+  }, [value]);
 
   if (help) {
     describedByIds.push(`${selectId}-help`);
@@ -111,9 +116,13 @@ export function Select({
     return val === '' ? EMPTY_VALUE_SENTINEL : val;
   };
 
+  const registration = register && name ? register(name) : undefined;
+  const rootValue = denormalizeValue(value ?? selectedValue);
+
   const handleValueChange = (newValue: string) => {
     // Convert sentinel value back to empty string
     const normalizedValue = normalizeValue(newValue) ?? '';
+    setSelectedValue(normalizedValue);
     if (onValueChange) {
       onValueChange(normalizedValue);
     }
@@ -123,6 +132,11 @@ export function Select({
         target: { value: normalizedValue },
       } as React.ChangeEvent<HTMLSelectElement>;
       onChange(syntheticEvent);
+    }
+    if (registration) {
+      registration.onChange({
+        target: { value: normalizedValue, name },
+      } as unknown as React.ChangeEvent<HTMLInputElement>);
     }
   };
 
@@ -134,11 +148,10 @@ export function Select({
         </label>
       )}
       <SelectPrimitive.Root
-        {...(value !== undefined ? { value: denormalizeValue(value) } : {})}
+        {...(rootValue !== undefined ? { value: rootValue } : {})}
         onValueChange={handleValueChange}
         disabled={isDisabled}
         {...(name ? { name } : {})}
-        {...(register && name ? register(name) : {})}
       >
         <SelectPrimitive.Trigger
           id={selectId}
@@ -181,6 +194,16 @@ export function Select({
           </SelectPrimitive.Content>
         </SelectPrimitive.Portal>
       </SelectPrimitive.Root>
+      {registration && (
+        <input
+          type="hidden"
+          name={name}
+          value={selectedValue ?? ''}
+          onChange={registration.onChange}
+          onBlur={registration.onBlur}
+          ref={registration.ref}
+        />
+      )}
       {help && (
         <span id={`${selectId}-help`} className="block text-xs text-fg-muted">
           {help}
