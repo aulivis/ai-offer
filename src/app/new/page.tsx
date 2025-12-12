@@ -222,31 +222,6 @@ export default function NewOfferPage() {
   const supabase = useSupabase();
   const { user, status: authStatus } = useRequireAuth();
 
-  const handlePageError = useCallback(
-    (error: Error, errorInfo: { componentStack: string }) => {
-      logger.error('NewOfferPage render error', error, {
-        componentStack: errorInfo.componentStack,
-        step,
-        authStatus,
-        userId: user?.id ?? null,
-        pricingRowCount: pricingRows.length,
-        hasPreviewHtml: Boolean(previewHtml?.trim()),
-        previewStatus,
-        selectedTemplateId,
-      });
-    },
-    [
-      authStatus,
-      logger,
-      previewHtml,
-      previewStatus,
-      pricingRows.length,
-      selectedTemplateId,
-      step,
-      user?.id,
-    ],
-  );
-
   // Preview hook - enabled from Step 2 onwards
   const previewEnabled = step >= 2;
   const {
@@ -398,6 +373,31 @@ export default function NewOfferPage() {
       setSelectedTemplateId(defaultTemplateId);
     }
   }, [defaultTemplateId]);
+
+  const handlePageError = useCallback(
+    (error: Error, errorInfo: { componentStack: string }) => {
+      logger.error('NewOfferPage render error', error, {
+        componentStack: errorInfo.componentStack,
+        step,
+        authStatus,
+        userId: user?.id ?? null,
+        pricingRowCount: pricingRows.length,
+        hasPreviewHtml: Boolean(previewHtml?.trim()),
+        previewStatus,
+        selectedTemplateId,
+      });
+    },
+    [
+      authStatus,
+      logger,
+      previewHtml,
+      previewStatus,
+      pricingRows.length,
+      selectedTemplateId,
+      step,
+      user?.id,
+    ],
+  );
   const [brandingPrimary, setBrandingPrimary] = useState('#1c274c');
   const [brandingSecondary, setBrandingSecondary] = useState('#e2e8f0');
   const [brandingLogoUrl, setBrandingLogoUrl] = useState('');
@@ -537,7 +537,7 @@ export default function NewOfferPage() {
             if (active && logoUrl) {
               setBrandingLogoUrl(logoUrl);
             }
-          } catch (logoError) {
+          } catch (_logoError) {
             // Silently handle logo loading errors - it's optional
             // Logo is optional, so we don't need to log errors in production
           }

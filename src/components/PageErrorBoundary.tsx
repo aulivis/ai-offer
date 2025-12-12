@@ -16,11 +16,11 @@ type PageErrorBoundaryProps = Pick<ErrorBoundaryProps, 'onError' | 'fallback' | 
 
 export function PageErrorBoundary({
   children,
-  onError,
+  onError = () => {},
   fallback,
-  onRetry,
-  maxRetries,
-  retryDelay,
+  onRetry = () => {},
+  maxRetries = 3,
+  retryDelay = 100,
 }: PageErrorBoundaryProps) {
   return (
     <ErrorBoundary
