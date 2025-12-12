@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useSupabase } from '@/components/SupabaseProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { clientLogger } from '@/lib/clientLogger';
+import { ensureSession } from '@/lib/supabaseClient';
 
 export type Testimonial = {
   id: string;
@@ -23,7 +24,20 @@ export function useTestimonials() {
   const [loading, setLoading] = useState(true);
 
   const loadTestimonials = useCallback(async () => {
+    // If auth is still loading or user is not available, clear testimonials gracefully
     if (!user) {
+      setTestimonials([]);
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+
+    // Ensure the Supabase session is initialized before querying to avoid auth errors
+    try {
+      await ensureSession(user.id);
+    } catch (error) {
+      clientLogger.error('Failed to ensure Supabase session before loading testimonials', error);
       setTestimonials([]);
       setLoading(false);
       return;
