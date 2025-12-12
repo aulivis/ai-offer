@@ -162,11 +162,11 @@ export async function fetchWithSupabaseAuth(
       const method = (restInit.method ?? 'GET').toString().toUpperCase();
       if (method !== 'GET' && method !== 'HEAD') {
         const csrfToken = getCsrfToken();
+        // Only attach the header when we actually have a token. Sending an empty
+        // value can trigger CSRF middleware to reject the request with a 400,
+        // which prevents the offer wizard API calls from succeeding.
         if (csrfToken) {
           finalHeaders.set('x-csrf-token', csrfToken);
-        } else if (!finalHeaders.has('x-csrf-token')) {
-          // Only set empty if not already set (preserve explicit empty values)
-          finalHeaders.set('x-csrf-token', '');
         }
       }
 
