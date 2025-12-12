@@ -10,7 +10,7 @@ const SupabaseContext = createContext<SupabaseClient | null>(null);
 
 type SupabaseProviderProps = {
   children: ReactNode;
-  client?: SupabaseClient;
+  client?: SupabaseClient | null;
 };
 
 export function SupabaseProvider({ children, client }: SupabaseProviderProps) {
