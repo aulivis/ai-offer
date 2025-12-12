@@ -222,6 +222,31 @@ export default function NewOfferPage() {
   const supabase = useSupabase();
   const { user, status: authStatus } = useRequireAuth();
 
+  const handlePageError = useCallback(
+    (error: Error, errorInfo: { componentStack: string }) => {
+      logger.error('NewOfferPage render error', error, {
+        componentStack: errorInfo.componentStack,
+        step,
+        authStatus,
+        userId: user?.id ?? null,
+        pricingRowCount: pricingRows.length,
+        hasPreviewHtml: Boolean(previewHtml?.trim()),
+        previewStatus,
+        selectedTemplateId,
+      });
+    },
+    [
+      authStatus,
+      logger,
+      previewHtml,
+      previewStatus,
+      pricingRows.length,
+      selectedTemplateId,
+      step,
+      user?.id,
+    ],
+  );
+
   // Preview hook - enabled from Step 2 onwards
   const previewEnabled = step >= 2;
   const {
@@ -1356,7 +1381,7 @@ export default function NewOfferPage() {
   // This prevents errors if user data is not yet available
   if (authStatus === 'loading') {
     return (
-      <PageErrorBoundary>
+      <PageErrorBoundary onError={handlePageError}>
         <AppFrame
           title={t('offers.wizard.pageTitle')}
           description={t('offers.wizard.pageDescription')}
@@ -1373,7 +1398,7 @@ export default function NewOfferPage() {
   }
 
   return (
-    <PageErrorBoundary>
+    <PageErrorBoundary onError={handlePageError}>
       <AppFrame
         title={t('offers.wizard.pageTitle')}
         description={t('offers.wizard.pageDescription')}
