@@ -91,11 +91,7 @@ export function Select({
       // Use sentinel value for empty strings to satisfy Radix UI requirements
       const selectValue = optionValue === '' ? EMPTY_VALUE_SENTINEL : String(optionValue);
       return (
-        <SelectItem
-          key={String(keyValue)}
-          value={selectValue}
-          disabled={!!optionProps.disabled}
-        >
+        <SelectItem key={String(keyValue)} value={selectValue} disabled={!!optionProps.disabled}>
           {optionProps.children || optionProps.value}
         </SelectItem>
       );
