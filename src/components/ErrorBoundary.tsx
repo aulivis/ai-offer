@@ -7,7 +7,7 @@ import { t } from '@/copy';
 import { clientLogger } from '@/lib/clientLogger';
 import { envClient } from '@/env.client';
 
-type ErrorBoundaryProps = {
+export type ErrorBoundaryProps = {
   children: ReactNode;
   fallback?: ReactNode;
   onError?: (error: Error, errorInfo: { componentStack: string }) => void;
