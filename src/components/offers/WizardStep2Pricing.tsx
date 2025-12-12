@@ -218,6 +218,8 @@ export function WizardStep2Pricing({
 
   // Load testimonials when component mounts or when testimonials are enabled
   useEffect(() => {
+    let isActive = true;
+
     if (enableTestimonials && user) {
       (async () => {
         try {
@@ -226,6 +228,8 @@ export function WizardStep2Pricing({
             .select('id, text, activity_id')
             .eq('user_id', user.id)
             .order('created_at', { ascending: false });
+
+          if (!isActive) return;
 
           if (error) {
             logger.error('Failed to load testimonials', error);
@@ -250,6 +254,7 @@ export function WizardStep2Pricing({
             setAvailableTestimonials([]);
           }
         } catch (error) {
+          if (!isActive) return;
           logger.error('Error loading testimonials', error);
           setAvailableTestimonials([]);
         }
@@ -258,6 +263,10 @@ export function WizardStep2Pricing({
       // Clear testimonials when feature is disabled
       setAvailableTestimonials([]);
     }
+
+    return () => {
+      isActive = false;
+    };
   }, [enableTestimonials, user, supabase, logger]);
 
   // Load image URLs when image modal is opened
@@ -269,15 +278,19 @@ export function WizardStep2Pricing({
         return;
       }
 
+      const uncachedPaths = images.filter((path) => !imageUrlCache[path]);
+      if (uncachedPaths.length === 0) {
+        // Avoid re-triggering the fetch loop if everything is already cached
+        setLoadingImageUrls(false);
+        return;
+      }
+
       setLoadingImageUrls(true);
       let active = true;
       (async () => {
         const urls: Record<string, string> = {};
-        for (const path of images) {
+        for (const path of uncachedPaths) {
           try {
-            if (imageUrlCache[path]) {
-              continue;
-            }
             const { data } = await supabase.storage
               .from('brand-assets')
               .createSignedUrl(path, 60 * 60 * 24); // 1 day

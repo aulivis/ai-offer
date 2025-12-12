@@ -71,7 +71,7 @@ export function WizardPreviewPanel({
     () => [...validationIssues, ...previewIssues],
     [previewIssues, validationIssues],
   );
-  const previousIssueCountRef = useRef(combinedIssues.length);
+  const previousIssueCountRef = useRef(0);
 
   // Auto-switch to issues tab when issues appear
   useEffect(() => {
