@@ -75,22 +75,15 @@ export function WizardPreviewPanel({
 
   // Auto-switch to issues tab when issues appear
   useEffect(() => {
-    if (
-      combinedIssues.length > 0 &&
-      previousIssueCountRef.current === 0 &&
-      activeTab !== 'issues'
-    ) {
+    const issueCount = combinedIssues.length;
+    if (issueCount > 0 && previousIssueCountRef.current === 0 && activeTab !== 'issues') {
       onTabChange('issues');
-    } else if (
-      combinedIssues.length === 0 &&
-      previousIssueCountRef.current > 0 &&
-      activeTab === 'issues'
-    ) {
+    } else if (issueCount === 0 && previousIssueCountRef.current > 0 && activeTab === 'issues') {
       onTabChange('document');
     }
 
-    previousIssueCountRef.current = combinedIssues.length;
-  }, [activeTab, combinedIssues.length, onTabChange]);
+    previousIssueCountRef.current = issueCount;
+  }, [activeTab, combinedIssues, onTabChange]);
 
   const statusDescriptor = useMemo(() => {
     switch (previewStatus) {

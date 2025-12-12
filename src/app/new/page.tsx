@@ -2,9 +2,10 @@
 
 import { t } from '@/copy';
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import type React from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import { createClientLogger } from '@/lib/clientLogger';
+import { createClientLogger, clientLogger } from '@/lib/clientLogger';
 import AppFrame from '@/components/AppFrame';
 import StepIndicator, { type StepIndicatorStep } from '@/components/StepIndicator';
 import { useSupabase } from '@/components/SupabaseProvider';
@@ -31,7 +32,6 @@ import { normalizeBrandHex, getBrandLogoUrl } from '@/lib/branding';
 // Lazy load wizard step components for route-based code splitting
 // Note: Error logging is handled by the component's logger after mount
 // Added error handling to prevent unhandled promise rejections
-import { clientLogger } from '@/lib/clientLogger';
 
 // Fallback component for failed dynamic imports
 function OfferProjectDetailsSectionFallback() {
@@ -374,6 +374,27 @@ export default function NewOfferPage() {
     }
   }, [defaultTemplateId]);
 
+  const handleTitleChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setTitle(event.target.value);
+    },
+    [setTitle],
+  );
+
+  const handleProjectDetailsChange = useCallback(
+    (field: string, value: string) => {
+      setProjectDetails((prev) => ({ ...prev, [field]: value }));
+    },
+    [setProjectDetails],
+  );
+
+  const handlePricingRowsChange = useCallback(
+    (rows: PriceRow[]) => {
+      setPricingRows(rows);
+    },
+    [setPricingRows],
+  );
+
   const handlePageError = useCallback(
     (error: Error, errorInfo: { componentStack: string }) => {
       logger.error('NewOfferPage render error', error, {
@@ -455,6 +476,34 @@ export default function NewOfferPage() {
   >([]);
   const [selectedGuaranteeIds, setSelectedGuaranteeIds] = useState<string[]>([]);
   const isCreatingClientRef = useRef(false); // Prevent race condition in client creation
+
+  const handleClientChange = useCallback(
+    (updates: Partial<ClientForm>) => {
+      setClient((prev) => ({ ...prev, ...updates }));
+    },
+    [setClient],
+  );
+
+  const handleClientDropdownToggle = useCallback(
+    (isOpen: boolean) => {
+      setShowClientDropdown(isOpen);
+    },
+    [setShowClientDropdown],
+  );
+
+  const handleSelectedImagesChange = useCallback(
+    (images: string[]) => {
+      setSelectedImages(images);
+    },
+    [setSelectedImages],
+  );
+
+  const handleSelectedTestimonialsChange = useCallback(
+    (testimonials: string[]) => {
+      setSelectedTestimonials(testimonials);
+    },
+    [setSelectedTestimonials],
+  );
 
   // Filter clients based on company name input
   const filteredClients = useMemo(() => {
@@ -734,6 +783,49 @@ export default function NewOfferPage() {
     [guarantees],
   );
 
+  const handlePreviewTabChange = useCallback(
+    (tab: OfferPreviewTab) => {
+      setActivePreviewTab(tab);
+    },
+    [setActivePreviewTab],
+  );
+
+  const handleTemplateChange = useCallback(
+    (templateId: TemplateId) => {
+      setSelectedTemplateId(templateId);
+    },
+    [setSelectedTemplateId],
+  );
+
+  const handleBrandingPrimaryChange = useCallback(
+    (color: string) => {
+      setBrandingPrimary(color);
+    },
+    [setBrandingPrimary],
+  );
+
+  const handleBrandingSecondaryChange = useCallback(
+    (color: string) => {
+      setBrandingSecondary(color);
+    },
+    [setBrandingSecondary],
+  );
+
+  const handleBrandingLogoChange = useCallback(
+    (url: string) => {
+      setBrandingLogoUrl(url);
+    },
+    [setBrandingLogoUrl],
+  );
+
+  const handleRefreshPreview = useCallback(() => {
+    refreshPreview();
+  }, [refreshPreview]);
+
+  const handleAbortPreview = useCallback(() => {
+    abortPreview();
+  }, [abortPreview]);
+
   const { totals } = usePricingRows(pricingRows);
   const [previewDocumentHtml, setPreviewDocumentHtml] = useState('');
   const previewDocumentAbortRef = useRef<AbortController | null>(null);
@@ -752,17 +844,24 @@ export default function NewOfferPage() {
     projectDetailsText.trim().length === 0;
 
   useEffect(() => {
-    // Clear any existing debounce timeout
-    if (previewDocumentDebounceRef.current) {
-      window.clearTimeout(previewDocumentDebounceRef.current);
-      previewDocumentDebounceRef.current = null;
+    const clearPendingPreview = () => {
+      if (previewDocumentDebounceRef.current) {
+        window.clearTimeout(previewDocumentDebounceRef.current);
+        previewDocumentDebounceRef.current = null;
+      }
+      if (previewDocumentAbortRef.current) {
+        previewDocumentAbortRef.current.abort();
+        previewDocumentAbortRef.current = null;
+      }
+    };
+
+    if (!previewEnabled || !previewHtml.trim()) {
+      clearPendingPreview();
+      setPreviewDocumentHtml('');
+      return undefined;
     }
 
-    // Abort any in-flight request
-    if (previewDocumentAbortRef.current) {
-      previewDocumentAbortRef.current.abort();
-      previewDocumentAbortRef.current = null;
-    }
+    clearPendingPreview();
 
     // Debounce the API call
     previewDocumentDebounceRef.current = window.setTimeout(() => {
@@ -858,17 +957,10 @@ export default function NewOfferPage() {
     }, PREVIEW_DEBOUNCE_MS); // Use the existing constant
 
     return () => {
-      if (previewDocumentDebounceRef.current) {
-        window.clearTimeout(previewDocumentDebounceRef.current);
-        previewDocumentDebounceRef.current = null;
-      }
-      if (previewDocumentAbortRef.current) {
-        previewDocumentAbortRef.current.abort();
-        previewDocumentAbortRef.current = null;
-      }
+      clearPendingPreview();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
+    previewEnabled,
     previewHtml,
     pricingRows,
     title,
@@ -881,6 +973,7 @@ export default function NewOfferPage() {
     selectedTestimonialsContent,
     selectedGuaranteeIds,
     guarantees,
+    logger,
   ]);
 
   // Simplified mobile action bar - always visible on mobile
@@ -1418,10 +1511,8 @@ export default function NewOfferPage() {
                   <OfferProjectDetailsSection
                     title={title}
                     projectDetails={projectDetails}
-                    onTitleChange={(event) => setTitle(event.target.value)}
-                    onProjectDetailsChange={(field, value) =>
-                      setProjectDetails((prev) => ({ ...prev, [field]: value }))
-                    }
+                    onTitleChange={handleTitleChange}
+                    onProjectDetailsChange={handleProjectDetailsChange}
                     showInlineValidation={true}
                     {...(detailFieldErrors ? { errors: detailFieldErrors } : {})}
                   />
@@ -1432,23 +1523,23 @@ export default function NewOfferPage() {
                 <StepErrorBoundary stepNumber={2}>
                   <WizardStep2Pricing
                     rows={pricingRows}
-                    onRowsChange={setPricingRows}
+                    onRowsChange={handlePricingRowsChange}
                     activities={activities}
                     {...(pricingSectionError ? { validationError: pricingSectionError } : {})}
                     client={client}
-                    onClientChange={(updates) => setClient((prev) => ({ ...prev, ...updates }))}
+                    onClientChange={handleClientChange}
                     clientList={clientList}
                     onClientSelect={handleClientSelect}
                     showClientDropdown={showClientDropdown}
-                    onClientDropdownToggle={setShowClientDropdown}
+                    onClientDropdownToggle={handleClientDropdownToggle}
                     filteredClients={filteredClients}
                     onActivitySaved={handleActivitySaved}
                     enableReferencePhotos={profileSettings.enable_reference_photos}
                     enableTestimonials={profileSettings.enable_testimonials}
                     selectedImages={selectedImages}
-                    onSelectedImagesChange={setSelectedImages}
+                    onSelectedImagesChange={handleSelectedImagesChange}
                     selectedTestimonials={selectedTestimonials}
-                    onSelectedTestimonialsChange={setSelectedTestimonials}
+                    onSelectedTestimonialsChange={handleSelectedTestimonialsChange}
                     guarantees={guarantees}
                     selectedGuaranteeIds={selectedGuaranteeIds}
                     onToggleGuarantee={handleToggleGuarantee}
@@ -1553,9 +1644,9 @@ export default function NewOfferPage() {
             validationIssues={validationPreviewIssues}
             attemptedSteps={attemptedSteps}
             activeTab={activePreviewTab}
-            onTabChange={setActivePreviewTab}
-            onRefresh={refreshPreview}
-            onAbort={abortPreview}
+            onTabChange={handlePreviewTabChange}
+            onRefresh={handleRefreshPreview}
+            onAbort={handleAbortPreview}
             // PDF preview modal removed - using Preview as Customer button instead
             isStreaming={isStreaming}
             templateOptions={templateOptions}
@@ -1564,10 +1655,10 @@ export default function NewOfferPage() {
             brandingPrimary={brandingPrimary}
             brandingSecondary={brandingSecondary}
             brandingLogoUrl={brandingLogoUrl}
-            onTemplateChange={setSelectedTemplateId}
-            onBrandingPrimaryChange={setBrandingPrimary}
-            onBrandingSecondaryChange={setBrandingSecondary}
-            onBrandingLogoChange={setBrandingLogoUrl}
+            onTemplateChange={handleTemplateChange}
+            onBrandingPrimaryChange={handleBrandingPrimaryChange}
+            onBrandingSecondaryChange={handleBrandingSecondaryChange}
+            onBrandingLogoChange={handleBrandingLogoChange}
           />
         </div>
       </AppFrame>
