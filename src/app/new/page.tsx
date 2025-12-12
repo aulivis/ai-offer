@@ -613,7 +613,7 @@ export default function NewOfferPage() {
   // Fetch testimonials content when testimonials are selected
   useEffect(() => {
     if (!user || !profileSettings.enable_testimonials || selectedTestimonials.length === 0) {
-      setSelectedTestimonialsContent([]);
+      setSelectedTestimonialsContent((prev) => (prev.length > 0 ? [] : prev));
       return;
     }
 
