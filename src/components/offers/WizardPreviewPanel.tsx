@@ -75,7 +75,11 @@ export function WizardPreviewPanel({
 
   // Auto-switch to issues tab when issues appear
   useEffect(() => {
-    if (combinedIssues.length > 0 && previousIssueCountRef.current === 0) {
+    if (
+      combinedIssues.length > 0 &&
+      previousIssueCountRef.current === 0 &&
+      activeTab !== 'issues'
+    ) {
       onTabChange('issues');
     } else if (
       combinedIssues.length === 0 &&
