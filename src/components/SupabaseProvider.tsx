@@ -47,3 +47,11 @@ export function useSupabase(): SupabaseClient {
 
   return context;
 }
+
+/**
+ * Safe accessor that returns the Supabase client when available.
+ * Unlike useSupabase, this variant will not throw if the client is missing.
+ */
+export function useOptionalSupabase(): SupabaseClient | null {
+  return useContext(SupabaseContext);
+}

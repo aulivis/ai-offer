@@ -8,7 +8,7 @@ import dynamic from 'next/dynamic';
 import { createClientLogger, clientLogger } from '@/lib/clientLogger';
 import AppFrame from '@/components/AppFrame';
 import StepIndicator, { type StepIndicatorStep } from '@/components/StepIndicator';
-import { useSupabase } from '@/components/SupabaseProvider';
+import { useOptionalSupabase } from '@/components/SupabaseProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { StepErrorBoundary } from '@/components/offers/StepErrorBoundary';
 import { PageErrorBoundary } from '@/components/PageErrorBoundary';
@@ -219,7 +219,7 @@ export default function NewOfferPage() {
       };
     }
   }, []);
-  const supabase = useSupabase();
+  const supabase = useOptionalSupabase();
   const { user, status: authStatus } = useRequireAuth();
 
   // Preview hook - enabled from Step 2 onwards
@@ -522,7 +522,7 @@ export default function NewOfferPage() {
 
   // Load activities and profile settings on mount - parallel loading for better performance
   useEffect(() => {
-    if (!user) return;
+    if (!user || !supabase) return;
     let active = true;
 
     (async () => {
@@ -686,7 +686,12 @@ export default function NewOfferPage() {
 
   // Fetch testimonials content when testimonials are selected
   useEffect(() => {
-    if (!user || !profileSettings.enable_testimonials || selectedTestimonials.length === 0) {
+    if (
+      !supabase ||
+      !user ||
+      !profileSettings.enable_testimonials ||
+      selectedTestimonials.length === 0
+    ) {
       setSelectedTestimonialsContent((prev) => (prev.length > 0 ? [] : prev));
       return;
     }
@@ -721,7 +726,7 @@ export default function NewOfferPage() {
   // Reload activities after saving a new one
   const handleActivitySaved = useCallback(
     async (newActivity?: Activity) => {
-      if (!newActivity || !user) return;
+      if (!newActivity || !user || !supabase) return;
       // Optimistically add to list
       setActivities((prev) => {
         const exists = prev.some((a) => a.id === newActivity.id);
@@ -1098,6 +1103,14 @@ export default function NewOfferPage() {
   }, [attemptedSteps, goToStep, isStepValid, step, stepLabels, validation.steps]);
 
   const handleSubmit = useCallback(async () => {
+    if (!supabase) {
+      showToast({
+        title: 'Nem sikerült csatlakozni az adatokhoz',
+        description: 'Ellenőrizd a Supabase beállításokat és próbáld újra.',
+        variant: 'error',
+      });
+      return;
+    }
     if (isSubmittingRef.current) {
       return;
     }
@@ -1469,6 +1482,34 @@ export default function NewOfferPage() {
         })()
       : undefined;
   const pricingSectionError = attemptedSteps[2] ? validation.fields[2]?.pricing : undefined;
+
+  if (!supabase) {
+    logger.error('Failed to initialize Supabase in NewOfferPage');
+
+    return (
+      <PageErrorBoundary onError={handlePageError}>
+        <AppFrame
+          title={t('offers.wizard.pageTitle')}
+          description={t('offers.wizard.pageDescription')}
+        >
+          <Card className="w-full max-w-2xl space-y-4">
+            <CardHeader>
+              <h2 className="text-lg font-semibold text-fg">
+                Nem sikerült csatlakozni az adatokhoz
+              </h2>
+            </CardHeader>
+            <div className="space-y-3 text-sm text-fg-muted">
+              <p>
+                A Supabase kliens nem inicializálódott. Kérjük, ellenőrizd a szükséges környezeti
+                változókat (például a Supabase URL-t és anon kulcsot), majd frissítsd az oldalt.
+              </p>
+              <p>Ha a probléma továbbra is fennáll, vedd fel a kapcsolatot a rendszergazdával.</p>
+            </div>
+          </Card>
+        </AppFrame>
+      </PageErrorBoundary>
+    );
+  }
 
   // Safety check: show loading state if auth is still loading
   // This prevents errors if user data is not yet available
