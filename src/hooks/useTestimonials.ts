@@ -37,7 +37,10 @@ export function useTestimonials() {
     try {
       await ensureSession(user.id);
     } catch (error) {
-      clientLogger.error('Failed to ensure Supabase session before loading testimonials', error);
+      clientLogger.error('Failed to ensure Supabase session before loading testimonials', error, {
+        userId: user.id,
+      });
+      // Don't throw - gracefully handle the error by setting empty testimonials
       setTestimonials([]);
       setLoading(false);
       return;
@@ -51,13 +54,23 @@ export function useTestimonials() {
         .order('created_at', { ascending: false });
 
       if (error) {
-        clientLogger.error('Failed to load testimonials', error);
+        clientLogger.error('Failed to load testimonials', error, {
+          userId: user.id,
+          errorCode: error.code,
+          errorMessage: error.message,
+        });
+        // Don't throw - gracefully handle the error by setting empty testimonials
         setTestimonials([]);
       } else {
         setTestimonials((data as Testimonial[]) || []);
       }
     } catch (error) {
-      clientLogger.error('Failed to load testimonials', error);
+      clientLogger.error('Failed to load testimonials - unexpected error', error, {
+        userId: user.id,
+        errorName: error instanceof Error ? error.name : 'Unknown',
+        errorMessage: error instanceof Error ? error.message : String(error),
+      });
+      // Don't throw - gracefully handle the error by setting empty testimonials
       setTestimonials([]);
     } finally {
       setLoading(false);

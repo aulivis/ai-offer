@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, type ReactNode } from 'react';
+import { createContext, useContext, useMemo, type ReactNode } from 'react';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 import { getSupabaseClient } from '@/lib/supabaseClient';
@@ -14,26 +14,35 @@ type SupabaseProviderProps = {
 };
 
 export function SupabaseProvider({ children, client }: SupabaseProviderProps) {
-  const instance =
-    client ??
-    (() => {
-      try {
-        return getSupabaseClient();
-      } catch (error) {
-        clientLogger.error('Failed to get Supabase client', error);
-        // Return null - components should handle this gracefully
-        return null;
-      }
-    })();
+  const instance = useMemo(() => {
+    if (client) {
+      return client;
+    }
+    try {
+      return getSupabaseClient();
+    } catch (error) {
+      clientLogger.error('Failed to get Supabase client', error);
+      // Return null - AppProviders should have caught this and shown error UI
+      // But if we get here, return null and let useSupabase throw a helpful error
+      return null;
+    }
+  }, [client]);
 
+  // If instance is null, we'll let useSupabase throw a helpful error when it's called
+  // This prevents the component from crashing during render
   return <SupabaseContext.Provider value={instance}>{children}</SupabaseContext.Provider>;
 }
 
 export function useSupabase(): SupabaseClient {
   const context = useContext(SupabaseContext);
 
-  if (!context) {
-    throw new Error('useSupabase must be used within a SupabaseProvider');
+  if (context === null) {
+    // This can happen if:
+    // 1. Context is used outside provider (default value)
+    // 2. Supabase client failed to initialize
+    throw new Error(
+      'Supabase client is not available. This may be due to missing environment variables (NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY) or a configuration error. Please check your environment configuration.',
+    );
   }
 
   return context;

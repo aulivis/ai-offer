@@ -18,14 +18,13 @@ interface AppProvidersProps {
 import { QueryProvider } from '@/providers/QueryProvider';
 
 export function AppProviders({ children }: AppProvidersProps) {
-  const supabase = useMemo(() => {
+  const supabaseResult = useMemo(() => {
     try {
-      return getSupabaseClient();
+      return { client: getSupabaseClient(), error: null };
     } catch (error) {
-      // Log error but don't crash - SupabaseProvider will handle null client
+      // Log error but don't crash - show error UI instead
       clientLogger.error('Failed to initialize Supabase client', error);
-      // Return null and let SupabaseProvider handle it
-      return null;
+      return { client: null, error };
     }
   }, []);
 
@@ -53,9 +52,28 @@ export function AppProviders({ children }: AppProvidersProps) {
     );
   }
 
+  if (supabaseResult.error) {
+    return (
+      <div className="mx-auto flex min-h-screen w-full max-w-4xl items-center justify-center px-6">
+        <Card className="w-full space-y-4 p-6 text-sm text-fg">
+          <p className="font-semibold text-danger">Failed to initialize application</p>
+          <p className="text-fg-muted">
+            {supabaseResult.error instanceof Error
+              ? supabaseResult.error.message
+              : 'An unexpected error occurred while initializing the application.'}
+          </p>
+          <p className="text-fg-muted">
+            Please check your environment configuration and reload the page. If the problem
+            persists, contact support.
+          </p>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <QueryProvider>
-      <SupabaseProvider client={supabase}>
+      <SupabaseProvider client={supabaseResult.client}>
         <PlanUpgradeDialogProvider>
           <BrandingProvider>
             {children}

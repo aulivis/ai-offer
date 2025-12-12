@@ -118,9 +118,9 @@ export function TestimonialsManager({
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
 
-  // Ensure arrays are always defined
-  const safeTestimonials = testimonials || [];
-  const safeActivities = activities || [];
+  // Ensure arrays are always defined and are actually arrays
+  const safeTestimonials = Array.isArray(testimonials) ? testimonials : [];
+  const safeActivities = Array.isArray(activities) ? activities : [];
 
   if (!enabled) {
     return null;

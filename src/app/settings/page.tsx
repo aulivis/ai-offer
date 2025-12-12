@@ -20,6 +20,7 @@ import { useTestimonials } from '@/hooks/useTestimonials';
 import { useGoogleAuth } from '@/hooks/useGoogleAuth';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
 import type { TemplateId } from '@/lib/offers/templates/types';
 import { mapTemplateId } from '@/lib/offers/templates/index';
 import { SectionErrorBoundary } from '@/components/settings/SectionErrorBoundary';
@@ -90,12 +91,27 @@ const TestimonialsManager = dynamic(
     import('@/components/settings/TestimonialsManager')
       .then((mod) => mod.TestimonialsManager)
       .catch((error) => {
-        // Log error without console.error to pass linting
-        if (process.env.NODE_ENV === 'development') {
-          // eslint-disable-next-line no-console
-          console.error('Failed to load TestimonialsManager:', error);
-        }
-        throw error;
+        // Log error for debugging
+        const logger = createClientLogger({ component: 'SettingsPage' });
+        logger.error('Failed to load TestimonialsManager component', error);
+        // Return a fallback component instead of throwing
+        const TestimonialsManagerFallback = () => (
+          <div className="rounded-xl border-2 border-border bg-bg-muted/50 p-8 text-center">
+            <p className="text-sm font-semibold text-fg mb-2">
+              {t('errors.settings.sectionError.title', {
+                section: t('settings.testimonials.title'),
+              })}
+            </p>
+            <p className="text-sm text-fg-muted mb-4">
+              {t('errors.settings.sectionError.description')}
+            </p>
+            <Button onClick={() => window.location.reload()} variant="secondary" size="sm">
+              {t('errors.settings.sectionError.retry')}
+            </Button>
+          </div>
+        );
+        TestimonialsManagerFallback.displayName = 'TestimonialsManagerFallback';
+        return TestimonialsManagerFallback;
       }),
   {
     loading: () => <div className="h-96 animate-pulse rounded-lg bg-bg-muted" />,
@@ -110,7 +126,6 @@ const SettingsTeamSection = dynamic(
 );
 import type { Profile as _Profile } from '@/components/settings/types';
 import { ChatBubbleLeftRightIcon, LockClosedIcon } from '@heroicons/react/24/outline';
-import { Button } from '@/components/ui/Button';
 import { H2 } from '@/components/ui/Heading';
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
 import { useToast } from '@/hooks/useToast';
@@ -619,8 +634,8 @@ export default function SettingsPage() {
                             <div className="space-y-6">
                               {plan === 'pro' ? (
                                 <TestimonialsManager
-                                  testimonials={testimonials || []}
-                                  activities={acts || []}
+                                  testimonials={Array.isArray(testimonials) ? testimonials : []}
+                                  activities={Array.isArray(acts) ? acts : []}
                                   enabled={true}
                                   plan={plan}
                                   onTestimonialsChange={reloadTestimonials}
