@@ -110,9 +110,19 @@ export function mapTemplateId(oldId: string): TemplateId {
 
 /**
  * List all available templates
+ *
+ * Wrapped in try-catch to handle any potential errors during template loading
  */
 export function listTemplates(): Template[] {
-  return Object.values(TEMPLATES);
+  try {
+    return Object.values(TEMPLATES);
+  } catch (error) {
+    // Log error but return empty array to prevent app crash
+    // Note: Using console here as this is server-side code and clientLogger is client-only
+    // eslint-disable-next-line no-console
+    console.error('Error loading templates:', error);
+    return [];
+  }
 }
 
 /**

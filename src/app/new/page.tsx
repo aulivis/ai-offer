@@ -29,44 +29,126 @@ import type { WizardStep } from '@/types/wizard';
 
 // Lazy load wizard step components for route-based code splitting
 // Note: Error logging is handled by the component's logger after mount
+// Added error handling to prevent unhandled promise rejections
+import { clientLogger } from '@/lib/clientLogger';
+
+// Fallback component for failed dynamic imports
+function OfferProjectDetailsSectionFallback() {
+  return (
+    <div className="p-8 text-center text-danger">
+      <p>Hiba történt a komponens betöltésekor. Kérjük, frissítsd az oldalt.</p>
+    </div>
+  );
+}
+
+function WizardStep2PricingFallback() {
+  return (
+    <div className="p-8 text-center text-danger">
+      <p>Hiba történt a komponens betöltésekor. Kérjük, frissítsd az oldalt.</p>
+    </div>
+  );
+}
+
+function OfferSummarySectionFallback() {
+  return (
+    <div className="p-8 text-center text-danger">
+      <p>Hiba történt a komponens betöltésekor. Kérjük, frissítsd az oldalt.</p>
+    </div>
+  );
+}
+
+function WizardActionBarFallback() {
+  return (
+    <div className="p-4 text-center text-danger text-sm">
+      <p>Hiba történt a komponens betöltésekor.</p>
+    </div>
+  );
+}
+
+function WizardPreviewPanelFallback() {
+  return (
+    <div className="p-8 text-center text-danger">
+      <p>Hiba történt a komponens betöltésekor. Kérjük, frissítsd az oldalt.</p>
+    </div>
+  );
+}
+
+function PreviewAsCustomerButtonFallback() {
+  return (
+    <div className="p-4 text-center text-danger text-sm">
+      <p>Hiba történt a komponens betöltésekor.</p>
+    </div>
+  );
+}
+
 const OfferProjectDetailsSection = dynamic(
   () =>
-    import('@/components/offers/OfferProjectDetailsSection').then(
-      (mod) => mod.OfferProjectDetailsSection,
-    ),
+    import('@/components/offers/OfferProjectDetailsSection')
+      .then((mod) => mod.OfferProjectDetailsSection)
+      .catch((error) => {
+        clientLogger.error('Failed to load OfferProjectDetailsSection', error);
+        return OfferProjectDetailsSectionFallback;
+      }),
   {
     loading: () => <div className="h-96 animate-pulse rounded-lg bg-bg-muted" />,
   },
 );
 const WizardStep2Pricing = dynamic(
-  () => import('@/components/offers/WizardStep2Pricing').then((mod) => mod.WizardStep2Pricing),
+  () =>
+    import('@/components/offers/WizardStep2Pricing')
+      .then((mod) => mod.WizardStep2Pricing)
+      .catch((error) => {
+        clientLogger.error('Failed to load WizardStep2Pricing', error);
+        return WizardStep2PricingFallback;
+      }),
   {
     loading: () => <div className="h-96 animate-pulse rounded-lg bg-bg-muted" />,
   },
 );
 const OfferSummarySection = dynamic(
-  () => import('@/components/offers/OfferSummarySection').then((mod) => mod.OfferSummarySection),
+  () =>
+    import('@/components/offers/OfferSummarySection')
+      .then((mod) => mod.OfferSummarySection)
+      .catch((error) => {
+        clientLogger.error('Failed to load OfferSummarySection', error);
+        return OfferSummarySectionFallback;
+      }),
   {
     loading: () => <div className="h-64 animate-pulse rounded-lg bg-bg-muted" />,
   },
 );
 const WizardActionBar = dynamic(
-  () => import('@/components/offers/WizardActionBar').then((mod) => mod.WizardActionBar),
+  () =>
+    import('@/components/offers/WizardActionBar')
+      .then((mod) => mod.WizardActionBar)
+      .catch((error) => {
+        clientLogger.error('Failed to load WizardActionBar', error);
+        return WizardActionBarFallback;
+      }),
   {
     loading: () => <div className="h-16 animate-pulse rounded-lg bg-bg-muted" />,
   },
 );
 const WizardPreviewPanel = dynamic(
-  () => import('@/components/offers/WizardPreviewPanel').then((mod) => mod.WizardPreviewPanel),
+  () =>
+    import('@/components/offers/WizardPreviewPanel')
+      .then((mod) => mod.WizardPreviewPanel)
+      .catch((error) => {
+        clientLogger.error('Failed to load WizardPreviewPanel', error);
+        return WizardPreviewPanelFallback;
+      }),
   {
     loading: () => <div className="h-96 animate-pulse rounded-lg bg-bg-muted" />,
   },
 );
 const PreviewAsCustomerButton = dynamic(
   () =>
-    import('@/components/offers/PreviewAsCustomerButton').then(
-      (mod) => mod.PreviewAsCustomerButton,
-    ),
+    import('@/components/offers/PreviewAsCustomerButton')
+      .then((mod) => mod.PreviewAsCustomerButton)
+      .catch((error) => {
+        clientLogger.error('Failed to load PreviewAsCustomerButton', error);
+        return PreviewAsCustomerButtonFallback;
+      }),
   {
     loading: () => <div className="h-12 animate-pulse rounded-lg bg-bg-muted" />,
   },
@@ -123,7 +205,19 @@ export default function NewOfferPage() {
   } = useOfferWizard();
   const { showToast } = useToast();
   const router = useRouter();
-  const logger = useMemo(() => createClientLogger({ component: 'NewOfferPage' }), []);
+  const logger = useMemo(() => {
+    try {
+      return createClientLogger({ component: 'NewOfferPage' });
+    } catch (error) {
+      // Fallback logger if createClientLogger fails
+      clientLogger.error('Failed to create logger', error);
+      return {
+        error: (...args: unknown[]) => clientLogger.error('[NewOfferPage]', args[0], { args }),
+        warn: (...args: unknown[]) => clientLogger.warn('[NewOfferPage]', { args }),
+        info: (...args: unknown[]) => clientLogger.info('[NewOfferPage]', { args }),
+      };
+    }
+  }, []);
   const supabase = useSupabase();
   const { user, status: authStatus } = useRequireAuth();
 
@@ -264,14 +358,18 @@ export default function NewOfferPage() {
       return DEFAULT_OFFER_TEMPLATE_ID as TemplateId;
     }
   }, [templateOptions, logger]);
-  const [selectedTemplateId, setSelectedTemplateId] = useState<TemplateId>(() => {
-    try {
-      return defaultTemplateId;
-    } catch (error) {
-      logger.error('Failed to initialize selectedTemplateId', error);
-      return DEFAULT_OFFER_TEMPLATE_ID as TemplateId;
+  // Initialize selectedTemplateId with a safe default, then update it in useEffect
+  // This prevents issues if defaultTemplateId is not yet computed during initial render
+  const [selectedTemplateId, setSelectedTemplateId] = useState<TemplateId>(
+    DEFAULT_OFFER_TEMPLATE_ID as TemplateId,
+  );
+
+  // Update selectedTemplateId once defaultTemplateId is computed
+  useEffect(() => {
+    if (defaultTemplateId) {
+      setSelectedTemplateId(defaultTemplateId);
     }
-  });
+  }, [defaultTemplateId]);
   const [brandingPrimary, setBrandingPrimary] = useState('#1c274c');
   const [brandingSecondary, setBrandingSecondary] = useState('#e2e8f0');
   const [brandingLogoUrl, setBrandingLogoUrl] = useState('');
@@ -412,14 +510,44 @@ export default function NewOfferPage() {
           }
         } else {
           try {
-            const formattedGuarantees = (guaranteesResult.data || []).map((row) => ({
-              id: row.id,
-              text: row.text || '',
-              activity_ids:
-                row.activity_guarantees
-                  ?.map((link: { activity_id: string | null }) => link?.activity_id)
-                  .filter((id): id is string => typeof id === 'string' && id.length > 0) ?? [],
-            }));
+            const formattedGuarantees = (guaranteesResult.data || [])
+              .filter((row) => row && typeof row === 'object' && row.id) // Validate row structure
+              .map((row) => {
+                try {
+                  // Safely handle activity_guarantees - it might be null, undefined, or not an array
+                  const activityGuarantees = row.activity_guarantees;
+                  const activityIds =
+                    Array.isArray(activityGuarantees) && activityGuarantees.length > 0
+                      ? activityGuarantees
+                          .map((link: unknown) => {
+                            if (
+                              link &&
+                              typeof link === 'object' &&
+                              'activity_id' in link &&
+                              typeof link.activity_id === 'string'
+                            ) {
+                              return link.activity_id;
+                            }
+                            return null;
+                          })
+                          .filter((id): id is string => typeof id === 'string' && id.length > 0)
+                      : [];
+
+                  return {
+                    id: row.id,
+                    text: typeof row.text === 'string' ? row.text : '',
+                    activity_ids: activityIds,
+                  };
+                } catch (rowError) {
+                  logger.warn('Failed to format guarantee row', rowError, { rowId: row.id });
+                  // Return a safe fallback for this row
+                  return {
+                    id: row.id,
+                    text: typeof row.text === 'string' ? row.text : '',
+                    activity_ids: [],
+                  };
+                }
+              });
             if (active) {
               setGuarantees(formattedGuarantees);
             }

@@ -4,6 +4,7 @@ import { createContext, useContext, type ReactNode } from 'react';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 import { getSupabaseClient } from '@/lib/supabaseClient';
+import { clientLogger } from '@/lib/clientLogger';
 
 const SupabaseContext = createContext<SupabaseClient | null>(null);
 
@@ -13,7 +14,17 @@ type SupabaseProviderProps = {
 };
 
 export function SupabaseProvider({ children, client }: SupabaseProviderProps) {
-  const instance = client ?? getSupabaseClient();
+  const instance =
+    client ??
+    (() => {
+      try {
+        return getSupabaseClient();
+      } catch (error) {
+        clientLogger.error('Failed to get Supabase client', error);
+        // Return null - components should handle this gracefully
+        return null;
+      }
+    })();
 
   return <SupabaseContext.Provider value={instance}>{children}</SupabaseContext.Provider>;
 }

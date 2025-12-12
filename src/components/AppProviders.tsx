@@ -7,6 +7,7 @@ import { SupabaseProvider } from '@/components/SupabaseProvider';
 import { PlanUpgradeDialogProvider } from '@/components/PlanUpgradeDialogProvider';
 import { BrandingProvider } from '@/components/BrandingProvider';
 import { getSupabaseClient } from '@/lib/supabaseClient';
+import { clientLogger } from '@/lib/clientLogger';
 
 interface AppProvidersProps {
   children: ReactNode;
@@ -15,7 +16,16 @@ interface AppProvidersProps {
 import { QueryProvider } from '@/providers/QueryProvider';
 
 export function AppProviders({ children }: AppProvidersProps) {
-  const supabase = useMemo(() => getSupabaseClient(), []);
+  const supabase = useMemo(() => {
+    try {
+      return getSupabaseClient();
+    } catch (error) {
+      // Log error but don't crash - SupabaseProvider will handle null client
+      clientLogger.error('Failed to initialize Supabase client', error);
+      // Return null and let SupabaseProvider handle it
+      return null;
+    }
+  }, []);
 
   return (
     <QueryProvider>
